@@ -35,7 +35,7 @@ function ClientHomepageContent() {
   const { data: homepage, isLoading: homepageLoading } = useClientHomepage(
     client?.id || ""
   );
-  console.log(client, "client");
+  console.log(client, "client check in homepage");
 
   if (isLoading || homepageLoading) {
     return (
