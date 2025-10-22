@@ -62,6 +62,41 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // Handle Vercel domain with path-based subdomains (e.g., quezt-learn-lms.vercel.app/{client}/login)
+  if (
+    hostname === "quezt-learn-lms.vercel.app" &&
+    pathname.split("/")[1] &&
+    pathname.split("/")[1] !== "admin" &&
+    pathname.split("/")[1] !== "teacher" &&
+    pathname.split("/")[1] !== "login"
+  ) {
+    const url = new URL(request.url);
+    const subdomainPath = pathname.substring(1); // Remove leading slash
+    const pathParts = subdomainPath.split("/");
+    const clientSubdomain = pathParts[0]; // Dynamic client subdomain
+    const remainingPath = pathParts.slice(1).join("/"); // "login" or "student/dashboard"
+
+    url.searchParams.set("subdomain", clientSubdomain);
+
+    if (remainingPath === "") {
+      // Root of subdomain
+      url.pathname = `/[client]`;
+      return NextResponse.rewrite(url);
+    } else if (remainingPath === "login") {
+      // Login on subdomain
+      url.pathname = `/[client]/login`;
+      return NextResponse.rewrite(url);
+    } else if (remainingPath.startsWith("student")) {
+      // Student routes on subdomain
+      url.pathname = `/[client]/${remainingPath}`;
+      return NextResponse.rewrite(url);
+    } else {
+      // Other routes on subdomain
+      url.pathname = `/[client]/${remainingPath}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   // Handle localhost development - simulate subdomain behavior
   if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
     // Check if there's a subdomain in the URL
