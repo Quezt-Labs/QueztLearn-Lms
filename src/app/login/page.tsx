@@ -24,6 +24,7 @@ import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { ClientProvider, useClient } from "@/components/client/client-provider";
 import { useLogin } from "@/hooks";
 import { useAuthStore } from "@/lib/store";
+import { isAllowedDevDomain } from "@/lib/config/development";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -54,7 +55,8 @@ function LoginContent() {
 
         if (
           hostname === "queztlearn.com" ||
-          hostname === "www.queztlearn.com"
+          hostname === "www.queztlearn.com" ||
+          isAllowedDevDomain(hostname)
         ) {
           // Main domain - admin and teacher dashboards
           switch (role) {
@@ -66,7 +68,12 @@ function LoginContent() {
               break;
             default:
               // Redirect students to appropriate subdomain
-              router.push(`https://mit.queztlearn.in/student/dashboard`);
+              if (isAllowedDevDomain(hostname)) {
+                // For development, redirect to test subdomain
+                router.push("/?subdomain=mit&role=student");
+              } else {
+                router.push(`https://mit.queztlearn.in/student/dashboard`);
+              }
               break;
           }
         } else {
@@ -99,7 +106,7 @@ function LoginContent() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
+      <div className="hidden lg:flex lg:w-2/5 bg-linear-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -310,17 +317,27 @@ function SubdomainLoginContent() {
         login(result.data.user, result.data.token);
 
         // Redirect based on role
+        const hostname = window.location.hostname;
+
         switch (role) {
           case "student":
             router.push("/student/dashboard");
             break;
           case "teacher":
             // Redirect teachers to main domain
-            router.push("https://queztlearn.com/teacher/dashboard");
+            if (isAllowedDevDomain(hostname)) {
+              router.push("/teacher/dashboard");
+            } else {
+              router.push("https://queztlearn.com/teacher/dashboard");
+            }
             break;
           case "admin":
             // Redirect admin to main domain
-            router.push("https://queztlearn.com/admin/dashboard");
+            if (isAllowedDevDomain(hostname)) {
+              router.push("/admin/dashboard");
+            } else {
+              router.push("https://queztlearn.com/admin/dashboard");
+            }
             break;
           default:
             router.push("/student/dashboard");
@@ -351,7 +368,7 @@ function SubdomainLoginContent() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Client Branding */}
-      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
+      <div className="hidden lg:flex lg:w-2/5 bg-linear-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}

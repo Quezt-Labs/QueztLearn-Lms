@@ -62,14 +62,11 @@ export function middleware(request: NextRequest) {
       // Rewrite to client routes for development
       if (pathname === "/") {
         return NextResponse.rewrite(
-          new URL(`/[client]?subdomain=${subdomainFromUrl}`, request.url)
+          new URL(`/client?subdomain=${subdomainFromUrl}`, request.url)
         );
       }
       return NextResponse.rewrite(
-        new URL(
-          `/[client]${pathname}?subdomain=${subdomainFromUrl}`,
-          request.url
-        )
+        new URL(`/client${pathname}?subdomain=${subdomainFromUrl}`, request.url)
       );
     }
   }
