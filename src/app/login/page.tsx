@@ -118,7 +118,8 @@ function LoginContent() {
               alt="QueztLearn Logo"
               width={300}
               height={200}
-              className="mx-auto mb-6 w-auto h-24 scale-250"
+              className="mx-auto mb-6 w-auto h-24"
+              priority
             />
             <h1 className="text-3xl font-bold mb-4">QueztLearn</h1>
             <p className="text-lg text-muted-foreground">
