@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ import Link from "next/link";
 function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"admin" | "teacher" | "student">("student");
+  const [role, setRole] = useState<"admin" | "teacher">("admin");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const loginMutation = useLogin();
@@ -68,37 +68,24 @@ function LoginContent() {
               break;
           }
         } else {
-          // Subdomain - student/organization site only
-          switch (role) {
-            case "student":
-              router.push("/student/dashboard");
-              break;
-            case "teacher":
-              // Redirect teachers to main domain
-              router.push("https://queztlearn.com/teacher/dashboard");
-              break;
-            case "admin":
-              // Redirect admin to main domain
-              router.push("https://queztlearn.com/admin/dashboard");
-              break;
-            default:
-              router.push("/student/dashboard");
-              break;
-          }
+          // This should not happen in main domain login
+          router.push("/login");
         }
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Login failed:", error);
+      }
+      // Show user-friendly error message via toast/alert
     }
   };
 
   const demoCredentials = {
     admin: { email: "admin@example.com", password: "password" },
     teacher: { email: "teacher@example.com", password: "password" },
-    student: { email: "student@example.com", password: "password" },
   };
 
-  const handleDemoLogin = (selectedRole: "admin" | "teacher" | "student") => {
+  const handleDemoLogin = (selectedRole: "admin" | "teacher") => {
     const credentials = demoCredentials[selectedRole];
     setEmail(credentials.email);
     setPassword(credentials.password);
@@ -108,7 +95,7 @@ function LoginContent() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-2/5 bg-linear-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
+      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -210,7 +197,7 @@ function LoginContent() {
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={role}
-                    onValueChange={(value: "admin" | "teacher" | "student") =>
+                    onValueChange={(value: "admin" | "teacher") =>
                       setRole(value)
                     }
                   >
@@ -337,7 +324,10 @@ function SubdomainLoginContent() {
         }
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Login failed:", error);
+      }
+      // Show user-friendly error message via toast/alert
     }
   };
 
@@ -357,7 +347,7 @@ function SubdomainLoginContent() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Client Branding */}
-      <div className="hidden lg:flex lg:w-2/5 bg-linear-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
+      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary/10 to-primary/5 flex-col justify-center p-12">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -468,6 +458,8 @@ function SubdomainLoginContent() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -515,15 +507,30 @@ function SubdomainLoginContent() {
 
 // Main Login Page
 export default function LoginPage() {
-  // Check if we're on a subdomain
-  const isSubdomain =
-    typeof window !== "undefined" &&
-    window.location.hostname.endsWith(".queztlearn.in");
+  const [subdomain, setSubdomain] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
-  if (isSubdomain) {
-    // Extract subdomain from hostname
-    const subdomain = window.location.hostname.split(".")[0];
+  useEffect(() => {
+    setIsClient(true);
+    const hostname = window.location.hostname;
+    if (hostname.endsWith(".queztlearn.in")) {
+      const parts = hostname.split(".");
+      if (parts.length > 2) {
+        setSubdomain(parts[0]);
+      }
+    }
+  }, []);
 
+  // Show loading state during hydration
+  if (!isClient) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (subdomain) {
     return (
       <ClientProvider subdomain={subdomain}>
         <SubdomainLoginContent />
@@ -531,6 +538,5 @@ export default function LoginPage() {
     );
   }
 
-  // Main domain - no client provider needed
   return <LoginContent />;
 }

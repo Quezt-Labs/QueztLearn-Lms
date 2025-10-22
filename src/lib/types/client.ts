@@ -9,7 +9,7 @@ export interface Client {
   secondaryColor: string;
   theme: "light" | "dark" | "system";
   isActive: boolean;
-  createdAt: Date;
+  createdAt: string; // ISO 8601 format
   settings: ClientSettings;
 }
 

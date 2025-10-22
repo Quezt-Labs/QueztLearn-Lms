@@ -258,16 +258,18 @@ export const ANIMATION_VARIANTS = {
 } as const;
 
 // Utility function to get navigation items based on domain and role
+type UserRole = (typeof ROLES)[keyof typeof ROLES];
+
 export const getNavigationItems = (
   hostname: string,
-  role: string
+  role: UserRole
 ): NavigationItem[] => {
   // Main domain (queztlearn.com) - admin and teacher
   if (hostname === "queztlearn.com" || hostname === "www.queztlearn.com") {
     switch (role) {
-      case "admin":
+      case ROLES.ADMIN:
         return ADMIN_NAVIGATION_ITEMS;
-      case "teacher":
+      case ROLES.TEACHER:
         return TEACHER_NAVIGATION_ITEMS;
       default:
         // Students should be redirected to subdomain
@@ -277,12 +279,12 @@ export const getNavigationItems = (
 
   // Subdomain - students only
   switch (role) {
-    case "student":
+    case ROLES.STUDENT:
       return STUDENT_NAVIGATION_ITEMS;
-    case "teacher":
+    case ROLES.TEACHER:
       // Teacher on subdomain should redirect to main domain
       return TEACHER_NAVIGATION_ITEMS;
-    case "admin":
+    case ROLES.ADMIN:
       // Admin on subdomain should redirect to main domain
       return ADMIN_NAVIGATION_ITEMS;
     default:

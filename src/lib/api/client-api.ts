@@ -14,7 +14,7 @@ const mockClients: Client[] = [
     secondaryColor: "#0F766E",
     theme: "light",
     isActive: true,
-    createdAt: new Date("2024-01-15"),
+    createdAt: "2024-01-15T00:00:00.000Z",
     settings: {
       allowSelfRegistration: true,
       maxUsers: 10000,
@@ -36,7 +36,7 @@ const mockClients: Client[] = [
     secondaryColor: "#991B1B",
     theme: "dark",
     isActive: true,
-    createdAt: new Date("2024-02-01"),
+    createdAt: "2024-02-01T00:00:00.000Z",
     settings: {
       allowSelfRegistration: false,
       maxUsers: 5000,
@@ -58,7 +58,7 @@ const mockClients: Client[] = [
     secondaryColor: "#5B21B6",
     theme: "system",
     isActive: true,
-    createdAt: new Date("2024-01-20"),
+    createdAt: "2024-01-20T00:00:00.000Z",
     settings: {
       allowSelfRegistration: true,
       maxUsers: 15000,
@@ -253,7 +253,7 @@ export const clientApi = {
     const newClient: Client = {
       ...clientData,
       id: `client-${Date.now()}`,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     };
     mockClients.push(newClient);
     return {

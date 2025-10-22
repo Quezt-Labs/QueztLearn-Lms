@@ -24,14 +24,25 @@ export default function TestSubdomainPage() {
   const [role, setRole] = useState("student");
 
   const testSubdomain = () => {
-    const url = new URL(window.location.origin);
-    url.searchParams.set("subdomain", subdomain);
+    // For local testing, use query params; for production, construct subdomain URL
+    const isLocalhost = window.location.hostname === "localhost";
+    const url = isLocalhost
+      ? new URL(window.location.origin)
+      : new URL(`https://${subdomain}.queztlearn.in`);
+
+    if (isLocalhost) {
+      url.searchParams.set("subdomain", subdomain);
+    }
     url.searchParams.set("role", role);
     window.open(url.toString(), "_blank");
   };
 
   const testMainDomain = () => {
-    window.open("http://localhost:3000/login", "_blank");
+    const isLocalhost = window.location.hostname === "localhost";
+    const baseUrl = isLocalhost
+      ? "http://localhost:3000"
+      : "https://queztlearn.com";
+    window.open(`${baseUrl}/login`, "_blank");
   };
 
   return (

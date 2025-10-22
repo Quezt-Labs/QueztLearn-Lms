@@ -40,13 +40,18 @@ export function ClientProvider({
 
       // Handle production subdomains (e.g., mit.queztlearn.in)
       if (hostname.endsWith(".queztlearn.in")) {
-        const subdomainFromHost = hostname.split(".")[0];
-        setDetectedSubdomain(subdomainFromHost);
+        const parts = hostname.split(".");
+        if (parts.length > 2) {
+          const subdomainFromHost = parts[0];
+          setDetectedSubdomain(subdomainFromHost);
+        }
       }
       // Handle localhost development with subdomain parameter
       else if (
-        hostname.includes("localhost") ||
-        hostname.includes("127.0.0.1")
+        hostname === "localhost" ||
+        hostname.startsWith("localhost:") ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("127.0.0.1:")
       ) {
         const urlParams = new URLSearchParams(window.location.search);
         const subdomainFromUrl = urlParams.get("subdomain");
@@ -60,15 +65,23 @@ export function ClientProvider({
   const finalSubdomain = subdomain || detectedSubdomain;
 
   // Try domain first, then subdomain
-  const { data: clientByDomain, isLoading: domainLoading } = useClientByDomain(
-    domain || ""
-  );
-  const { data: clientBySubdomain, isLoading: subdomainLoading } =
-    useClientBySubdomain(finalSubdomain || "");
+  const {
+    data: clientByDomain,
+    isLoading: domainLoading,
+    error: domainError,
+  } = useClientByDomain(domain || "");
+  const {
+    data: clientBySubdomain,
+    isLoading: subdomainLoading,
+    error: subdomainError,
+  } = useClientBySubdomain(finalSubdomain || "");
 
   const client = clientByDomain || clientBySubdomain;
   const isLoading = domainLoading || subdomainLoading;
-  const error = !isLoading && !client ? "Client not found" : null;
+  const error =
+    domainError?.message ||
+    subdomainError?.message ||
+    (!isLoading && !client ? "Client not found" : null);
 
   return (
     <ClientContext.Provider

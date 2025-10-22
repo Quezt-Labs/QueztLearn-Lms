@@ -69,7 +69,10 @@ export const useUpdateClient = () => {
       updates: Partial<import("@/lib/types/client").Client>;
     }) => clientApi.updateClient(clientId, updates),
     onSuccess: (_, { clientId }) => {
-      queryClient.invalidateQueries({ queryKey: ["client", clientId] });
+      queryClient.invalidateQueries({ queryKey: ["client"] });
+      queryClient.invalidateQueries({
+        queryKey: ["client-homepage", clientId],
+      });
       queryClient.invalidateQueries({ queryKey: ["all-clients"] });
     },
   });

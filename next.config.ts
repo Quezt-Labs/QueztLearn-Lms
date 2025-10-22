@@ -6,11 +6,11 @@ const nextConfig: NextConfig = {
       // Rewrite subdomain requests to client pages
       {
         source: "/:path*",
-        destination: "/[client]/:path*",
+        destination: "/:subdomain/:path*",
         has: [
           {
             type: "host",
-            value: "(?<subdomain>.*)\\.queztlearn\\.in",
+            value: "(?<subdomain>[^.]+)\\.queztlearn\\.in",
           },
         ],
       },

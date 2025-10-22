@@ -26,7 +26,11 @@ import { useCourses } from "@/hooks";
 import Link from "next/link";
 
 export default function StudentDashboard() {
-  const { data: courses, isLoading: coursesLoading } = useCourses(1, 10);
+  const {
+    data: courses,
+    isLoading: coursesLoading,
+    error: coursesError,
+  } = useCourses(1, 10);
 
   // Mock student progress data
   const studentProgress = {
@@ -137,9 +141,11 @@ export default function StudentDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">
                 {Math.round(
-                  (studentProgress.completedLessons /
-                    studentProgress.totalLessons) *
-                    100
+                  studentProgress.totalLessons > 0
+                    ? (studentProgress.completedLessons /
+                        studentProgress.totalLessons) *
+                        100
+                    : 0
                 )}
                 %
               </div>
@@ -165,7 +171,13 @@ export default function StudentDashboard() {
               <CardDescription>Continue your learning journey</CardDescription>
             </CardHeader>
             <CardContent>
-              {coursesLoading ? (
+              {coursesError ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Failed to load courses. Please try again later.
+                  </p>
+                </div>
+              ) : coursesLoading ? (
                 <div className="space-y-4">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="flex items-center space-x-4">
@@ -180,7 +192,8 @@ export default function StudentDashboard() {
               ) : (
                 <div className="space-y-4">
                   {enrolledCourses.map((course, index) => {
-                    const progress = Math.floor(Math.random() * 40) + 30; // Mock progress
+                    const progress =
+                      course.progress ?? Math.floor(Math.random() * 40) + 30; // Use real progress or fallback
                     const isCompleted = progress === 100;
 
                     return (

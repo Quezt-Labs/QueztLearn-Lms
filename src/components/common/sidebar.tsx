@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -43,6 +43,11 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const role = useRole();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [hostname, setHostname] = useState("");
+
+  useEffect(() => {
+    setHostname(window.location.hostname);
+  }, []);
 
   const toggleExpanded = (itemTitle: string) => {
     setExpandedItems((prev) =>
@@ -53,8 +58,6 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   // Get navigation items based on current domain and role
-  const hostname =
-    typeof window !== "undefined" ? window.location.hostname : "";
   const filteredItems = getNavigationItems(hostname, role || "student");
 
   const isActive = (href: string) => {
