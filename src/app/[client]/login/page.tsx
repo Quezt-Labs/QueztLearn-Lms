@@ -173,7 +173,7 @@ function ClientLoginContent() {
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <Link
                     href={`/${client.subdomain}/register`}
                     className="text-primary hover:underline"

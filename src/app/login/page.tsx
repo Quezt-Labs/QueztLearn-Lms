@@ -34,7 +34,6 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "teacher">("admin");
   const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
   const router = useRouter();
   const loginMutation = useLogin();
   const { login } = useAuthStore();
@@ -43,7 +42,6 @@ function LoginContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError(null); // Clear previous errors
 
     try {
       const result = await loginMutation.mutateAsync({ email, password });
@@ -85,7 +83,7 @@ function LoginContent() {
       if (process.env.NODE_ENV === "development") {
         console.error("Login failed:", error);
       }
-      setLoginError(
+      console.error(
         "Login failed. Please check your credentials and try again."
       );
     }
