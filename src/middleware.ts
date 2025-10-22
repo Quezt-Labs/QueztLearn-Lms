@@ -13,10 +13,11 @@ export function middleware(request: NextRequest) {
   // Handle Vercel domain with path-based subdomains FIRST (e.g., quezt-learn-lms.vercel.app/{client}/login)
   if (
     hostname === "quezt-learn-lms.vercel.app" &&
-    pathname.split("/")[1] &&
-    pathname.split("/")[1] !== "admin" &&
-    pathname.split("/")[1] !== "teacher" &&
-    pathname.split("/")[1] !== "login"
+    pathname.startsWith("/") &&
+    pathname.length > 1 &&
+    !pathname.startsWith("/admin") &&
+    !pathname.startsWith("/teacher") &&
+    !pathname.startsWith("/login")
   ) {
     const url = new URL(request.url);
     const subdomainPath = pathname.substring(1); // Remove leading slash
@@ -51,22 +52,18 @@ export function middleware(request: NextRequest) {
     hostname === "www.queztlearn.com" ||
     hostname === "quezt-learn-lms.vercel.app"
   ) {
-    // If accessing root, redirect to login
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-
-    // Allow admin, teacher, and login routes
+    // Allow admin, teacher, login, and root routes
     if (
       pathname.startsWith("/admin") ||
       pathname.startsWith("/teacher") ||
-      pathname.startsWith("/login")
+      pathname.startsWith("/login") ||
+      pathname === "/"
     ) {
       return NextResponse.next();
     }
 
-    // For other routes on main domain, redirect to login
-    return NextResponse.redirect(new URL("/login", request.url));
+    // For other routes on main domain, show homepage
+    return NextResponse.next();
   }
 
   // Handle subdomain requests (e.g., mit.queztlearn.in)

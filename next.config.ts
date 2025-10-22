@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
-      // Rewrite subdomain requests to client pages
+      // Rewrite real subdomain requests to client pages (for production with custom domain)
       {
         source: "/:path*",
         destination: "/:subdomain/:path*",
@@ -11,6 +11,17 @@ const nextConfig: NextConfig = {
           {
             type: "host",
             value: "(?<subdomain>[^.]+)\\.queztlearn\\.in",
+          },
+        ],
+      },
+      // Rewrite Vercel path-based subdomains to client pages
+      {
+        source: "/:client/:path*",
+        destination: "/[client]/:path*",
+        has: [
+          {
+            type: "host",
+            value: "quezt-learn-lms\\.vercel\\.app",
           },
         ],
       },
