@@ -54,6 +54,7 @@ function LoginContent() {
         if (
           hostname === "queztlearn.com" ||
           hostname === "www.queztlearn.com" ||
+          hostname === "quezt-learn-lms.vercel.app" ||
           isAllowedDevDomain(hostname)
         ) {
           // Main domain - admin and teacher dashboards

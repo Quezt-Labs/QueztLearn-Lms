@@ -11,7 +11,11 @@ export function middleware(request: NextRequest) {
       : null;
 
   // Handle main domain (queztlearn.com) - admin and teacher dashboards
-  if (hostname === "queztlearn.com" || hostname === "www.queztlearn.com") {
+  if (
+    hostname === "queztlearn.com" ||
+    hostname === "www.queztlearn.com" ||
+    hostname === "quezt-learn-lms.vercel.app"
+  ) {
     // If accessing root, redirect to login
     if (pathname === "/") {
       return NextResponse.redirect(new URL("/login", request.url));
