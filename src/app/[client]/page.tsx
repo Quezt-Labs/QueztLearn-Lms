@@ -35,6 +35,7 @@ function ClientHomepageContent() {
   const { data: homepage, isLoading: homepageLoading } = useClientHomepage(
     client?.id || ""
   );
+  console.log(client, "client");
 
   if (isLoading || homepageLoading) {
     return (
@@ -102,7 +103,7 @@ function ClientHomepageContent() {
                 {client.settings.maxUsers.toLocaleString()} max users
               </Badge>
               <Button asChild>
-                <Link href="/login">
+                <Link href="/[client]/login">
                   Login
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
