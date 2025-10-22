@@ -37,13 +37,13 @@ export function middleware(request: NextRequest) {
 
     // If accessing root of subdomain, show client homepage
     if (pathname === "/") {
-      url.pathname = "/[client]";
+      url.pathname = `/[client]`;
       return NextResponse.rewrite(url);
     }
 
     // Handle login on subdomain
     if (pathname === "/login") {
-      url.pathname = "/[client]/login";
+      url.pathname = `/[client]/login`;
       return NextResponse.rewrite(url);
     }
 
@@ -64,6 +64,16 @@ export function middleware(request: NextRequest) {
         return NextResponse.rewrite(
           new URL(`/client?subdomain=${subdomainFromUrl}`, request.url)
         );
+      }
+      // Handle login route specifically
+      if (pathname === "/login") {
+        return NextResponse.rewrite(
+          new URL(`/client/login?subdomain=${subdomainFromUrl}`, request.url)
+        );
+      }
+      // Don't rewrite if already on client route
+      if (pathname.startsWith("/client")) {
+        return NextResponse.next();
       }
       return NextResponse.rewrite(
         new URL(`/client${pathname}?subdomain=${subdomainFromUrl}`, request.url)
