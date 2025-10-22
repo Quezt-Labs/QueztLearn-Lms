@@ -4,10 +4,11 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get("host") || "";
 
-  // Extract subdomain from hostname
-  const subdomain = hostname.endsWith(".queztlearn.in")
-    ? hostname.split(".")[0]
-    : null;
+  // Extract subdomain from hostname (e.g., "mit" from "mit.queztlearn.in")
+  const subdomain =
+    hostname.endsWith(".queztlearn.in") && hostname !== "queztlearn.in"
+      ? hostname.replace(".queztlearn.in", "")
+      : null;
 
   // Handle main domain (queztlearn.com) - admin and teacher dashboards
   if (hostname === "queztlearn.com" || hostname === "www.queztlearn.com") {
@@ -31,24 +32,24 @@ export function middleware(request: NextRequest) {
 
   // Handle subdomain requests (e.g., mit.queztlearn.in)
   if (hostname.endsWith(".queztlearn.in") && subdomain) {
+    const url = new URL(request.url);
+    url.searchParams.set("subdomain", subdomain);
+
     // If accessing root of subdomain, show client homepage
     if (pathname === "/") {
-      return NextResponse.rewrite(
-        new URL(`/[client]?subdomain=${subdomain}`, request.url)
-      );
+      url.pathname = "/[client]";
+      return NextResponse.rewrite(url);
     }
 
     // Handle login on subdomain
     if (pathname === "/login") {
-      return NextResponse.rewrite(
-        new URL(`/[client]/login?subdomain=${subdomain}`, request.url)
-      );
+      url.pathname = "/[client]/login";
+      return NextResponse.rewrite(url);
     }
 
     // For other routes on subdomain, rewrite to client routes
-    return NextResponse.rewrite(
-      new URL(`/[client]${pathname}?subdomain=${subdomain}`, request.url)
-    );
+    url.pathname = `/[client]${pathname}`;
+    return NextResponse.rewrite(url);
   }
 
   // Handle localhost development

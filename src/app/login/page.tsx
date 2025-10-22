@@ -33,6 +33,7 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "teacher">("admin");
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const router = useRouter();
   const loginMutation = useLogin();
   const { login } = useAuthStore();
@@ -41,6 +42,7 @@ function LoginContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null); // Clear previous errors
 
     try {
       const result = await loginMutation.mutateAsync({ email, password });
@@ -68,15 +70,17 @@ function LoginContent() {
               break;
           }
         } else {
-          // This should not happen in main domain login
-          router.push("/login");
+          // Invalid domain - redirect to home
+          router.push("/");
         }
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         console.error("Login failed:", error);
       }
-      // Show user-friendly error message via toast/alert
+      setLoginError(
+        "Login failed. Please check your credentials and try again."
+      );
     }
   };
 
@@ -508,10 +512,8 @@ function SubdomainLoginContent() {
 // Main Login Page
 export default function LoginPage() {
   const [subdomain, setSubdomain] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
     const hostname = window.location.hostname;
     if (hostname.endsWith(".queztlearn.in")) {
       const parts = hostname.split(".");
@@ -521,13 +523,10 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Show loading state during hydration
-  if (!isClient) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+  // Server-side rendering - determine subdomain from hostname
+  if (typeof window === "undefined") {
+    // During SSR, we can't detect subdomain, so render main domain login
+    return <LoginContent />;
   }
 
   if (subdomain) {

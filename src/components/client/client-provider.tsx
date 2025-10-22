@@ -47,12 +47,7 @@ export function ClientProvider({
         }
       }
       // Handle localhost development with subdomain parameter
-      else if (
-        hostname === "localhost" ||
-        hostname.startsWith("localhost:") ||
-        hostname === "127.0.0.1" ||
-        hostname.startsWith("127.0.0.1:")
-      ) {
+      else if (hostname === "localhost") {
         const urlParams = new URLSearchParams(window.location.search);
         const subdomainFromUrl = urlParams.get("subdomain");
         if (subdomainFromUrl) {
