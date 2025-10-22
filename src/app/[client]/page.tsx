@@ -103,7 +103,7 @@ function ClientHomepageContent() {
                 {client.settings.maxUsers.toLocaleString()} max users
               </Badge>
               <Button asChild>
-                <Link href="/[client]/login">
+                <Link href={`/${client.subdomain}/login`}>
                   Login
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -268,7 +268,7 @@ function ClientHomepageContent() {
               with {client.name}.
             </p>
             <Button size="lg" asChild>
-              <Link href="/login">
+              <Link href={`/${client.subdomain}/login`}>
                 {homepage.ctaText}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
