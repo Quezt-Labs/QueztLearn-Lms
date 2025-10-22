@@ -84,7 +84,7 @@ export interface Activity {
   userId: string;
   userName: string;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface NavigationItem {

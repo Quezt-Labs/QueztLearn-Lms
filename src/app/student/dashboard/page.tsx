@@ -22,7 +22,6 @@ import {
   Award,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { StatsSkeleton } from "@/components/common/loading-skeleton";
 import { useCourses } from "@/hooks";
 import Link from "next/link";
 

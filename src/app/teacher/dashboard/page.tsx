@@ -28,7 +28,7 @@ import Link from "next/link";
 
 export default function TeacherDashboard() {
   const { data: courses, isLoading: coursesLoading } = useCourses(1, 5);
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { isLoading: statsLoading } = useDashboardStats();
 
   return (
     <div className="space-y-6">
@@ -254,7 +254,8 @@ export default function TeacherDashboard() {
                   <div className="h-2 w-2 rounded-full bg-primary mt-2" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm">
-                      Student completed "Getting Started with React" lesson
+                      Student completed &ldquo;Getting Started with React&rdquo;
+                      lesson
                     </p>
                     <div className="flex items-center space-x-2">
                       <Badge variant="secondary" className="text-xs">

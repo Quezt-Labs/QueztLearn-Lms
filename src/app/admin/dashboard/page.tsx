@@ -16,8 +16,6 @@ import {
   BookOpen,
   TrendingUp,
   Activity,
-  Plus,
-  ArrowUpRight,
   UserPlus,
   BookPlus,
 } from "lucide-react";
@@ -187,7 +185,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {activities?.slice(0, 5).map((activity, index) => (
+                  {activities?.slice(0, 5).map((activity) => (
                     <div
                       key={activity.id}
                       className="flex items-start space-x-4"

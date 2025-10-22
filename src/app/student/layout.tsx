@@ -1,5 +1,6 @@
 "use client";
 
+import { Layout } from "@/components/common/layout";
 import { RouteGuard } from "@/components/common/route-guard";
 
 export default function StudentLayout({
@@ -9,7 +10,7 @@ export default function StudentLayout({
 }) {
   return (
     <RouteGuard allowedRoles={["student", "admin", "teacher"]}>
-      {children}
+      <Layout>{children}</Layout>
     </RouteGuard>
   );
 }

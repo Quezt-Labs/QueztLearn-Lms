@@ -18,11 +18,10 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRole, useHasRole } from "@/lib/store";
-import { NAVIGATION_ITEMS } from "@/lib/constants";
+import { useRole } from "@/lib/store";
+import { getNavigationItems } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 
 const iconMap = {
   LayoutDashboard,
@@ -53,9 +52,10 @@ export function Sidebar({ className }: SidebarProps) {
     );
   };
 
-  const filteredItems = NAVIGATION_ITEMS.filter(
-    (item) => role && item.roles.includes(role)
-  );
+  // Get navigation items based on current domain and role
+  const hostname =
+    typeof window !== "undefined" ? window.location.hostname : "";
+  const filteredItems = getNavigationItems(hostname, role || "student");
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {

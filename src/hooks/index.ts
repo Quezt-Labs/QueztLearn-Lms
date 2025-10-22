@@ -32,7 +32,7 @@ export const useLogout = () => {
 export const useUser = () => {
   return useQuery({
     queryKey: ["user"],
-    queryFn: () => authApi.getProfile("mock-token"),
+    queryFn: () => authApi.getProfile(),
     select: (data) => (data.success ? data.data : null),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

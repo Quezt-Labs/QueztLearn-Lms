@@ -1,14 +1,11 @@
 import {
   User,
   Course,
-  Lesson,
   Enrollment,
   DashboardStats,
   Activity,
-  Tenant,
   ApiResponse,
   PaginatedResponse,
-  UserRole,
 } from "@/lib/types";
 
 // Mock data
@@ -146,7 +143,8 @@ const mockActivities: Activity[] = [
 ];
 
 // Simulate API delay
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 // Auth API
 export const authApi = {
@@ -159,7 +157,7 @@ export const authApi = {
     const user = mockUsers.find((u) => u.email === email);
     if (!user || password !== "password") {
       return {
-        data: null as any,
+        data: null as never,
         success: false,
         error: "Invalid credentials",
       };
@@ -171,13 +169,13 @@ export const authApi = {
     };
   },
 
-  async getProfile(token: string): Promise<ApiResponse<User>> {
+  async getProfile(): Promise<ApiResponse<User>> {
     await delay(500);
 
     const user = mockUsers.find((u) => u.id === "1"); // Mock current user
     if (!user) {
       return {
-        data: null as any,
+        data: null as never,
         success: false,
         error: "User not found",
       };
@@ -252,7 +250,7 @@ export const usersApi = {
     const userIndex = mockUsers.findIndex((u) => u.id === id);
     if (userIndex === -1) {
       return {
-        data: null as any,
+        data: null as never,
         success: false,
         error: "User not found",
       };
@@ -319,7 +317,7 @@ export const coursesApi = {
     const course = mockCourses.find((c) => c.id === id);
     if (!course) {
       return {
-        data: null as any,
+        data: null as never,
         success: false,
         error: "Course not found",
       };
@@ -365,7 +363,7 @@ export const coursesApi = {
     const courseIndex = mockCourses.findIndex((c) => c.id === id);
     if (courseIndex === -1) {
       return {
-        data: null as any,
+        data: null as never,
         success: false,
         error: "Course not found",
       };
@@ -412,7 +410,7 @@ export const coursesApi = {
     const course = mockCourses.find((c) => c.id === courseId);
     if (!course) {
       return {
-        data: null as any,
+        data: null as never,
         success: false,
         error: "Course not found",
       };

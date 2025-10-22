@@ -6,6 +6,133 @@ export const ROLES = {
   STUDENT: "student" as const,
 } as const;
 
+// Admin navigation items (main domain)
+export const ADMIN_NAVIGATION_ITEMS: NavigationItem[] = [
+  {
+    title: "Dashboard",
+    href: "/admin/dashboard",
+    icon: "LayoutDashboard",
+    roles: ["admin"],
+  },
+  {
+    title: "Manage Users",
+    href: "/admin/users",
+    icon: "UserCog",
+    roles: ["admin"],
+  },
+  {
+    title: "All Courses",
+    href: "/admin/courses",
+    icon: "BookOpen",
+    roles: ["admin"],
+  },
+  {
+    title: "Analytics",
+    href: "/admin/analytics",
+    icon: "BarChart3",
+    roles: ["admin"],
+  },
+  {
+    title: "Clients",
+    href: "/admin/clients",
+    icon: "Building2",
+    roles: ["admin"],
+  },
+  {
+    title: "Settings",
+    href: "/admin/settings",
+    icon: "Settings",
+    roles: ["admin"],
+  },
+  {
+    title: "Billing",
+    href: "/admin/billing",
+    icon: "CreditCard",
+    roles: ["admin"],
+  },
+];
+
+// Teacher navigation items (main domain)
+export const TEACHER_NAVIGATION_ITEMS: NavigationItem[] = [
+  {
+    title: "Dashboard",
+    href: "/teacher/dashboard",
+    icon: "LayoutDashboard",
+    roles: ["teacher"],
+  },
+  {
+    title: "My Courses",
+    href: "/teacher/courses",
+    icon: "BookOpen",
+    roles: ["teacher"],
+  },
+  {
+    title: "Students",
+    href: "/teacher/students",
+    icon: "Users",
+    roles: ["teacher"],
+  },
+  {
+    title: "Analytics",
+    href: "/teacher/analytics",
+    icon: "BarChart3",
+    roles: ["teacher"],
+  },
+  {
+    title: "Assignments",
+    href: "/teacher/assignments",
+    icon: "FileText",
+    roles: ["teacher"],
+  },
+  {
+    title: "Schedule",
+    href: "/teacher/schedule",
+    icon: "Calendar",
+    roles: ["teacher"],
+  },
+];
+
+// Student navigation items (subdomain)
+export const STUDENT_NAVIGATION_ITEMS: NavigationItem[] = [
+  {
+    title: "Dashboard",
+    href: "/student/dashboard",
+    icon: "LayoutDashboard",
+    roles: ["student"],
+  },
+  {
+    title: "My Courses",
+    href: "/student/courses",
+    icon: "BookOpen",
+    roles: ["student"],
+  },
+  {
+    title: "My Progress",
+    href: "/student/progress",
+    icon: "TrendingUp",
+    roles: ["student"],
+  },
+  {
+    title: "Assignments",
+    href: "/student/assignments",
+    icon: "FileText",
+    roles: ["student"],
+  },
+  {
+    title: "Upcoming Classes",
+    href: "/student/classes",
+    icon: "Calendar",
+    roles: ["student"],
+  },
+  {
+    title: "Grades",
+    href: "/student/grades",
+    icon: "Award",
+    roles: ["student"],
+  },
+];
+
+// Legacy navigation items for backward compatibility
 export const NAVIGATION_ITEMS: NavigationItem[] = [
   {
     title: "Dashboard",
@@ -129,3 +256,36 @@ export const ANIMATION_VARIANTS = {
     exit: { scale: 0.9, opacity: 0 },
   },
 } as const;
+
+// Utility function to get navigation items based on domain and role
+export const getNavigationItems = (
+  hostname: string,
+  role: string
+): NavigationItem[] => {
+  // Main domain (queztlearn.com) - admin and teacher
+  if (hostname === "queztlearn.com" || hostname === "www.queztlearn.com") {
+    switch (role) {
+      case "admin":
+        return ADMIN_NAVIGATION_ITEMS;
+      case "teacher":
+        return TEACHER_NAVIGATION_ITEMS;
+      default:
+        // Students should be redirected to subdomain
+        return STUDENT_NAVIGATION_ITEMS;
+    }
+  }
+
+  // Subdomain - students only
+  switch (role) {
+    case "student":
+      return STUDENT_NAVIGATION_ITEMS;
+    case "teacher":
+      // Teacher on subdomain should redirect to main domain
+      return TEACHER_NAVIGATION_ITEMS;
+    case "admin":
+      // Admin on subdomain should redirect to main domain
+      return ADMIN_NAVIGATION_ITEMS;
+    default:
+      return STUDENT_NAVIGATION_ITEMS;
+  }
+};

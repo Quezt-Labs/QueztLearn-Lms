@@ -74,7 +74,7 @@ export function RouteGuard({
             <Shield className="h-12 w-12 mx-auto text-destructive mb-4" />
             <CardTitle>Access Denied</CardTitle>
             <CardDescription>
-              You don't have permission to access this page.
+              You don&apos;t have permission to access this page.
               <br />
               Your current role: <strong>{role}</strong>
             </CardDescription>
