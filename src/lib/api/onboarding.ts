@@ -165,7 +165,11 @@ export const onboardingApi = {
     await delay(1000);
 
     // Mock token validation
-    if (data.token === "valid-token" || data.token.length > 10) {
+    if (
+      data.token === "123456" ||
+      data.token === "valid-token" ||
+      data.token.length > 10
+    ) {
       return {
         data: { verified: true },
         success: true,

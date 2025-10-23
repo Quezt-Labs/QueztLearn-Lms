@@ -269,6 +269,14 @@ export default function VerifyEmailPage() {
                       <p className="text-sm text-muted-foreground">
                         • Make sure the email address is correct
                       </p>
+                      <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
+                        <p className="text-xs text-blue-600 font-medium mb-1">
+                          For testing purposes:
+                        </p>
+                        <p className="text-sm text-blue-800 font-mono">
+                          Use code: <span className="font-bold">123456</span>
+                        </p>
+                      </div>
                       <Button
                         type="button"
                         variant="outline"
