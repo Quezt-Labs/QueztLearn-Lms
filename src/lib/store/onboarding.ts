@@ -43,7 +43,7 @@ export interface OnboardingState {
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Organization data
       organizationData: null,
       setOrganizationData: (data) => set({ organizationData: data }),

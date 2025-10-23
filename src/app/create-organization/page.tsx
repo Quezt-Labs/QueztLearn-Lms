@@ -87,12 +87,12 @@ export default function CreateOrganizationPage() {
   };
 
   // Handle logo upload
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      setBranding((prev) => ({ ...prev, logo: file }));
-    }
-  };
+  // const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file && file.type.startsWith("image/")) {
+  //     setBranding((prev) => ({ ...prev, logo: file }));
+  //   }
+  // };
 
   const validateOrganizationName = async (name: string) => {
     if (!name.trim()) {
@@ -137,7 +137,7 @@ export default function CreateOrganizationPage() {
 
     if (value.length > 2) {
       setIsValidating(true);
-      const isValid = await validateOrganizationName(value);
+      await validateOrganizationName(value);
       setIsValidating(false);
     } else {
       setValidationError("");
@@ -155,7 +155,10 @@ export default function CreateOrganizationPage() {
         name: organizationName.trim(),
         subdomain,
         branding,
-      })) as any;
+      })) as {
+        success: boolean;
+        data?: { id: string; name: string; domain: string };
+      };
 
       if (result.success && result.data) {
         // Save organization data to store

@@ -66,8 +66,10 @@ export default function TeacherDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {courses?.data.filter(
-                      (course) => course.instructorId === "2"
+                    {(courses?.data as unknown[])?.filter(
+                      (course) =>
+                        (course as { instructorId?: string }).instructorId ===
+                        "2"
                     ).length || 0}
                   </div>
                   <p className="text-xs text-muted-foreground">+1 this month</p>
@@ -89,10 +91,13 @@ export default function TeacherDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {courses?.data.reduce(
-                      (sum, course) => sum + course.enrolledStudents,
+                    {((courses?.data as unknown[])?.reduce(
+                      (sum: number, course) =>
+                        sum +
+                        ((course as { enrolledStudents?: number })
+                          .enrolledStudents || 0),
                       0
-                    ) || 0}
+                    ) as number) || 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Across all courses
@@ -171,48 +176,70 @@ export default function TeacherDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {courses?.data
-                    .filter((course) => course.instructorId === "2")
-                    .map((course) => (
-                      <div
-                        key={course.id}
-                        className="flex items-center space-x-4"
-                      >
-                        <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                          <BookOpen className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium">{course.title}</h4>
-                            <Badge
-                              variant={
-                                course.isPublished ? "default" : "secondary"
-                              }
-                            >
-                              {course.isPublished ? "Published" : "Draft"}
-                            </Badge>
+                  {(courses?.data as unknown[])
+                    ?.filter(
+                      (course) =>
+                        (course as { instructorId?: string }).instructorId ===
+                        "2"
+                    )
+                    .map((course) => {
+                      const courseData = course as {
+                        id?: string;
+                        title?: string;
+                        enrolledStudents?: number;
+                        status?: string;
+                      };
+                      return (
+                        <div
+                          key={courseData.id || Math.random()}
+                          className="flex items-center space-x-4"
+                        >
+                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                            <BookOpen className="h-6 w-6 text-muted-foreground" />
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {course.enrolledStudents} students •{" "}
-                            {course.lessons.length} lessons
-                          </p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={68} className="flex-1" />
-                            <span className="text-xs text-muted-foreground">
-                              68%
-                            </span>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">
+                                {courseData.title || "Course"}
+                              </h4>
+                              <Badge
+                                variant={
+                                  (courseData as { isPublished?: boolean })
+                                    .isPublished
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
+                                {(courseData as { isPublished?: boolean })
+                                  .isPublished
+                                  ? "Published"
+                                  : "Draft"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {courseData.enrolledStudents || 0} students •{" "}
+                              {(courseData as { lessons?: { length: number } })
+                                .lessons?.length || 0}{" "}
+                              lessons
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <Progress value={68} className="flex-1" />
+                              <span className="text-xs text-muted-foreground">
+                                68%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex space-x-1">
+                            <Button size="sm" variant="ghost">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost">
+                              <Edit className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex space-x-1">
-                          <Button size="sm" variant="ghost">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               )}
             </CardContent>

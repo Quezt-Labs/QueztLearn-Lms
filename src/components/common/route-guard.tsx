@@ -27,11 +27,9 @@ export function RouteGuard({
   fallback,
 }: RouteGuardProps) {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
-  const {
-    hasAccess,
-    role,
-    isLoading: roleLoading,
-  } = useRequireRole(allowedRoles);
+  const { hasRequiredRole, isLoading: roleLoading } = useRequireRole(
+    allowedRoles[0] as "ADMIN" | "TEACHER" | "STUDENT"
+  );
 
   if (authLoading || roleLoading) {
     return (
@@ -62,7 +60,7 @@ export function RouteGuard({
     );
   }
 
-  if (!hasAccess) {
+  if (!hasRequiredRole) {
     if (fallback) {
       return <>{fallback}</>;
     }
@@ -76,7 +74,7 @@ export function RouteGuard({
             <CardDescription>
               You don&apos;t have permission to access this page.
               <br />
-              Your current role: <strong>{role}</strong>
+              Your current role: <strong>Unknown</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">

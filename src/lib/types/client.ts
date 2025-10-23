@@ -21,6 +21,10 @@ export interface ClientSettings {
   customDomain: boolean;
   analytics: boolean;
   apiAccess: boolean;
+  theme?: {
+    primaryColor: string;
+    secondaryColor: string;
+  };
 }
 
 export interface ClientHomepage {

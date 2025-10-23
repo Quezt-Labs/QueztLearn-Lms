@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useClientByDomain, useClientBySubdomain } from "@/hooks/client-hooks";
+// Removed client-hooks import - using mock data for now
 import { Client } from "@/lib/types/client";
 
 interface ClientContextType {
@@ -59,24 +59,63 @@ export function ClientProvider({
 
   const finalSubdomain = subdomain || detectedSubdomain;
 
-  // Try domain first, then subdomain
-  const {
-    data: clientByDomain,
-    isLoading: domainLoading,
-    error: domainError,
-  } = useClientByDomain(domain || "");
-  const {
-    data: clientBySubdomain,
-    isLoading: subdomainLoading,
-    error: subdomainError,
-  } = useClientBySubdomain(finalSubdomain || "");
+  // Mock client data for now
+  const [client, setClient] = useState<Client | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const client = clientByDomain || clientBySubdomain;
-  const isLoading = domainLoading || subdomainLoading;
-  const error =
-    domainError?.message ||
-    subdomainError?.message ||
-    (!isLoading && !client ? "Client not found" : null);
+  useEffect(() => {
+    // Simulate API call
+    const fetchClient = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Mock client data
+        const mockClient: Client = {
+          id: "client-1",
+          name: "Demo University",
+          domain: finalSubdomain
+            ? `${finalSubdomain}.queztlearn.in`
+            : "demo.queztlearn.in",
+          subdomain: finalSubdomain || "demo",
+          basePath: "queztlearn",
+          logo: "/images/Logo.png",
+          primaryColor: "#3b82f6",
+          secondaryColor: "#1e40af",
+          theme: "light",
+          isActive: true,
+          settings: {
+            allowSelfRegistration: true,
+            maxUsers: 1000,
+            features: ["courses", "assignments", "discussions"],
+            customBranding: true,
+            customDomain: false,
+            analytics: true,
+            apiAccess: true,
+            theme: {
+              primaryColor: "#3b82f6",
+              secondaryColor: "#1e40af",
+            },
+          },
+          createdAt: new Date().toISOString(),
+        };
+
+        setClient(mockClient);
+      } catch {
+        setError("Failed to load client data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (finalSubdomain || domain) {
+      fetchClient();
+    } else {
+      setIsLoading(false);
+      setError("No subdomain or domain provided");
+    }
+  }, [finalSubdomain, domain]);
 
   return (
     <ClientContext.Provider

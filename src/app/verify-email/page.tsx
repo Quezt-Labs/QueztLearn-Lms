@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import Image from "next/image";
 import { useVerifyEmail } from "@/hooks";
 import { useOnboardingStore } from "@/lib/store/onboarding";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const [verificationToken, setVerificationToken] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState("");
@@ -39,6 +39,47 @@ export default function VerifyEmailPage() {
     useOnboardingStore();
   const verifyEmailMutation = useVerifyEmail();
 
+  const handleVerifyEmail = useCallback(
+    async (token?: string) => {
+      const tokenToUse = token || verificationToken;
+
+      if (!tokenToUse.trim()) {
+        setVerificationError("Please enter a verification code");
+        return;
+      }
+
+      setIsVerifying(true);
+      setVerificationError("");
+
+      try {
+        const result = (await verifyEmailMutation.mutateAsync({
+          token: tokenToUse,
+        })) as {
+          success: boolean;
+          data?: { verified: boolean };
+          error?: string;
+        };
+
+        if (result.success && result.data?.verified) {
+          setIsVerified(true);
+          setEmailVerified(true);
+
+          // Auto-redirect to password setup after 2 seconds
+          setTimeout(() => {
+            router.push("/set-password");
+          }, 2000);
+        } else {
+          setVerificationError(result.error || "Invalid verification code");
+        }
+      } catch {
+        setVerificationError("Failed to verify email. Please try again.");
+      } finally {
+        setIsVerifying(false);
+      }
+    },
+    [verificationToken, verifyEmailMutation, router, setEmailVerified]
+  );
+
   // Get token from URL params
   useEffect(() => {
     const token = searchParams.get("token");
@@ -46,7 +87,7 @@ export default function VerifyEmailPage() {
       setVerificationToken(token);
       handleVerifyEmail(token);
     }
-  }, [searchParams]);
+  }, [searchParams, handleVerifyEmail]);
 
   // Redirect if no admin data
   useEffect(() => {
@@ -54,40 +95,6 @@ export default function VerifyEmailPage() {
       router.push("/create-organization");
     }
   }, [adminData, organizationData, router]);
-
-  const handleVerifyEmail = async (token?: string) => {
-    const tokenToUse = token || verificationToken;
-
-    if (!tokenToUse.trim()) {
-      setVerificationError("Please enter a verification code");
-      return;
-    }
-
-    setIsVerifying(true);
-    setVerificationError("");
-
-    try {
-      const result = await verifyEmailMutation.mutateAsync({
-        token: tokenToUse,
-      });
-
-      if (result.success && result.data?.verified) {
-        setIsVerified(true);
-        setEmailVerified(true);
-
-        // Auto-redirect to password setup after 2 seconds
-        setTimeout(() => {
-          router.push("/set-password");
-        }, 2000);
-      } else {
-        setVerificationError(result.error || "Invalid verification code");
-      }
-    } catch (error) {
-      setVerificationError("Failed to verify email. Please try again.");
-    } finally {
-      setIsVerifying(false);
-    }
-  };
 
   const handleResendEmail = () => {
     if (!canResend) return;
@@ -187,7 +194,7 @@ export default function VerifyEmailPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Verify Your Email</h2>
             <p className="text-muted-foreground">
-              We've sent a verification code to {adminData.email}
+              We&apos;ve sent a verification code to {adminData.email}
             </p>
           </div>
 
@@ -260,7 +267,7 @@ export default function VerifyEmailPage() {
 
                   <div className="bg-muted/50 p-4 rounded-lg">
                     <h4 className="font-medium text-sm mb-2">
-                      Didn't receive the email?
+                      Didn&apos;t receive the email?
                     </h4>
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">
@@ -324,5 +331,19 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

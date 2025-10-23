@@ -43,7 +43,8 @@ export default function StudentDashboard() {
     totalStudyTime: 24, // hours
   };
 
-  const enrolledCourses = courses?.data.slice(0, 3) || [];
+  const enrolledCourses =
+    (courses?.data as { courses?: unknown[] })?.courses?.slice(0, 3) || [];
 
   return (
     <div className="space-y-6">
@@ -192,13 +193,21 @@ export default function StudentDashboard() {
               ) : (
                 <div className="space-y-4">
                   {enrolledCourses.map((course, index) => {
+                    const courseData = course as {
+                      progress?: number;
+                      title?: string;
+                      id?: string;
+                      instructorName?: string;
+                      lessons?: { length: number };
+                    };
                     const progress =
-                      course.progress ?? Math.floor(Math.random() * 40) + 30; // Use real progress or fallback
+                      courseData.progress ??
+                      Math.floor(Math.random() * 40) + 30; // Use real progress or fallback
                     const isCompleted = progress === 100;
 
                     return (
                       <motion.div
-                        key={course.id}
+                        key={courseData.id || index}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
@@ -209,7 +218,9 @@ export default function StudentDashboard() {
                         </div>
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium">{course.title}</h4>
+                            <h4 className="font-medium">
+                              {courseData.title || "Course"}
+                            </h4>
                             <Badge
                               variant={isCompleted ? "default" : "secondary"}
                             >
@@ -217,8 +228,8 @@ export default function StudentDashboard() {
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {course.instructorName} • {course.lessons.length}{" "}
-                            lessons
+                            {courseData.instructorName || "Instructor"} •{" "}
+                            {courseData.lessons?.length || 0} lessons
                           </p>
                           <div className="flex items-center space-x-2">
                             <Progress value={progress} className="flex-1" />
@@ -228,7 +239,7 @@ export default function StudentDashboard() {
                           </div>
                         </div>
                         <Button size="sm" asChild>
-                          <Link href={`/student/course/${course.id}`}>
+                          <Link href={`/student/course/${courseData.id}`}>
                             <Play className="h-4 w-4" />
                           </Link>
                         </Button>

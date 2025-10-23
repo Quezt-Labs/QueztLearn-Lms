@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -71,13 +71,16 @@ export default function RegisterAdminPage() {
     if (value && validateEmail(value)) {
       setIsCheckingEmail(true);
       try {
-        const result = (await checkEmailMutation.mutateAsync(value)) as any;
+        const result = (await checkEmailMutation.mutateAsync(value)) as {
+          success: boolean;
+          data?: { available: boolean };
+        };
         if (!result.success || !result.data?.available) {
           setEmailError("Email is already registered");
         } else {
           setEmailError("");
         }
-      } catch (error) {
+      } catch {
         setEmailError("Error checking email availability");
       } finally {
         setIsCheckingEmail(false);
@@ -121,7 +124,10 @@ export default function RegisterAdminPage() {
         email,
         username,
         organizationId: organizationData.id,
-      })) as any;
+      })) as {
+        success: boolean;
+        data?: { id: string; email: string; username: string };
+      };
 
       if (result.success && result.data) {
         // Save admin data to store

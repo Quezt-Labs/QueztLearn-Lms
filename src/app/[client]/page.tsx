@@ -25,19 +25,61 @@ import {
   Star,
 } from "lucide-react";
 import { ClientProvider, useClient } from "@/components/client/client-provider";
-import { useClientHomepage } from "@/hooks/client-hooks";
+// Removed client-hooks import - using mock data for now
 import Link from "next/link";
 import Image from "next/image";
 
 // Client Homepage Component
 function ClientHomepageContent() {
   const { client, isLoading, error } = useClient();
-  const { data: homepage, isLoading: homepageLoading } = useClientHomepage(
-    client?.id || ""
-  );
-  console.log(client, "client check in homepage");
 
-  if (isLoading || homepageLoading) {
+  // Mock homepage data for now
+  const homepage = {
+    title: "Welcome to " + (client?.name || "Our Platform"),
+    tagline: "Transform Your Learning Experience",
+    description:
+      "Join thousands of learners who have already started their journey with us.",
+    ctaText: "Get Started",
+    features: [
+      {
+        id: 1,
+        title: "Interactive Learning",
+        description: "Engage with interactive content and hands-on exercises.",
+        icon: "brain",
+      },
+      {
+        id: 2,
+        title: "Expert Instructors",
+        description:
+          "Learn from industry experts and experienced professionals.",
+        icon: "graduation-cap",
+      },
+      {
+        id: 3,
+        title: "Flexible Schedule",
+        description: "Learn at your own pace with flexible scheduling options.",
+        icon: "clock",
+      },
+    ],
+    testimonials: [
+      {
+        id: 1,
+        name: "Sarah Johnson",
+        role: "Student",
+        content:
+          "This platform has completely transformed my learning experience. The interactive content makes everything so engaging!",
+      },
+      {
+        id: 2,
+        name: "Mike Chen",
+        role: "Professional",
+        content:
+          "The flexibility to learn at my own pace while having access to expert instructors is exactly what I needed.",
+      },
+    ],
+  };
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -45,7 +87,7 @@ function ClientHomepageContent() {
     );
   }
 
-  if (error || !client || !homepage) {
+  if (error || !client) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

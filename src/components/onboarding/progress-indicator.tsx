@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
-import { useOnboardingProgress } from "@/lib/store/onboarding";
+// import { useOnboardingProgress } from "@/lib/store/onboarding";
 
 interface ProgressIndicatorProps {
   currentStep: number;
@@ -15,7 +15,7 @@ export function ProgressIndicator({
   totalSteps = 4,
   className = "",
 }: ProgressIndicatorProps) {
-  const { isStepComplete } = useOnboardingProgress();
+  // const { isStepComplete } = useOnboardingProgress();
 
   const steps = [
     {

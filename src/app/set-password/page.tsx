@@ -14,19 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import {
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  AlertCircle,
-  Shield,
-} from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSetPassword } from "@/hooks";
 import { useOnboardingStore } from "@/lib/store/onboarding";
-import { useAuthStore } from "@/lib/store";
+// import { useAuthStore } from "@/lib/store";
 
 export default function SetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -45,7 +38,7 @@ export default function SetPasswordPage() {
     setPasswordSet,
     completeOnboarding,
   } = useOnboardingStore();
-  const { login } = useAuthStore();
+  // const { login } = useAuthStore();
   const setPasswordMutation = useSetPassword();
 
   // Redirect if prerequisites not met
@@ -119,32 +112,28 @@ export default function SetPasswordPage() {
     }
 
     try {
-      const result = await setPasswordMutation.mutateAsync({
+      // Get userId from adminData (should be available after email verification)
+      const userId = adminData?.id;
+      if (!userId) {
+        console.error("No user ID available");
+        return;
+      }
+
+      const result = (await setPasswordMutation.mutateAsync({
+        userId,
         password,
-        confirmPassword,
-        token: "valid-token", // In real app, this would come from email verification
-      });
+      })) as { success: boolean; data?: { message: string } };
 
       if (result.success && result.data) {
         setIsPasswordSet(true);
         setPasswordSet(true);
 
-        // Login the user
-        const userData = {
-          ...result.data.user,
-          name: result.data.user.username,
-          tenantId: organizationData?.id || "",
-          createdAt: new Date(),
-          role: result.data.user.role as "admin" | "teacher" | "student",
-        };
-        login(userData, result.data.token);
-
         // Complete onboarding
         completeOnboarding();
 
-        // Redirect to dashboard after 2 seconds
+        // Redirect to login page after 2 seconds
         setTimeout(() => {
-          router.push("/admin/dashboard");
+          router.push("/login");
         }, 2000);
       }
     } catch (error) {

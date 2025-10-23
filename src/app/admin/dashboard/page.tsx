@@ -72,7 +72,8 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {stats?.totalCourses || 0}
+                    {(stats?.data as { totalCourses?: number })?.totalCourses ||
+                      0}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     +2 from last month
@@ -95,7 +96,8 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {stats?.totalStudents || 0}
+                    {(stats?.data as { totalStudents?: number })
+                      ?.totalStudents || 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     +12% from last month
@@ -118,7 +120,8 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {stats?.activeEnrollments || 0}
+                    {(stats?.data as { activeEnrollments?: number })
+                      ?.activeEnrollments || 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     +8% from last month
@@ -141,7 +144,8 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {stats?.totalTeachers || 0}
+                    {(stats?.data as { totalTeachers?: number })
+                      ?.totalTeachers || 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     +1 from last month
@@ -185,25 +189,39 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {activities?.slice(0, 5).map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex items-start space-x-4"
-                    >
-                      <div className="h-2 w-2 rounded-full bg-primary mt-2" />
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm">{activity.description}</p>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {activity.type}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleDateString()}
-                          </span>
+                  {(activities?.data as unknown[])
+                    ?.slice(0, 5)
+                    .map((activity, index) => {
+                      const activityData = activity as {
+                        id?: string;
+                        type?: string;
+                        message?: string;
+                        timestamp?: string;
+                      };
+                      return (
+                        <div
+                          key={activityData.id || index}
+                          className="flex items-start space-x-4"
+                        >
+                          <div className="h-2 w-2 rounded-full bg-primary mt-2" />
+                          <div className="flex-1 space-y-1">
+                            <p className="text-sm">
+                              {activityData.message || "Activity"}
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {activityData.type || "activity"}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(
+                                  activityData.timestamp || Date.now()
+                                ).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })}
                 </div>
               )}
             </CardContent>

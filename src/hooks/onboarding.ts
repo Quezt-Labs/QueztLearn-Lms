@@ -1,11 +1,20 @@
-import { onboardingApi } from "@/lib/api/onboarding";
+import { api } from "@/lib/api/client";
 import { useMutation } from "@tanstack/react-query";
 
 // Organization creation hook
 export const useCreateOrganization = () => {
   return useMutation({
-    mutationFn: (data: { name: string; subdomain?: string; branding?: any }) =>
-      onboardingApi.createOrganization(data),
+    mutationFn: (data: {
+      name: string;
+      subdomain?: string;
+      branding?: unknown;
+    }) => {
+      // For now, we'll use the real API but only send the name
+      // In the future, you can extend the API to support subdomain and branding
+      return api
+        .createOrganization({ name: data.name })
+        .then((res: { data: unknown }) => res.data);
+    },
     onError: (error) => {
       console.error("Failed to create organization:", error);
     },
@@ -19,7 +28,7 @@ export const useRegisterAdmin = () => {
       email: string;
       username: string;
       organizationId: string;
-    }) => onboardingApi.registerAdmin(data),
+    }) => api.register(data).then((res: { data: unknown }) => res.data),
     onError: (error) => {
       console.error("Failed to register admin:", error);
     },
@@ -29,7 +38,8 @@ export const useRegisterAdmin = () => {
 // Email verification hook
 export const useVerifyEmail = () => {
   return useMutation({
-    mutationFn: (data: { token: string }) => onboardingApi.verifyEmail(data),
+    mutationFn: (data: { token: string }) =>
+      api.verifyEmail(data).then((res: { data: unknown }) => res.data),
     onError: (error) => {
       console.error("Failed to verify email:", error);
     },
@@ -39,23 +49,10 @@ export const useVerifyEmail = () => {
 // Password setup hook
 export const useSetPassword = () => {
   return useMutation({
-    mutationFn: (data: {
-      password: string;
-      confirmPassword: string;
-      token: string;
-    }) => onboardingApi.setPassword(data),
+    mutationFn: (data: { userId: string; password: string }) =>
+      api.setPassword(data).then((res: { data: unknown }) => res.data),
     onError: (error) => {
       console.error("Failed to set password:", error);
-    },
-  });
-};
-
-// Organization name availability check hook
-export const useCheckOrganizationName = () => {
-  return useMutation({
-    mutationFn: (name: string) => onboardingApi.checkOrganizationName(name),
-    onError: (error) => {
-      console.error("Failed to check organization name:", error);
     },
   });
 };
@@ -63,7 +60,10 @@ export const useCheckOrganizationName = () => {
 // Email availability check hook
 export const useCheckEmailAvailability = () => {
   return useMutation({
-    mutationFn: (email: string) => onboardingApi.checkEmailAvailability(email),
+    mutationFn: (email: string) =>
+      api
+        .checkEmailAvailability(email)
+        .then((res: { data: unknown }) => res.data),
     onError: (error) => {
       console.error("Failed to check email availability:", error);
     },
