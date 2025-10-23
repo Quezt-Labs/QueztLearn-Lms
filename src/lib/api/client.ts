@@ -52,6 +52,15 @@ export interface SetPasswordResponse {
   message: string;
 }
 
+export interface InviteUserResponse {
+  id: string;
+  email: string;
+  username: string;
+  role: "TEACHER";
+  organizationId: string;
+  message: string;
+}
+
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -194,18 +203,19 @@ export const api = {
       data
     ),
 
+  inviteUser: (data: { email: string; username: string }) =>
+    apiClient.post<ApiResponse<InviteUserResponse>>(
+      "/admin/auth/invite-user",
+      data
+    ),
+
   refreshToken: (data: { refreshToken: string }) =>
     apiClient.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
       "/admin/auth/refresh",
       data
     ),
 
-  // Dashboard endpoints
-  getDashboardStats: () =>
-    apiClient.get<ApiResponse<unknown>>("/admin/dashboard/stats"),
-
-  getActivity: () => apiClient.get<ApiResponse<unknown>>("/admin/activity"),
-
+  // Course endpoints
   getCourses: (page: number = 1, limit: number = 10) =>
     apiClient.get<ApiResponse<unknown>>(
       `/admin/courses?page=${page}&limit=${limit}`

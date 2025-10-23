@@ -147,6 +147,26 @@ export const useResendVerification = () => {
   });
 };
 
+export const useInviteUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { email: string; username: string }) =>
+      api.inviteUser(data).then((res) => res.data),
+    onSuccess: (data) => {
+      if (data.success) {
+        // Invalidate users query to refresh the list
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        // You could also show a success toast here
+        console.log("Teacher invited successfully:", data.data);
+      }
+    },
+    onError: (error) => {
+      console.error("Invite user failed:", error);
+    },
+  });
+};
+
 // Utility hook for authentication state
 export const useAuth = () => {
   const { data: user, isLoading, error } = useCurrentUser();

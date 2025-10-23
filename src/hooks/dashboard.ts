@@ -3,24 +3,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 
-// Dashboard Stats Hook
-export const useDashboardStats = () => {
-  return useQuery({
-    queryKey: ["dashboard-stats"],
-    queryFn: () => api.getDashboardStats().then((res) => res.data),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
-
-// Activity Hook
-export const useActivity = () => {
-  return useQuery({
-    queryKey: ["activity"],
-    queryFn: () => api.getActivity().then((res) => res.data),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-  });
-};
-
 // Courses Hook
 export const useCourses = (page: number = 1, limit: number = 10) => {
   return useQuery({

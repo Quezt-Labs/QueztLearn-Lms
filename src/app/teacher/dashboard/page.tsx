@@ -23,12 +23,12 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { StatsSkeleton } from "@/components/common/loading-skeleton";
-import { useCourses, useDashboardStats } from "@/hooks";
+import { useCourses } from "@/hooks";
 import Link from "next/link";
 
 export default function TeacherDashboard() {
   const { data: courses, isLoading: coursesLoading } = useCourses(1, 5);
-  const { isLoading: statsLoading } = useDashboardStats();
+  const statsLoading = false; // Mock loading state
 
   return (
     <div className="space-y-6">
