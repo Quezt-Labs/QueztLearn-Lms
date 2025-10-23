@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRequireAuth, useRequireRole } from "@/hooks";
 import { UserRole } from "@/lib/types";
 import {
@@ -26,12 +26,26 @@ export function RouteGuard({
   allowedRoles = ["admin", "teacher", "student"],
   fallback,
 }: RouteGuardProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
   const {
     hasRequiredRole,
     isLoading: roleLoading,
     user,
   } = useRequireRole(allowedRoles[0] as "ADMIN" | "TEACHER" | "STUDENT");
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (authLoading || roleLoading) {
     return (

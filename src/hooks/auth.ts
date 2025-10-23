@@ -1,25 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./api";
 import { tokenManager } from "@/lib/api/client";
 
 // Require Authentication Hook
 export const useRequireAuth = () => {
+  const [isMounted, setIsMounted] = useState(false);
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted && !isLoading && !isAuthenticated) {
       router.push("/login");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isMounted, isLoading, isAuthenticated, router]);
 
   return {
     user,
-    isLoading,
-    isAuthenticated,
+    isLoading: !isMounted || isLoading,
+    isAuthenticated: isMounted ? isAuthenticated : false,
   };
 };
 
@@ -27,10 +32,17 @@ export const useRequireAuth = () => {
 export const useRequireRole = (
   requiredRole: "ADMIN" | "TEACHER" | "STUDENT"
 ) => {
+  const [isMounted, setIsMounted] = useState(false);
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
       return;
@@ -58,13 +70,14 @@ export const useRequireRole = (
           router.push("/login");
       }
     }
-  }, [isLoading, isAuthenticated, user, requiredRole, router]);
+  }, [isMounted, isLoading, isAuthenticated, user, requiredRole, router]);
 
   return {
     user,
-    isLoading,
-    isAuthenticated,
+    isLoading: !isMounted || isLoading,
+    isAuthenticated: isMounted ? isAuthenticated : false,
     hasRequiredRole:
+      isMounted &&
       user &&
       (user as { role?: string }).role?.toLowerCase() ===
         requiredRole.toLowerCase(),
