@@ -1,16 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Search,
-  Bell,
-  Moon,
-  Sun,
-  Monitor,
-  LogOut,
-  User,
-  Settings,
-} from "lucide-react";
+import { Search, Bell, LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,37 +14,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useThemeStore } from "@/lib/store";
 import { useLogout } from "@/hooks";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { theme, setTheme } = useThemeStore();
   const logoutMutation = useLogout();
 
   const handleLogout = () => {
     logoutMutation.mutate();
-  };
-
-  const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
-    } else if (theme === "dark") {
-      setTheme("system");
-    } else {
-      setTheme("light");
-    }
-  };
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case "light":
-        return <Sun className="h-4 w-4" />;
-      case "dark":
-        return <Moon className="h-4 w-4" />;
-      default:
-        return <Monitor className="h-4 w-4" />;
-    }
   };
 
   return (
@@ -73,17 +41,6 @@ export function Header() {
 
       {/* Right side */}
       <div className="flex items-center space-x-4">
-        {/* Theme Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="h-9 w-9"
-        >
-          {getThemeIcon()}
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="h-9 w-9 relative">
           <Bell className="h-4 w-4" />
