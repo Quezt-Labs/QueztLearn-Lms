@@ -220,21 +220,23 @@ export default function Home() {
             management needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/login">
+            <Link href="/create-organization">
               <Button
                 size="lg"
                 className="w-full sm:w-auto bg-background text-foreground hover:bg-background/90"
               >
-                Get Started Free
+                Create Organization
               </Button>
             </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-            >
-              Contact Sales
-            </Button>
+            <Link href="/login">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+              >
+                Sign In
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

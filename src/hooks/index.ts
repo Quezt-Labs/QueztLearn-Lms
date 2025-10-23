@@ -196,3 +196,6 @@ export const useRequireAuth = () => {
     isLoading,
   };
 };
+
+// Onboarding hooks
+export * from "./onboarding";

@@ -94,3 +94,6 @@ export const useHasRole = (allowedRoles: UserRole[]) => {
   const role = useRole();
   return role ? allowedRoles.includes(role) : false;
 };
+
+// Export onboarding store
+export * from "./onboarding";
