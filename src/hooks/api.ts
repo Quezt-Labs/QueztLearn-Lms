@@ -27,8 +27,8 @@ export const useLogin = () => {
       api.login(data).then((res) => res.data),
     onSuccess: (data: ApiResponse<LoginResponse>) => {
       if (data.success && data.data) {
-        // Store tokens
-        tokenManager.setTokens(data.data.token, data.data.token); // Using same token for both in this example
+        // Store complete auth data (token + user) in QUEZT_AUTH cookie
+        tokenManager.setAuthData(data.data.token, data.data.user);
 
         // Update user cache
         queryClient.setQueryData(queryKeys.user, data.data.user);
@@ -49,8 +49,8 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: async () => {
-      // Clear tokens
-      tokenManager.clearTokens();
+      // Clear auth data
+      tokenManager.clearAuthData();
       // Clear all cached data
       queryClient.clear();
     },
@@ -67,9 +67,12 @@ export const useCurrentUser = () => {
       if (!tokenManager.isAuthenticated()) {
         throw new Error("Not authenticated");
       }
-      // In a real app, you'd fetch user data from /me endpoint
-      // For now, return null to indicate no user
-      return null;
+      // Get user data from cookie
+      const user = tokenManager.getUser();
+      if (!user) {
+        throw new Error("User data not found");
+      }
+      return user;
     },
     enabled: tokenManager.isAuthenticated(),
     staleTime: 5 * 60 * 1000, // 5 minutes

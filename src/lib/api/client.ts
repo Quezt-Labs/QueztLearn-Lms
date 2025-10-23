@@ -5,8 +5,7 @@ import { getCookie, setCookie, deleteCookie } from "cookies-next";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Token management
-const ACCESS_TOKEN_KEY = "access_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
+const QUEZT_AUTH_KEY = "QUEZT_AUTH";
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -73,7 +72,7 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = getCookie(ACCESS_TOKEN_KEY);
+    const token = getCookie(QUEZT_AUTH_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -84,55 +83,16 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle 401 errors
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
   async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = getCookie(REFRESH_TOKEN_KEY);
-        if (refreshToken) {
-          const response = await axios.post(
-            `${API_BASE_URL}/admin/auth/refresh`,
-            {
-              refreshToken,
-            }
-          );
-
-          const { accessToken, refreshToken: newRefreshToken } =
-            response.data.data;
-
-          // Update tokens in cookies
-          setCookie(ACCESS_TOKEN_KEY, accessToken, {
-            maxAge: 7 * 24 * 60 * 60, // 7 days
-            httpOnly: false, // Allow client-side access
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-          });
-
-          setCookie(REFRESH_TOKEN_KEY, newRefreshToken, {
-            maxAge: 30 * 24 * 60 * 60, // 30 days
-            httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-          });
-
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return apiClient(originalRequest);
-        }
-      } catch {
-        // Refresh failed, redirect to login
-        deleteCookie(ACCESS_TOKEN_KEY);
-        deleteCookie(REFRESH_TOKEN_KEY);
-        window.location.href = "/login";
-      }
+    if (error.response?.status === 401) {
+      // Token expired or invalid, redirect to login
+      deleteCookie(QUEZT_AUTH_KEY);
+      window.location.href = "/login";
     }
 
     return Promise.reject(error);
@@ -141,31 +101,73 @@ apiClient.interceptors.response.use(
 
 // Token management functions
 export const tokenManager = {
-  setTokens: (accessToken: string, refreshToken: string) => {
-    setCookie(ACCESS_TOKEN_KEY, accessToken, {
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
+  setAuthData: (
+    token: string,
+    user: {
+      id: string;
+      email: string;
+      username: string;
+      role: string;
+      organizationId: string;
+    }
+  ) => {
+    const authData = {
+      token,
+      user,
+      timestamp: Date.now(),
+    };
 
-    setCookie(REFRESH_TOKEN_KEY, refreshToken, {
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+    setCookie(QUEZT_AUTH_KEY, JSON.stringify(authData), {
+      maxAge: 7 * 24 * 60 * 60, // 7 days (matches JWT expiry)
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
     });
   },
 
-  getAccessToken: () => getCookie(ACCESS_TOKEN_KEY),
-  getRefreshToken: () => getCookie(REFRESH_TOKEN_KEY),
-
-  clearTokens: () => {
-    deleteCookie(ACCESS_TOKEN_KEY);
-    deleteCookie(REFRESH_TOKEN_KEY);
+  getToken: () => {
+    const authData = getCookie(QUEZT_AUTH_KEY);
+    if (authData && typeof authData === "string") {
+      try {
+        const parsed = JSON.parse(authData);
+        return parsed.token;
+      } catch {
+        return null;
+      }
+    }
+    return null;
   },
 
-  isAuthenticated: () => !!getCookie(ACCESS_TOKEN_KEY),
+  getUser: () => {
+    const authData = getCookie(QUEZT_AUTH_KEY);
+    if (authData && typeof authData === "string") {
+      try {
+        const parsed = JSON.parse(authData);
+        return parsed.user;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  },
+
+  getAuthData: () => {
+    const authData = getCookie(QUEZT_AUTH_KEY);
+    if (authData && typeof authData === "string") {
+      try {
+        return JSON.parse(authData);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  },
+
+  clearAuthData: () => {
+    deleteCookie(QUEZT_AUTH_KEY);
+  },
+
+  isAuthenticated: () => !!getCookie(QUEZT_AUTH_KEY),
 };
 
 // API endpoints
