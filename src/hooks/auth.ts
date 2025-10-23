@@ -40,17 +40,18 @@ export const useRequireRole = (
       !isLoading &&
       isAuthenticated &&
       user &&
-      (user as { role?: string }).role !== requiredRole
+      (user as { role?: string }).role?.toLowerCase() !==
+        requiredRole.toLowerCase()
     ) {
       // Redirect to appropriate dashboard based on user role
-      switch ((user as { role?: string }).role) {
-        case "ADMIN":
+      switch ((user as { role?: string }).role?.toLowerCase()) {
+        case "admin":
           router.push("/admin/dashboard");
           break;
-        case "TEACHER":
+        case "teacher":
           router.push("/teacher/dashboard");
           break;
-        case "STUDENT":
+        case "student":
           router.push("/student/dashboard");
           break;
         default:
@@ -63,7 +64,10 @@ export const useRequireRole = (
     user,
     isLoading,
     isAuthenticated,
-    hasRequiredRole: user && (user as { role?: string }).role === requiredRole,
+    hasRequiredRole:
+      user &&
+      (user as { role?: string }).role?.toLowerCase() ===
+        requiredRole.toLowerCase(),
   };
 };
 

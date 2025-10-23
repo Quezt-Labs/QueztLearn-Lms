@@ -185,35 +185,8 @@ export const api = {
       data
     ),
 
-  login: async (data: { email: string; password: string }) => {
-    // Mock login for test credentials
-    if (data.email === "admin@test.com" && data.password === "password123") {
-      return {
-        data: {
-          success: true,
-          data: {
-            token: "mock-access-token-123",
-            user: {
-              id: "user-123",
-              organizationId: "org-123",
-              email: "admin@test.com",
-              username: "admin",
-              role: "ADMIN" as const,
-              isVerified: true,
-              createdAt: new Date().toISOString(),
-            },
-          },
-          message: "Login successful",
-        },
-      };
-    }
-
-    // Real API call for other credentials
-    return apiClient.post<ApiResponse<LoginResponse>>(
-      "/admin/auth/login",
-      data
-    );
-  },
+  login: (data: { email: string; password: string }) =>
+    apiClient.post<ApiResponse<LoginResponse>>("/admin/auth/login", data),
 
   resendVerification: (data: { email: string }) =>
     apiClient.post<ApiResponse<{ message: string }>>(
@@ -225,12 +198,6 @@ export const api = {
     apiClient.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
       "/admin/auth/refresh",
       data
-    ),
-
-  // Check email availability
-  checkEmailAvailability: (email: string) =>
-    apiClient.get<ApiResponse<{ available: boolean }>>(
-      `/admin/auth/check-email?email=${encodeURIComponent(email)}`
     ),
 
   // Dashboard endpoints

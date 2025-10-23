@@ -125,33 +125,6 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              {/* Test Credentials */}
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                  Test Credentials
-                </h4>
-                <div className="space-y-1 text-xs text-blue-800 dark:text-blue-200">
-                  <p>
-                    <strong>Email:</strong> admin@test.com
-                  </p>
-                  <p>
-                    <strong>Password:</strong> password123
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 text-xs"
-                  onClick={() => {
-                    setEmail("admin@test.com");
-                    setPassword("password123");
-                  }}
-                >
-                  Fill Test Credentials
-                </Button>
-              </div>
-
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
                   Don&apos;t have an account?{" "}

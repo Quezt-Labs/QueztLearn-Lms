@@ -147,16 +147,6 @@ export const useResendVerification = () => {
   });
 };
 
-export const useCheckEmailAvailability = () => {
-  return useMutation({
-    mutationFn: (email: string) =>
-      api.checkEmailAvailability(email).then((res) => res.data),
-    onError: (error) => {
-      console.error("Check email availability failed:", error);
-    },
-  });
-};
-
 // Utility hook for authentication state
 export const useAuth = () => {
   const { data: user, isLoading, error } = useCurrentUser();

@@ -56,16 +56,3 @@ export const useSetPassword = () => {
     },
   });
 };
-
-// Email availability check hook
-export const useCheckEmailAvailability = () => {
-  return useMutation({
-    mutationFn: (email: string) =>
-      api
-        .checkEmailAvailability(email)
-        .then((res: { data: unknown }) => res.data),
-    onError: (error) => {
-      console.error("Failed to check email availability:", error);
-    },
-  });
-};

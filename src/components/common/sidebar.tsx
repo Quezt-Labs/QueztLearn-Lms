@@ -16,6 +16,9 @@ import {
   Calendar,
   ChevronDown,
   ChevronRight,
+  Building2,
+  FileText,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/store";
@@ -33,6 +36,9 @@ const iconMap = {
   CreditCard,
   TrendingUp,
   Calendar,
+  Building2,
+  FileText,
+  Award,
 };
 
 interface SidebarProps {
@@ -89,7 +95,7 @@ export function Sidebar({ className }: SidebarProps) {
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
           {filteredItems.map((item) => {
-            const Icon = iconMap[item.icon as keyof typeof iconMap];
+            const Icon = iconMap[item.icon as keyof typeof iconMap] || BookOpen;
             const isItemActive = isActive(item.href);
             const hasChildren = item.children && item.children.length > 0;
             const isExpanded = expandedItems.includes(item.title);
@@ -125,7 +131,8 @@ export function Sidebar({ className }: SidebarProps) {
                     >
                       {item.children!.map((child) => {
                         const ChildIcon =
-                          iconMap[child.icon as keyof typeof iconMap];
+                          iconMap[child.icon as keyof typeof iconMap] ||
+                          BookOpen;
                         const isChildActive = isActive(child.href);
 
                         return (

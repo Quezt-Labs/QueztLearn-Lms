@@ -11,7 +11,6 @@ export {
   useVerifyEmail as useVerifyEmailApi,
   useSetPassword as useSetPasswordApi,
   useResendVerification,
-  useCheckEmailAvailability as useCheckEmailAvailabilityApi,
   useAuth,
   queryKeys,
 } from "./api";

@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRegisterAdmin, useCheckEmailAvailability } from "@/hooks";
+import { useRegisterAdmin } from "@/hooks";
 import { useOnboardingStore } from "@/lib/store/onboarding";
 
 export default function RegisterAdminPage() {
@@ -29,7 +29,6 @@ export default function RegisterAdminPage() {
 
   const { organizationData, setAdminData, adminData } = useOnboardingStore();
   const registerAdminMutation = useRegisterAdmin();
-  const checkEmailMutation = useCheckEmailAvailability();
 
   // Redirect if no organization data
   useEffect(() => {
@@ -71,15 +70,8 @@ export default function RegisterAdminPage() {
     if (value && validateEmail(value)) {
       setIsCheckingEmail(true);
       try {
-        const result = (await checkEmailMutation.mutateAsync(value)) as {
-          success: boolean;
-          data?: { available: boolean };
-        };
-        if (!result.success || !result.data?.available) {
-          setEmailError("Email is already registered");
-        } else {
-          setEmailError("");
-        }
+        // Email availability check is not needed for this flow
+        setEmailError("");
       } catch {
         setEmailError("Error checking email availability");
       } finally {

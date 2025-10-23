@@ -27,9 +27,11 @@ export function RouteGuard({
   fallback,
 }: RouteGuardProps) {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
-  const { hasRequiredRole, isLoading: roleLoading } = useRequireRole(
-    allowedRoles[0] as "ADMIN" | "TEACHER" | "STUDENT"
-  );
+  const {
+    hasRequiredRole,
+    isLoading: roleLoading,
+    user,
+  } = useRequireRole(allowedRoles[0] as "ADMIN" | "TEACHER" | "STUDENT");
 
   if (authLoading || roleLoading) {
     return (
@@ -74,13 +76,17 @@ export function RouteGuard({
             <CardDescription>
               You don&apos;t have permission to access this page.
               <br />
-              Your current role: <strong>Unknown</strong>
+              Your current role:{" "}
+              <strong>
+                {user
+                  ? (user as { role?: string }).role || "Unknown"
+                  : "Not authenticated"}
+              </strong>
+              <br />
+              Required roles: {allowedRoles.join(", ")}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Required roles: {allowedRoles.join(", ")}
-            </p>
             <div className="flex space-x-2">
               <Button variant="outline" asChild>
                 <Link href="/">
