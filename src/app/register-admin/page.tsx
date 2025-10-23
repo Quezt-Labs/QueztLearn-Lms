@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -53,22 +53,16 @@ export default function RegisterAdminPage() {
 
   const validateUsername = (username: string) => {
     if (username.length < 3) {
-      setUsernameError("Username must be at least 3 characters");
-      return false;
+      return "Username must be at least 3 characters";
     }
     if (username.length > 20) {
-      setUsernameError("Username must be less than 20 characters");
-      return false;
+      return "Username must be less than 20 characters";
     }
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!usernameRegex.test(username)) {
-      setUsernameError(
-        "Username can only contain letters, numbers, and underscores"
-      );
-      return false;
+      return "Username can only contain letters, numbers, and underscores";
     }
-    setUsernameError("");
-    return true;
+    return null;
   };
 
   const handleEmailChange = async (value: string) => {
@@ -97,13 +91,23 @@ export default function RegisterAdminPage() {
 
   const handleUsernameChange = (value: string) => {
     setUsername(value);
-    validateUsername(value);
+    // Clear error when user starts typing
+    if (usernameError) {
+      setUsernameError("");
+    }
+  };
+
+  const handleUsernameBlur = () => {
+    if (username) {
+      const error = validateUsername(username);
+      setUsernameError(error || "");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateEmail(email) || !validateUsername(username) || emailError) {
+    if (!validateEmail(email) || validateUsername(username) || emailError) {
       return;
     }
 
@@ -139,7 +143,7 @@ export default function RegisterAdminPage() {
     email &&
     username &&
     validateEmail(email) &&
-    validateUsername(username) &&
+    !validateUsername(username) &&
     !emailError &&
     !usernameError;
 
@@ -275,6 +279,7 @@ export default function RegisterAdminPage() {
                     placeholder="admin_username"
                     value={username}
                     onChange={(e) => handleUsernameChange(e.target.value)}
+                    onBlur={handleUsernameBlur}
                     className={usernameError ? "border-destructive" : ""}
                     required
                   />
