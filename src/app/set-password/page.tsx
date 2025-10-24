@@ -134,7 +134,7 @@ export default function SetPasswordPage() {
 
   if (isPasswordSet) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -145,21 +145,21 @@ export default function SetPasswordPage() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4"
+            className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4"
           >
-            <CheckCircle className="h-8 w-8 text-white" />
+            <CheckCircle className="h-8 w-8 text-primary-foreground" />
           </motion.div>
 
-          <h1 className="text-2xl font-bold text-green-800 dark:text-green-200 mb-2">
+          <h1 className="text-2xl font-bold text-primary mb-2">
             Password Set Successfully!
           </h1>
-          <p className="text-green-600 dark:text-green-300 mb-6">
+          <p className="text-muted-foreground mb-6">
             Your account is now ready. You&apos;ll be redirected to the login
             page shortly.
           </p>
 
-          <div className="flex items-center justify-center space-x-2 text-sm text-green-500">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
+          <div className="flex items-center justify-center space-x-2 text-sm text-primary">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
             <span>Redirecting to login...</span>
           </div>
         </motion.div>
@@ -170,7 +170,7 @@ export default function SetPasswordPage() {
   return (
     <div className="min-h-screen flex overflow-hidden">
       {/* Left Side - Success State */}
-      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-green-500 to-green-600 flex-col justify-center p-8 text-white">
+      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary to-primary/80 flex-col justify-center p-8 text-primary-foreground">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -179,32 +179,32 @@ export default function SetPasswordPage() {
         >
           <div className="mb-6">
             <h1 className="text-3xl font-bold mb-2">Secure Your Account</h1>
-            <p className="text-green-100">
+            <p className="text-primary-foreground/80">
               Create a strong password to protect your administrator account
             </p>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-4 w-4" />
               </div>
               <span className="text-sm">Organization created</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-4 w-4" />
               </div>
               <span className="text-sm">Admin account created</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-4 w-4" />
               </div>
               <span className="text-sm">Email verified</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-foreground/30 rounded-full flex items-center justify-center">
                 <Shield className="h-4 w-4" />
               </div>
               <span className="text-sm font-medium">Set secure password</span>
