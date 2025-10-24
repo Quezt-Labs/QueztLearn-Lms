@@ -264,21 +264,33 @@ export const getNavigationItems = (
   hostname: string,
   role: UserRole
 ): NavigationItem[] => {
-  // Main domain (queztlearn.com) - admin and teacher
-  if (hostname === "queztlearn.com" || hostname === "www.queztlearn.com") {
-    switch (role) {
+  console.log("Navigation Debug:", { hostname, role, ROLES });
+
+  // Normalize role to lowercase for comparison
+  const normalizedRole = role?.toLowerCase();
+
+  // Main domain (queztlearn.com) or localhost - admin and teacher
+  if (
+    hostname === "queztlearn.com" ||
+    hostname === "www.queztlearn.com" ||
+    hostname === "localhost"
+  ) {
+    switch (normalizedRole) {
       case ROLES.ADMIN:
+        console.log("Returning ADMIN_NAVIGATION_ITEMS");
         return ADMIN_NAVIGATION_ITEMS;
       case ROLES.TEACHER:
+        console.log("Returning TEACHER_NAVIGATION_ITEMS");
         return TEACHER_NAVIGATION_ITEMS;
       default:
+        console.log("Returning STUDENT_NAVIGATION_ITEMS (default)");
         // Students should be redirected to subdomain
         return STUDENT_NAVIGATION_ITEMS;
     }
   }
 
   // Subdomain - students only
-  switch (role) {
+  switch (normalizedRole) {
     case ROLES.STUDENT:
       return STUDENT_NAVIGATION_ITEMS;
     case ROLES.TEACHER:

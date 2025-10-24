@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/store";
-import { getNavigationItems } from "@/lib/constants";
+import { getNavigationItems, ROLES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrentUser, useLogout } from "@/hooks";
@@ -68,7 +68,8 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   // Get navigation items based on current domain and role
-  const filteredItems = getNavigationItems(hostname, role || "student");
+  const effectiveRole = role || user?.role || ROLES.STUDENT;
+  const filteredItems = getNavigationItems(hostname, effectiveRole);
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -77,6 +78,25 @@ export function Sidebar({ className }: SidebarProps) {
         pathname === "/teacher/dashboard" ||
         pathname === "/student/dashboard"
       );
+    }
+    // Handle exact matches for admin routes
+    if (href === "/admin/users") {
+      return pathname === "/admin/users";
+    }
+    if (href === "/admin/courses") {
+      return pathname === "/admin/courses";
+    }
+    if (href === "/admin/analytics") {
+      return pathname === "/admin/analytics";
+    }
+    if (href === "/admin/clients") {
+      return pathname === "/admin/clients";
+    }
+    if (href === "/admin/settings") {
+      return pathname === "/admin/settings";
+    }
+    if (href === "/admin/billing") {
+      return pathname === "/admin/billing";
     }
     return pathname.startsWith(href);
   };

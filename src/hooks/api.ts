@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, tokenManager } from "@/lib/api/client";
+import apiClient from "@/lib/api/client";
 import { ApiResponse, Organization, LoginResponse } from "@/lib/types/api";
 import { useRouter } from "next/navigation";
 
@@ -10,6 +11,7 @@ export const queryKeys = {
   user: ["user"] as const,
   organization: ["organization"] as const,
   emailAvailability: (email: string) => ["emailAvailability", email] as const,
+  users: ["users"] as const,
 };
 
 // Auth Hooks
@@ -175,4 +177,26 @@ export const useAuth = () => {
     isAuthenticated: !!user && !error,
     error,
   };
+};
+
+// User Management Hooks
+export const useGetAllUsers = () => {
+  return useQuery({
+    queryKey: queryKeys.users,
+    queryFn: () => apiClient.get("/admin/users").then((res) => res.data),
+    enabled: !!tokenManager.getToken(),
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiClient.delete(`/admin/users/${userId}`).then((res) => res.data),
+    onSuccess: () => {
+      // Invalidate users query to refetch the list
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+  });
 };

@@ -12,6 +12,8 @@ export {
   useSetPassword as useSetPasswordApi,
   useResendVerification,
   useAuth,
+  useGetAllUsers,
+  useDeleteUser,
   queryKeys,
 } from "./api";
 
