@@ -18,6 +18,7 @@ function VerifyEmailContent() {
   const [resendCount, setResendCount] = useState(0);
   const [canResend, setCanResend] = useState(true);
   const [isProcessingToken, setIsProcessingToken] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const hasProcessedToken = useRef(false);
 
   const router = useRouter();
@@ -100,12 +101,22 @@ function VerifyEmailContent() {
     }
   }, [searchParams.get("token")]); // Only depend on the actual token value
 
-  // Redirect if no admin data
+  // Initialize and handle redirects
   useEffect(() => {
-    if (!adminData || !organizationData) {
+    const token = searchParams.get("token");
+
+    // Set initializing to false after a short delay to allow store to load
+    const initTimer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 100);
+
+    // Only redirect if there's no token AND no admin data AND we're not initializing
+    if (!isInitializing && !token && (!adminData || !organizationData)) {
       router.push("/create-organization");
     }
-  }, [adminData, organizationData, router]);
+
+    return () => clearTimeout(initTimer);
+  }, [adminData, organizationData, router, searchParams, isInitializing]);
 
   const handleResendEmail = async () => {
     if (!canResend || !adminData?.email) return;
@@ -128,6 +139,18 @@ function VerifyEmailContent() {
       setError(getFriendlyErrorMessage(error));
     }
   };
+
+  // Show loading state while initializing
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isVerified) {
     return (

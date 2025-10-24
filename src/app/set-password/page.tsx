@@ -28,6 +28,7 @@ export default function SetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isPasswordSet, setIsPasswordSet] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const router = useRouter();
   const {
@@ -57,12 +58,36 @@ export default function SetPasswordPage() {
     autoReset: true,
   });
 
-  // Redirect if prerequisites not met
+  // Initialize and handle redirects
   useEffect(() => {
-    if (!adminData || !organizationData || !emailVerified) {
-      router.push("/create-organization");
+    // Set initializing to false after a short delay to allow store to load
+    const initTimer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 100);
+
+    // Only redirect if we're not initializing
+    if (!isInitializing) {
+      // If we have no data at all, redirect to create organization
+      if (!adminData && !organizationData) {
+        router.push("/create-organization");
+        return;
+      }
+
+      // If we have admin data but no organization, redirect to create organization
+      if (adminData && !organizationData) {
+        router.push("/create-organization");
+        return;
+      }
+
+      // If we have both but email not verified, redirect to verify email
+      if (adminData && organizationData && !emailVerified) {
+        router.push("/verify-email");
+        return;
+      }
     }
-  }, [adminData, organizationData, emailVerified, router]);
+
+    return () => clearTimeout(initTimer);
+  }, [adminData, organizationData, emailVerified, router, isInitializing]);
 
   const handlePasswordChange = (value: string) => {
     updateField("password", value);
@@ -131,6 +156,18 @@ export default function SetPasswordPage() {
       : passwordStrength.score >= 25
       ? "Weak"
       : "Very Weak";
+
+  // Show loading state while initializing
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isPasswordSet) {
     return (
