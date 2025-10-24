@@ -23,10 +23,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { tokenManager } from "@/lib/api/client";
+import { useLogout } from "@/hooks";
 
 export default function Home() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+  const logoutMutation = useLogout();
 
   // Check if user is already authenticated and redirect accordingly
   useEffect(() => {
@@ -50,24 +53,9 @@ export default function Home() {
               "Homepage: User role:",
               (userData as { role?: string }).role
             );
-            // Redirect based on user role
-            switch ((userData as { role?: string }).role?.toLowerCase()) {
-              case "admin":
-                console.log("Homepage: Redirecting to admin dashboard");
-                router.push("/admin/dashboard");
-                break;
-              case "teacher":
-                console.log("Homepage: Redirecting to teacher dashboard");
-                router.push("/teacher/dashboard");
-                break;
-              case "student":
-                console.log("Homepage: Redirecting to student dashboard");
-                router.push("/student/dashboard");
-                break;
-              default:
-                console.log("Homepage: Redirecting to default admin dashboard");
-                router.push("/admin/dashboard"); // Default to admin
-            }
+            setIsAuthenticated(true);
+            // Don't auto-redirect, let user choose
+            setIsCheckingAuth(false);
             return;
           }
         }
@@ -115,19 +103,57 @@ export default function Home() {
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-foreground hover:bg-accent"
-                >
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Get Started
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Button
+                    onClick={() => logoutMutation.mutate()}
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                  >
+                    Logout
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const userData = tokenManager.getUser();
+                      const role = (
+                        userData as { role?: string }
+                      )?.role?.toLowerCase();
+                      switch (role) {
+                        case "admin":
+                          router.push("/admin/dashboard");
+                          break;
+                        case "teacher":
+                          router.push("/teacher/dashboard");
+                          break;
+                        case "student":
+                          router.push("/student/dashboard");
+                          break;
+                        default:
+                          router.push("/admin/dashboard");
+                      }
+                    }}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    Go to Dashboard
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-foreground hover:bg-accent"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/login">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

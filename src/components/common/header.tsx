@@ -14,11 +14,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogout } from "@/hooks";
+import { useLogout, useCurrentUser } from "@/hooks";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const logoutMutation = useLogout();
+  const { data: user, isLoading: userLoading } = useCurrentUser();
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -68,9 +69,13 @@ export function Header() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Admin User</p>
+                <p className="text-sm font-medium leading-none">
+                  {userLoading ? "Loading..." : user?.username || "User"}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  admin@example.com
+                  {userLoading
+                    ? "Loading..."
+                    : user?.email || "user@example.com"}
                 </p>
               </div>
             </DropdownMenuLabel>

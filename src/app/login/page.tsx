@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import { useLogin } from "@/hooks/api";
+import { useLogin, useLogout } from "@/hooks/api";
 import { BrandingSidebar } from "@/components/onboarding/branding-sidebar";
 import { tokenManager } from "@/lib/api/client";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
@@ -23,6 +23,7 @@ import { ErrorMessage } from "@/components/common/error-message";
 export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useLogin();
+  const logoutMutation = useLogout();
 
   // Form validation
   const {
@@ -214,17 +215,35 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Don&apos;t have an account?{" "}
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto"
-                    onClick={() => router.push("/create-organization")}
-                  >
-                    Create Organization
-                  </Button>
-                </p>
+              <div className="mt-6 space-y-4">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Don&apos;t have an account?{" "}
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto"
+                      onClick={() => router.push("/create-organization")}
+                    >
+                      Create Organization
+                    </Button>
+                  </p>
+                </div>
+
+                {tokenManager.isAuthenticated() && (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Already logged in as{" "}
+                      {tokenManager.getUser()?.username || "User"}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => logoutMutation.mutate()}
+                      className="w-full"
+                    >
+                      Logout and Sign In as Different User
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
