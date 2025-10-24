@@ -17,25 +17,62 @@ import { ArrowLeft, Eye, EyeOff, GraduationCap } from "lucide-react";
 import { ClientProvider, useClient } from "@/components/client/client-provider";
 import Link from "next/link";
 import Image from "next/image";
+import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
+import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
+import { ErrorMessage } from "@/components/common/error-message";
 
 // Client Login Component
 function ClientLoginContent() {
   const { client, isLoading, error } = useClient();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form validation
+  const {
+    updateField,
+    validateFieldOnBlur,
+    validateAllFields,
+    getFieldValue,
+    getFieldError,
+    isFormValid,
+  } = useEnhancedFormValidation({
+    email: "",
+    password: "",
+  });
+
+  // Loading state management
+  const {
+    isLoading: isSubmitting,
+    error: submitError,
+    setError,
+    executeWithLoading,
+  } = useLoadingState({
+    autoReset: true,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setError(null);
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Handle login logic here
-      console.log("Login attempt:", { email, password, client: client?.id });
-    }, 1000);
+    if (!validateAllFields()) {
+      setError("Please fix the form errors before submitting");
+      return;
+    }
+
+    try {
+      await executeWithLoading(async () => {
+        // Simulate login process
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Handle login logic here
+        console.log("Login attempt:", {
+          email: getFieldValue("email"),
+          password: getFieldValue("password"),
+          client: client?.id,
+        });
+      });
+    } catch (error: unknown) {
+      setError(getFriendlyErrorMessage(error));
+    }
   };
 
   if (isLoading) {
@@ -63,46 +100,18 @@ function ClientLoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-background to-muted/20">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to {client.name}
-                </Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Image
-                  src={client.logo}
-                  alt={client.name}
-                  width={24}
-                  height={24}
-                  className="rounded"
-                />
-              </div>
-              <span className="font-semibold">{client.name}</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Login Form */}
-      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex">
+      {/* Left Side - Client Branding */}
+      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary to-primary/80 flex-col justify-center p-8 text-white">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-md"
         >
-          <Card className="shadow-lg">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="mb-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <Image
                   src={client.logo}
                   alt={client.name}
@@ -111,26 +120,99 @@ function ClientLoginContent() {
                   className="rounded"
                 />
               </div>
-              <CardTitle className="text-2xl">
-                Welcome to {client.name}
-              </CardTitle>
+              <div>
+                <h1 className="text-2xl font-bold">{client.name}</h1>
+                <p className="text-primary-foreground/80">Learning Platform</p>
+              </div>
+            </div>
+            <p className="text-primary-foreground/80">
+              Welcome to {client.name}&apos;s learning platform. Sign in to
+              access your courses and continue your learning journey.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <GraduationCap className="h-4 w-4" />
+              </div>
+              <span className="text-sm">Access your courses</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <GraduationCap className="h-4 w-4" />
+              </div>
+              <span className="text-sm">Track your progress</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <GraduationCap className="h-4 w-4" />
+              </div>
+              <span className="text-sm">Connect with instructors</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="flex-1 lg:w-3/5 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile Header */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Image
+                  src={client.logo}
+                  alt={client.name}
+                  width={24}
+                  height={24}
+                  className="rounded"
+                />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">{client.name}</h1>
+                <p className="text-sm text-muted-foreground">
+                  Learning Platform
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Login Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign In</CardTitle>
               <CardDescription>
-                Sign in to your account to continue
+                Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <ErrorMessage error={submitError} />
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={getFieldValue("email")}
+                    onChange={(e) => updateField("email", e.target.value)}
+                    onBlur={() => validateFieldOnBlur("email")}
                     required
                   />
+                  {getFieldError("email") && (
+                    <p className="text-sm text-destructive">
+                      {getFieldError("email")}
+                    </p>
+                  )}
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -138,15 +220,17 @@ function ClientLoginContent() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={getFieldValue("password")}
+                      onChange={(e) => updateField("password", e.target.value)}
+                      onBlur={() => validateFieldOnBlur("password")}
+                      className="pr-10"
                       required
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -156,31 +240,40 @@ function ClientLoginContent() {
                       )}
                     </Button>
                   </div>
+                  {getFieldError("password") && (
+                    <p className="text-sm text-destructive">
+                      {getFieldError("password")}
+                    </p>
+                  )}
                 </div>
+
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isSubmitting}
+                  disabled={!isFormValid || isSubmitting}
                 >
-                  {isSubmitting ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  ) : (
-                    <GraduationCap className="h-4 w-4 mr-2" />
-                  )}
-                  {isSubmitting ? "Signing in..." : "Sign In"}
+                  {isSubmitting ? "Signing In..." : "Sign In"}
                 </Button>
               </form>
 
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Don&apos;t have an account?{" "}
-                  <Link
-                    href={`/${client.subdomain}/register`}
-                    className="text-primary hover:underline"
-                  >
-                    Contact your administrator
-                  </Link>
-                </p>
+              <div className="mt-6 space-y-4">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Don&apos;t have an account?{" "}
+                    <Button variant="link" className="p-0 h-auto">
+                      Contact your administrator
+                    </Button>
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <Button variant="ghost" asChild>
+                    <Link href="/">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Home
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -190,13 +283,12 @@ function ClientLoginContent() {
   );
 }
 
-// Main Client Login Page
 export default function ClientLogin() {
   const params = useParams();
-  const clientSubdomain = params.client as string;
+  const clientId = params.client as string;
 
   return (
-    <ClientProvider subdomain={clientSubdomain}>
+    <ClientProvider domain={clientId}>
       <ClientLoginContent />
     </ClientProvider>
   );

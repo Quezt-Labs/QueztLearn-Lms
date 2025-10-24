@@ -1,18 +1,22 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { getCookie, setCookie, deleteCookie } from "cookies-next";
+import {
+  ApiResponse,
+  LoginResponse,
+  RegisterResponse,
+  VerifyEmailResponse,
+  SetPasswordResponse,
+  InviteUserResponse,
+  Organization,
+  CreateOrganizationData,
+  CreateCourseData,
+} from "@/lib/types/api";
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Token management
 const QUEZT_AUTH_KEY = "QUEZT_AUTH";
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: unknown;
-}
 
 export interface User {
   id: string;
@@ -22,42 +26,6 @@ export interface User {
   role: "ADMIN" | "TEACHER" | "STUDENT";
   isVerified: boolean;
   createdAt: string;
-}
-
-export interface Organization {
-  id: string;
-  name: string;
-  createdAt: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  user: User;
-}
-
-export interface RegisterResponse {
-  id: string;
-  email: string;
-  username: string;
-  message: string;
-}
-
-export interface VerifyEmailResponse {
-  message: string;
-  userId: string;
-}
-
-export interface SetPasswordResponse {
-  message: string;
-}
-
-export interface InviteUserResponse {
-  id: string;
-  email: string;
-  username: string;
-  role: "TEACHER";
-  organizationId: string;
-  message: string;
 }
 
 // Create axios instance
@@ -199,7 +167,7 @@ export const tokenManager = {
 // API endpoints
 export const api = {
   // Organizations
-  createOrganization: (data: { name: string }) =>
+  createOrganization: (data: CreateOrganizationData) =>
     apiClient.post<ApiResponse<Organization>>("/admin/organizations", data),
 
   // Auth
@@ -249,7 +217,7 @@ export const api = {
       `/admin/courses?page=${page}&limit=${limit}`
     ),
 
-  createCourse: (data: { title: string; description: string }) =>
+  createCourse: (data: CreateCourseData) =>
     apiClient.post<ApiResponse<unknown>>("/admin/courses", data),
 };
 

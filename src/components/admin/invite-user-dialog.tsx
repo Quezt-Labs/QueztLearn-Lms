@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, User, UserPlus } from "lucide-react";
+import { UserPlus, Mail, User } from "lucide-react";
 import { useInviteUser } from "@/hooks/api";
+import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
+import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
+import { ErrorMessage } from "@/components/common/error-message";
 
 interface InviteUserDialogProps {
   children: React.ReactNode;
@@ -22,55 +25,89 @@ interface InviteUserDialogProps {
 
 export function InviteUserDialog({ children }: InviteUserDialogProps) {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [error, setError] = useState("");
-
   const inviteUserMutation = useInviteUser();
+
+  // Form validation
+  const {
+    updateField,
+    validateFieldOnBlur,
+    validateAllFields,
+    getFieldValue,
+    getFieldError,
+    isFormValid,
+    isFieldValidating,
+    resetForm,
+  } = useEnhancedFormValidation({
+    email: "",
+    username: "",
+  });
+
+  // Loading state management
+  const { isLoading, error, setError, setSuccess, executeWithLoading } =
+    useLoadingState({
+      autoReset: true,
+    });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError(null);
 
-    if (!email || !username) {
-      setError("Please fill in all fields");
+    if (!validateAllFields()) {
+      setError("Please fix the form errors before submitting");
       return;
     }
 
     try {
-      await inviteUserMutation.mutateAsync({ email, username });
-      setOpen(false);
-      setEmail("");
-      setUsername("");
+      await executeWithLoading(async () => {
+        const result = (await inviteUserMutation.mutateAsync({
+          email: getFieldValue("email"),
+          username: getFieldValue("username"),
+        })) as {
+          success: boolean;
+          data?: { id: string; email: string; username: string };
+        };
+
+        if (result.success) {
+          // Reset form and close dialog
+          resetForm();
+          setOpen(false);
+
+          // Show success message
+          setSuccess(true);
+        } else {
+          setError("Failed to invite user");
+        }
+      });
     } catch (error: unknown) {
-      setError(
-        (error as { response?: { data?: { message?: string } } }).response?.data
-          ?.message || "Failed to invite user. Please try again."
-      );
+      setError(getFriendlyErrorMessage(error));
+    }
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      // Reset form when dialog closes
+      resetForm();
+      setError(null);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <UserPlus className="mr-2 h-5 w-5" />
-            Invite Teacher
+          <DialogTitle className="flex items-center space-x-2">
+            <UserPlus className="h-5 w-5" />
+            <span>Invite User</span>
           </DialogTitle>
           <DialogDescription>
-            Send an invitation to a new teacher to join your organization. They
-            will receive a verification email to set up their account.
+            Send an invitation to a new user to join your organization.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
-          )}
+          <ErrorMessage error={error} />
 
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
@@ -79,13 +116,24 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
               <Input
                 id="email"
                 type="email"
-                placeholder="teacher@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="user@example.com"
+                value={getFieldValue("email")}
+                onChange={(e) => updateField("email", e.target.value)}
+                onBlur={() => validateFieldOnBlur("email")}
                 className="pl-10"
                 required
               />
+              {isFieldValidating("email") && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                </div>
+              )}
             </div>
+            {getFieldError("email") && (
+              <p className="text-sm text-destructive">
+                {getFieldError("email")}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -95,13 +143,24 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
               <Input
                 id="username"
                 type="text"
-                placeholder="johndoe"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="username"
+                value={getFieldValue("username")}
+                onChange={(e) => updateField("username", e.target.value)}
+                onBlur={() => validateFieldOnBlur("username")}
                 className="pl-10"
                 required
               />
+              {isFieldValidating("username") && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                </div>
+              )}
             </div>
+            {getFieldError("username") && (
+              <p className="text-sm text-destructive">
+                {getFieldError("username")}
+              </p>
+            )}
           </div>
 
           <DialogFooter>
@@ -112,8 +171,15 @@ export function InviteUserDialog({ children }: InviteUserDialogProps) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={inviteUserMutation.isPending}>
-              {inviteUserMutation.isPending ? "Sending..." : "Send Invitation"}
+            <Button
+              type="submit"
+              disabled={
+                !isFormValid || inviteUserMutation.isPending || isLoading
+              }
+            >
+              {isLoading || inviteUserMutation.isPending
+                ? "Sending Invitation..."
+                : "Send Invitation"}
             </Button>
           </DialogFooter>
         </form>

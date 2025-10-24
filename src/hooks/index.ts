@@ -20,3 +20,6 @@ export * from "./dashboard";
 
 // Authentication hooks
 export * from "./auth";
+
+// Common hooks
+export * from "./common";

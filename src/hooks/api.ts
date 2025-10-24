@@ -1,13 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  api,
-  tokenManager,
-  ApiResponse,
-  Organization,
-  LoginResponse,
-} from "@/lib/api/client";
+import { api, tokenManager } from "@/lib/api/client";
+import { ApiResponse, Organization, LoginResponse } from "@/lib/types/api";
 import { useRouter } from "next/navigation";
 
 // Query Keys

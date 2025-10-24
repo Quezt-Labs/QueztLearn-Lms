@@ -12,58 +12,64 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import { useLogin } from "@/hooks/api";
 import { BrandingSidebar } from "@/components/onboarding/branding-sidebar";
 import { tokenManager } from "@/lib/api/client";
+import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
+import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
+import { ErrorMessage } from "@/components/common/error-message";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
-
   const loginMutation = useLogin();
+
+  // Form validation
+  const {
+    updateField,
+    validateFieldOnBlur,
+    validateAllFields,
+    getFieldValue,
+    getFieldError,
+    isFormValid,
+  } = useEnhancedFormValidation({
+    email: "",
+    password: "",
+  });
+
+  // Loading state management
+  const { isLoading, error, setError, executeWithLoading } = useLoadingState({
+    autoReset: true,
+  });
+
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Check if user is already authenticated and redirect accordingly
   useEffect(() => {
-    // Only run on client side
     if (typeof window === "undefined") return;
 
     const checkAuthAndRedirect = async () => {
       try {
-        console.log("Checking authentication...");
-        console.log("isAuthenticated:", tokenManager.isAuthenticated());
-
         if (tokenManager.isAuthenticated()) {
           const userData = tokenManager.getUser();
-          console.log("User data:", userData);
-
           if (userData) {
-            console.log("User role:", (userData as { role?: string }).role);
             // Redirect based on user role
             switch ((userData as { role?: string }).role?.toLowerCase()) {
               case "admin":
-                console.log("Redirecting to admin dashboard");
                 router.push("/admin/dashboard");
                 break;
               case "teacher":
-                console.log("Redirecting to teacher dashboard");
                 router.push("/teacher/dashboard");
                 break;
               case "student":
-                console.log("Redirecting to student dashboard");
                 router.push("/student/dashboard");
                 break;
               default:
-                console.log("Redirecting to default admin dashboard");
-                router.push("/admin/dashboard"); // Default to admin
+                router.push("/admin/dashboard");
             }
             return;
           }
         }
-        console.log("Not authenticated, showing login form");
         setIsCheckingAuth(false);
       } catch (error) {
         console.error("Auth check error:", error);
@@ -71,10 +77,30 @@ export default function LoginPage() {
       }
     };
 
-    // Add a small delay to ensure cookies are available
     const timer = setTimeout(checkAuthAndRedirect, 100);
     return () => clearTimeout(timer);
   }, [router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!validateAllFields()) {
+      setError("Please fix the form errors before submitting");
+      return;
+    }
+
+    try {
+      await executeWithLoading(async () => {
+        await loginMutation.mutateAsync({
+          email: getFieldValue("email"),
+          password: getFieldValue("password"),
+        });
+      });
+    } catch (error: unknown) {
+      setError(getFriendlyErrorMessage(error));
+    }
+  };
 
   // Show loading while checking authentication
   if (isCheckingAuth) {
@@ -87,25 +113,6 @@ export default function LoginPage() {
       </div>
     );
   }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (!email || !password) {
-      setError("Please fill in all fields");
-      return;
-    }
-
-    try {
-      await loginMutation.mutateAsync({ email, password });
-    } catch (error: unknown) {
-      setError(
-        (error as { response?: { data?: { message?: string } } }).response?.data
-          ?.message || "Login failed. Please try again."
-      );
-    }
-  };
 
   return (
     <div className="min-h-screen flex overflow-hidden">
@@ -141,12 +148,14 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                    <p className="text-sm text-destructive">{error}</p>
-                  </div>
-                )}
+                <ErrorMessage
+                  error={
+                    error ||
+                    (loginMutation.error
+                      ? getFriendlyErrorMessage(loginMutation.error)
+                      : null)
+                  }
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
@@ -156,12 +165,18 @@ export default function LoginPage() {
                       id="email"
                       type="email"
                       placeholder="admin@yourorganization.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={getFieldValue("email")}
+                      onChange={(e) => updateField("email", e.target.value)}
+                      onBlur={() => validateFieldOnBlur("email")}
                       className="pl-10"
                       required
                     />
                   </div>
+                  {getFieldError("email") && (
+                    <p className="text-sm text-destructive">
+                      {getFieldError("email")}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -172,20 +187,30 @@ export default function LoginPage() {
                       id="password"
                       type="password"
                       placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={getFieldValue("password")}
+                      onChange={(e) => updateField("password", e.target.value)}
+                      onBlur={() => validateFieldOnBlur("password")}
                       className="pl-10"
                       required
                     />
                   </div>
+                  {getFieldError("password") && (
+                    <p className="text-sm text-destructive">
+                      {getFieldError("password")}
+                    </p>
+                  )}
                 </div>
 
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={loginMutation.isPending}
+                  disabled={
+                    isLoading || loginMutation.isPending || !isFormValid
+                  }
                 >
-                  {loginMutation.isPending ? "Signing In..." : "Sign In"}
+                  {isLoading || loginMutation.isPending
+                    ? "Signing In..."
+                    : "Sign In"}
                 </Button>
               </form>
 

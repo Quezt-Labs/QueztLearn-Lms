@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,181 +12,138 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  ArrowLeft,
-  CheckCircle,
-  AlertCircle,
-  Globe,
-  Palette,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle, Globe, Palette } from "lucide-react";
 import Link from "next/link";
 import { useCreateOrganization } from "@/hooks";
 import { useOnboardingStore } from "@/lib/store";
 import { BrandingSidebar } from "@/components/onboarding/branding-sidebar";
+import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
+import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
+import { ErrorMessage } from "@/components/common/error-message";
+import { generateSubdomain } from "@/lib/utils/validation";
+import { useDebounce } from "@/hooks/common";
 
 export default function CreateOrganizationPage() {
-  const [organizationName, setOrganizationName] = useState("");
-  const [isValidating, setIsValidating] = useState(false);
-  const [validationError, setValidationError] = useState("");
-  const [subdomain, setSubdomain] = useState("");
-  const [isSubdomainAvailable, setIsSubdomainAvailable] = useState<
-    boolean | null
-  >(null);
-  const [isCheckingSubdomain, setIsCheckingSubdomain] = useState(false);
+  const router = useRouter();
+  const { setOrganizationData, organizationData } = useOnboardingStore();
+  const createOrganizationMutation = useCreateOrganization();
 
-  // Branding options
-  const [branding, setBranding] = useState({
+  // Form validation
+  const {
+    updateField,
+    validateFieldOnBlur,
+    validateAllFields,
+    getFieldValue,
+    getFieldError,
+    isFieldValid,
+    isFormValid,
+    isFieldValidating,
+  } = useEnhancedFormValidation({
+    organizationName: "",
+    subdomain: "",
     primaryColor: "#3b82f6",
     secondaryColor: "#1e40af",
-    logo: null as File | null,
     customDomain: "",
   });
 
-  const router = useRouter();
+  // Loading state management
+  const { isLoading, error, setError, executeWithLoading } = useLoadingState({
+    autoReset: true,
+  });
 
-  const { setOrganizationData, organizationData } = useOnboardingStore();
-  const createOrganizationMutation = useCreateOrganization();
+  // Debounced subdomain generation
+  const debouncedOrganizationName = useDebounce(
+    getFieldValue("organizationName"),
+    500
+  );
 
   // Pre-fill form if data exists
   useEffect(() => {
     if (organizationData?.name) {
-      setOrganizationName(organizationData.name);
+      updateField("organizationName", organizationData.name);
     }
-  }, [organizationData]);
+  }, [organizationData, updateField]);
 
-  // Generate subdomain from organization name
-  const generateSubdomain = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-  };
+  // Generate subdomain when organization name changes
+  useEffect(() => {
+    if (debouncedOrganizationName && debouncedOrganizationName.length >= 3) {
+      const generatedSubdomain = generateSubdomain(debouncedOrganizationName);
+      updateField("subdomain", generatedSubdomain);
+    }
+  }, [debouncedOrganizationName, updateField]);
 
-  // Check subdomain availability
-  const checkSubdomainAvailability = async (subdomain: string) => {
-    if (!subdomain || subdomain.length < 3) return;
+  // Check subdomain availability (commented out for now)
+  // const checkSubdomainAvailability = async (subdomain: string) => {
+  //   if (!subdomain || subdomain.length < 3) return;
 
-    setIsCheckingSubdomain(true);
-    // Mock API call - in real app, this would check against existing subdomains
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  //   // Mock API call - in real app, this would check against existing subdomains
+  //   await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Mock availability check
-    const unavailableSubdomains = [
-      "admin",
-      "api",
-      "www",
-      "app",
-      "test",
-      "demo",
-    ];
-    const isAvailable = !unavailableSubdomains.includes(subdomain);
+  //   // Mock availability check
+  //   const unavailableSubdomains = [
+  //     "admin",
+  //     "api",
+  //     "www",
+  //     "app",
+  //     "test",
+  //     "demo",
+  //   ];
+  //   const isAvailable = !unavailableSubdomains.includes(subdomain);
 
-    setIsSubdomainAvailable(isAvailable);
-    setIsCheckingSubdomain(false);
-  };
-
-  // Handle logo upload
-  // const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (file && file.type.startsWith("image/")) {
-  //     setBranding((prev) => ({ ...prev, logo: file }));
-  //   }
+  //   return isAvailable;
   // };
-
-  const validateOrganizationName = async (name: string) => {
-    if (!name.trim()) {
-      setValidationError("Organization name is required");
-      return false;
-    }
-
-    if (name.length < 3) {
-      setValidationError("Organization name must be at least 3 characters");
-      return false;
-    }
-
-    if (name.length > 50) {
-      setValidationError("Organization name must be less than 50 characters");
-      return false;
-    }
-
-    // Check for valid characters (alphanumeric, spaces, hyphens, underscores)
-    const validNameRegex = /^[a-zA-Z0-9\s\-_]+$/;
-    if (!validNameRegex.test(name)) {
-      setValidationError(
-        "Organization name can only contain letters, numbers, spaces, hyphens, and underscores"
-      );
-      return false;
-    }
-
-    setValidationError("");
-    return true;
-  };
-
-  const handleNameChange = async (value: string) => {
-    setOrganizationName(value);
-
-    // Generate subdomain
-    const generatedSubdomain = generateSubdomain(value);
-    setSubdomain(generatedSubdomain);
-
-    // Check subdomain availability
-    if (generatedSubdomain.length >= 3) {
-      checkSubdomainAvailability(generatedSubdomain);
-    }
-
-    if (value.length > 2) {
-      setIsValidating(true);
-      await validateOrganizationName(value);
-      setIsValidating(false);
-    } else {
-      setValidationError("");
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    const isValid = await validateOrganizationName(organizationName);
-    if (!isValid) return;
+    if (!validateAllFields()) {
+      setError("Please fix the form errors before submitting");
+      return;
+    }
 
     try {
-      const result = (await createOrganizationMutation.mutateAsync({
-        name: organizationName.trim(),
-        subdomain,
-        branding,
-      })) as {
-        success: boolean;
-        data?: { id: string; name: string; domain: string };
-      };
+      await executeWithLoading(async () => {
+        const result = (await createOrganizationMutation.mutateAsync({
+          name: getFieldValue("organizationName").trim(),
+          subdomain: getFieldValue("subdomain"),
+          branding: {
+            primaryColor: getFieldValue("primaryColor"),
+            secondaryColor: getFieldValue("secondaryColor"),
+            customDomain: getFieldValue("customDomain"),
+          },
+        })) as {
+          success: boolean;
+          data?: { id: string; name: string; domain: string };
+        };
 
-      if (result.success && result.data) {
-        // Save organization data to store
-        setOrganizationData({
-          id: result.data.id,
-          name: result.data.name,
-          domain: result.data.domain,
-        });
+        if (result.success && result.data) {
+          // Save organization data to store
+          setOrganizationData({
+            id: result.data.id,
+            name: result.data.name,
+            domain: result.data.domain,
+          });
 
-        // Navigate to admin registration
-        router.push("/register-admin");
-      }
-    } catch (error) {
-      console.error("Failed to create organization:", error);
+          // Navigate to admin registration
+          router.push("/register-admin");
+        }
+      });
+    } catch (error: unknown) {
+      setError(getFriendlyErrorMessage(error));
     }
   };
 
-  const isFormValid =
-    organizationName.trim().length >= 3 &&
-    !validationError &&
-    !isValidating &&
-    subdomain.length >= 3 &&
-    isSubdomainAvailable === true;
+  const isFormValidComplete =
+    isFormValid &&
+    getFieldValue("organizationName").trim().length >= 3 &&
+    getFieldValue("subdomain").length >= 3;
 
   return (
     <div className="min-h-screen flex overflow-hidden">
       {/* Left Side - Branding */}
       <BrandingSidebar />
+
       {/* Right Side - Organization Form */}
       <div className="flex-1 lg:w-3/5 flex items-center justify-center p-6 bg-background">
         <div className="w-full max-w-lg max-h-screen overflow-hidden">
@@ -225,6 +182,8 @@ export default function CreateOrganizationPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <form onSubmit={handleSubmit} className="space-y-3">
+                <ErrorMessage error={error} />
+
                 <div className="space-y-2">
                   <Label htmlFor="organizationName">Organization Name</Label>
                   <div className="relative">
@@ -232,31 +191,37 @@ export default function CreateOrganizationPage() {
                       id="organizationName"
                       type="text"
                       placeholder="e.g., MIT University, Tech Academy"
-                      value={organizationName}
-                      onChange={(e) => handleNameChange(e.target.value)}
+                      value={getFieldValue("organizationName")}
+                      onChange={(e) =>
+                        updateField("organizationName", e.target.value)
+                      }
+                      onBlur={() => validateFieldOnBlur("organizationName")}
                       className={`pr-10 ${
-                        validationError ? "border-destructive" : ""
+                        getFieldError("organizationName")
+                          ? "border-destructive"
+                          : ""
                       }`}
                       required
                     />
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      {isValidating ? (
+                      {isFieldValidating("organizationName") ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      ) : organizationName.length >= 3 && !validationError ? (
+                      ) : isFieldValid("organizationName") &&
+                        getFieldValue("organizationName").length >= 3 ? (
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : validationError ? (
-                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      ) : getFieldError("organizationName") ? (
+                        <CheckCircle className="h-4 w-4 text-destructive" />
                       ) : null}
                     </div>
                   </div>
-                  {validationError && (
+                  {getFieldError("organizationName") && (
                     <p className="text-sm text-destructive">
-                      {validationError}
+                      {getFieldError("organizationName")}
                     </p>
                   )}
-                  {organizationName.length >= 3 &&
-                    !validationError &&
-                    !isValidating && (
+                  {isFieldValid("organizationName") &&
+                    getFieldValue("organizationName").length >= 3 &&
+                    !isFieldValidating("organizationName") && (
                       <p className="text-sm text-green-600">
                         Organization name is available
                       </p>
@@ -264,31 +229,30 @@ export default function CreateOrganizationPage() {
                 </div>
 
                 {/* Subdomain Preview */}
-                {subdomain && (
+                {getFieldValue("subdomain") && (
                   <div className="space-y-2">
                     <Label>Your Platform URL</Label>
                     <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
                       <Globe className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm font-mono">
-                        {subdomain}.queztlearn.in
+                        {getFieldValue("subdomain")}.queztlearn.in
                       </span>
                       <div className="ml-auto">
-                        {isCheckingSubdomain ? (
+                        {isFieldValidating("subdomain") ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                        ) : isSubdomainAvailable === true ? (
+                        ) : isFieldValid("subdomain") ? (
                           <CheckCircle className="h-4 w-4 text-green-500" />
-                        ) : isSubdomainAvailable === false ? (
-                          <AlertCircle className="h-4 w-4 text-destructive" />
+                        ) : getFieldError("subdomain") ? (
+                          <CheckCircle className="h-4 w-4 text-destructive" />
                         ) : null}
                       </div>
                     </div>
-                    {isSubdomainAvailable === false && (
+                    {getFieldError("subdomain") && (
                       <p className="text-sm text-destructive">
-                        This subdomain is not available. Try a different
-                        organization name.
+                        {getFieldError("subdomain")}
                       </p>
                     )}
-                    {isSubdomainAvailable === true && (
+                    {isFieldValid("subdomain") && (
                       <p className="text-sm text-green-600">
                         Great! This subdomain is available.
                       </p>
@@ -314,23 +278,17 @@ export default function CreateOrganizationPage() {
                         <Input
                           id="primaryColor"
                           type="color"
-                          value={branding.primaryColor}
+                          value={getFieldValue("primaryColor")}
                           onChange={(e) =>
-                            setBranding((prev) => ({
-                              ...prev,
-                              primaryColor: e.target.value,
-                            }))
+                            updateField("primaryColor", e.target.value)
                           }
                           className="w-6 h-6 p-0 border rounded"
                         />
                         <Input
                           type="text"
-                          value={branding.primaryColor}
+                          value={getFieldValue("primaryColor")}
                           onChange={(e) =>
-                            setBranding((prev) => ({
-                              ...prev,
-                              primaryColor: e.target.value,
-                            }))
+                            updateField("primaryColor", e.target.value)
                           }
                           className="flex-1 text-xs h-6"
                           placeholder="#3b82f6"
@@ -346,23 +304,17 @@ export default function CreateOrganizationPage() {
                         <Input
                           id="secondaryColor"
                           type="color"
-                          value={branding.secondaryColor}
+                          value={getFieldValue("secondaryColor")}
                           onChange={(e) =>
-                            setBranding((prev) => ({
-                              ...prev,
-                              secondaryColor: e.target.value,
-                            }))
+                            updateField("secondaryColor", e.target.value)
                           }
                           className="w-6 h-6 p-0 border rounded"
                         />
                         <Input
                           type="text"
-                          value={branding.secondaryColor}
+                          value={getFieldValue("secondaryColor")}
                           onChange={(e) =>
-                            setBranding((prev) => ({
-                              ...prev,
-                              secondaryColor: e.target.value,
-                            }))
+                            updateField("secondaryColor", e.target.value)
                           }
                           className="flex-1 text-xs h-6"
                           placeholder="#1e40af"
@@ -376,7 +328,9 @@ export default function CreateOrganizationPage() {
                     <div
                       className="p-2 rounded text-white text-xs"
                       style={{
-                        background: `linear-gradient(135deg, ${branding.primaryColor}, ${branding.secondaryColor})`,
+                        background: `linear-gradient(135deg, ${getFieldValue(
+                          "primaryColor"
+                        )}, ${getFieldValue("secondaryColor")})`,
                       }}
                     >
                       <div className="flex items-center space-x-2">
@@ -385,7 +339,8 @@ export default function CreateOrganizationPage() {
                         </div>
                         <div>
                           <div className="font-semibold text-xs">
-                            {organizationName || "Your Organization"}
+                            {getFieldValue("organizationName") ||
+                              "Your Organization"}
                           </div>
                           <div className="text-xs opacity-90">Platform</div>
                         </div>
@@ -398,10 +353,12 @@ export default function CreateOrganizationPage() {
                   type="submit"
                   className="w-full h-9"
                   disabled={
-                    !isFormValid || createOrganizationMutation.isPending
+                    !isFormValidComplete ||
+                    createOrganizationMutation.isPending ||
+                    isLoading
                   }
                 >
-                  {createOrganizationMutation.isPending
+                  {isLoading || createOrganizationMutation.isPending
                     ? "Creating..."
                     : "Create Organization"}
                 </Button>
