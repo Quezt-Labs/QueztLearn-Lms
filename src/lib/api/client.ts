@@ -139,15 +139,29 @@ export const tokenManager = {
   },
 
   getUser: () => {
+    // Only get user data on client side
+    if (typeof window === "undefined") {
+      console.log("TokenManager: Server side - returning null");
+      return null;
+    }
+
     const authData = getCookie(QUEZT_AUTH_KEY);
+    console.log("TokenManager: Getting user data");
+    console.log("TokenManager: Auth data:", authData);
+    console.log("TokenManager: Auth data type:", typeof authData);
+
     if (authData && typeof authData === "string") {
       try {
         const parsed = JSON.parse(authData);
+        console.log("TokenManager: Parsed data:", parsed);
+        console.log("TokenManager: User from parsed data:", parsed.user);
         return parsed.user;
-      } catch {
+      } catch (error) {
+        console.error("TokenManager: Error parsing auth data:", error);
         return null;
       }
     }
+    console.log("TokenManager: No valid auth data found");
     return null;
   },
 
@@ -167,7 +181,19 @@ export const tokenManager = {
     deleteCookie(QUEZT_AUTH_KEY);
   },
 
-  isAuthenticated: () => !!getCookie(QUEZT_AUTH_KEY),
+  isAuthenticated: () => {
+    // Only check cookies on client side
+    if (typeof window === "undefined") {
+      console.log("TokenManager: Server side - returning false");
+      return false;
+    }
+
+    const cookie = getCookie(QUEZT_AUTH_KEY);
+    console.log("TokenManager: Checking authentication");
+    console.log("TokenManager: Cookie value:", cookie);
+    console.log("TokenManager: Cookie exists:", !!cookie);
+    return !!cookie;
+  },
 };
 
 // API endpoints

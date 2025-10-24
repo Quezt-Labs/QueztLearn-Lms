@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -16,9 +20,82 @@ import {
   Zap,
   Globe,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
+import { tokenManager } from "@/lib/api/client";
 
 export default function Home() {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const router = useRouter();
+
+  // Check if user is already authenticated and redirect accordingly
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") return;
+
+    const checkAuthAndRedirect = async () => {
+      try {
+        console.log("Homepage: Checking authentication...");
+        console.log(
+          "Homepage: isAuthenticated:",
+          tokenManager.isAuthenticated()
+        );
+
+        if (tokenManager.isAuthenticated()) {
+          const userData = tokenManager.getUser();
+          console.log("Homepage: User data:", userData);
+
+          if (userData) {
+            console.log(
+              "Homepage: User role:",
+              (userData as { role?: string }).role
+            );
+            // Redirect based on user role
+            switch ((userData as { role?: string }).role?.toLowerCase()) {
+              case "admin":
+                console.log("Homepage: Redirecting to admin dashboard");
+                router.push("/admin/dashboard");
+                break;
+              case "teacher":
+                console.log("Homepage: Redirecting to teacher dashboard");
+                router.push("/teacher/dashboard");
+                break;
+              case "student":
+                console.log("Homepage: Redirecting to student dashboard");
+                router.push("/student/dashboard");
+                break;
+              default:
+                console.log("Homepage: Redirecting to default admin dashboard");
+                router.push("/admin/dashboard"); // Default to admin
+            }
+            return;
+          }
+        }
+        console.log("Homepage: Not authenticated, showing homepage");
+        setIsCheckingAuth(false);
+      } catch (error) {
+        console.error("Homepage: Auth check error:", error);
+        setIsCheckingAuth(false);
+      }
+    };
+
+    // Add a small delay to ensure cookies are available
+    const timer = setTimeout(checkAuthAndRedirect, 100);
+    return () => clearTimeout(timer);
+  }, [router]);
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,17 +12,81 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Mail, Lock } from "lucide-react";
+import { AlertCircle, Mail, Lock, Loader2 } from "lucide-react";
 import { useLogin } from "@/hooks/api";
 import { BrandingSidebar } from "@/components/onboarding/branding-sidebar";
+import { tokenManager } from "@/lib/api/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
   const loginMutation = useLogin();
+
+  // Check if user is already authenticated and redirect accordingly
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") return;
+
+    const checkAuthAndRedirect = async () => {
+      try {
+        console.log("Checking authentication...");
+        console.log("isAuthenticated:", tokenManager.isAuthenticated());
+
+        if (tokenManager.isAuthenticated()) {
+          const userData = tokenManager.getUser();
+          console.log("User data:", userData);
+
+          if (userData) {
+            console.log("User role:", (userData as { role?: string }).role);
+            // Redirect based on user role
+            switch ((userData as { role?: string }).role?.toLowerCase()) {
+              case "admin":
+                console.log("Redirecting to admin dashboard");
+                router.push("/admin/dashboard");
+                break;
+              case "teacher":
+                console.log("Redirecting to teacher dashboard");
+                router.push("/teacher/dashboard");
+                break;
+              case "student":
+                console.log("Redirecting to student dashboard");
+                router.push("/student/dashboard");
+                break;
+              default:
+                console.log("Redirecting to default admin dashboard");
+                router.push("/admin/dashboard"); // Default to admin
+            }
+            return;
+          }
+        }
+        console.log("Not authenticated, showing login form");
+        setIsCheckingAuth(false);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsCheckingAuth(false);
+      }
+    };
+
+    // Add a small delay to ensure cookies are available
+    const timer = setTimeout(checkAuthAndRedirect, 100);
+    return () => clearTimeout(timer);
+  }, [router]);
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
