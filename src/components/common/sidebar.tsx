@@ -26,7 +26,7 @@ import { useRole } from "@/lib/store";
 import { getNavigationItems } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCurrentUser } from "@/hooks";
+import { useCurrentUser, useLogout } from "@/hooks";
 
 const iconMap = {
   LayoutDashboard,
@@ -53,6 +53,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [hostname, setHostname] = useState("");
   const { data: user, isLoading: userLoading } = useCurrentUser();
+  const logoutMutation = useLogout();
 
   useEffect(() => {
     setHostname(window.location.hostname);
@@ -78,6 +79,9 @@ export function Sidebar({ className }: SidebarProps) {
       );
     }
     return pathname.startsWith(href);
+  };
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   return (
@@ -199,7 +203,19 @@ export function Sidebar({ className }: SidebarProps) {
             );
           })}
         </nav>
+        {/* Logout Section */}
       </ScrollArea>
+      <div className="border-t p-2">
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          size="sm"
+          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Log out
+        </Button>
+      </div>
     </div>
   );
 }
