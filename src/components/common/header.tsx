@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Bell, LogOut, User, Settings } from "lucide-react";
+import { Search, Bell, User, Settings, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,16 +14,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogout, useCurrentUser } from "@/hooks";
+import { useCurrentUser } from "@/hooks";
+import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/components/providers/theme-provider";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
-  const logoutMutation = useLogout();
   const { data: user, isLoading: userLoading } = useCurrentUser();
+  const { theme, setTheme } = useTheme();
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
+  const isDark = theme === "dark";
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-6">
@@ -42,6 +42,16 @@ export function Header() {
 
       {/* Right side */}
       <div className="flex items-center space-x-4">
+        {/* Theme Switch */}
+        <div className="flex items-center space-x-2">
+          <Sun className="h-4 w-4 text-muted-foreground" />
+          <Switch
+            checked={isDark}
+            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+          />
+          <Moon className="h-4 w-4 text-muted-foreground" />
+        </div>
+
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="h-9 w-9 relative">
           <Bell className="h-4 w-4" />
@@ -87,14 +97,6 @@ export function Header() {
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={handleLogout}
-              className="text-red-600 focus:text-red-600"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

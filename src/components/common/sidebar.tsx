@@ -19,12 +19,14 @@ import {
   Building2,
   FileText,
   Award,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/store";
 import { getNavigationItems } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLogout, useCurrentUser } from "@/hooks";
 
 const iconMap = {
   LayoutDashboard,
@@ -50,6 +52,8 @@ export function Sidebar({ className }: SidebarProps) {
   const role = useRole();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [hostname, setHostname] = useState("");
+  const logoutMutation = useLogout();
+  const { data: user, isLoading: userLoading } = useCurrentUser();
 
   useEffect(() => {
     setHostname(window.location.hostname);
@@ -61,6 +65,10 @@ export function Sidebar({ className }: SidebarProps) {
         ? prev.filter((item) => item !== itemTitle)
         : [...prev, itemTitle]
     );
+  };
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   // Get navigation items based on current domain and role
@@ -181,25 +189,44 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* User Info */}
       <div className="border-t p-4">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 mb-3">
           <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
             <span className="text-sm font-medium">
-              {role?.charAt(0).toUpperCase()}
+              {userLoading
+                ? "..."
+                : user?.username?.charAt(0).toUpperCase() ||
+                  role?.charAt(0).toUpperCase()}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">
-              {role === "admin"
-                ? "Admin User"
-                : role === "teacher"
-                ? "Teacher User"
-                : "Student User"}
+              {userLoading
+                ? "Loading..."
+                : user?.username ||
+                  (role === "admin"
+                    ? "Admin User"
+                    : role === "teacher"
+                    ? "Teacher User"
+                    : "Student User")}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {role}@example.com
+              {userLoading
+                ? "Loading..."
+                : user?.email || `${role}@example.com`}
             </p>
           </div>
         </div>
+
+        {/* Logout Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleLogout}
+          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Log out
+        </Button>
       </div>
     </div>
   );
