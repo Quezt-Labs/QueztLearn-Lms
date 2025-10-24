@@ -14,7 +14,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  Shield,
+  PartyPopper,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 // import Image from "next/image";
 import { useSetPassword } from "@/hooks";
@@ -128,10 +136,10 @@ export default function SetPasswordPage() {
         // Complete onboarding
         completeOnboarding();
 
-        // Redirect to login
+        // Redirect to login after celebration
         setTimeout(() => {
           router.push("/login");
-        }, 2000);
+        }, 4000);
       });
     } catch (error: unknown) {
       setError(getFriendlyErrorMessage(error));
@@ -171,34 +179,129 @@ export default function SetPasswordPage() {
 
   if (isPasswordSet) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 relative overflow-hidden">
+        {/* Celebration Background Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="absolute top-20 left-20"
+          >
+            <PartyPopper className="h-8 w-8 text-yellow-500 animate-bounce" />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
+            className="absolute top-32 right-32"
+          >
+            <Sparkles className="h-6 w-6 text-pink-500 animate-pulse" />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.9, duration: 0.8 }}
+            className="absolute bottom-32 left-32"
+          >
+            <PartyPopper className="h-6 w-6 text-green-500 animate-bounce" />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.1, duration: 0.8 }}
+            className="absolute bottom-20 right-20"
+          >
+            <Sparkles className="h-8 w-8 text-blue-500 animate-pulse" />
+          </motion.div>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-md mx-auto p-6"
+          className="text-center max-w-lg mx-auto p-6 relative z-10"
         >
+          {/* Success Icon with Celebration */}
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{
+              delay: 0.3,
+              type: "spring",
+              stiffness: 200,
+              damping: 10,
+            }}
+            className="relative mb-6"
           >
-            <CheckCircle className="h-8 w-8 text-primary-foreground" />
+            <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto shadow-lg">
+              <CheckCircle className="h-12 w-12 text-primary-foreground" />
+            </div>
+            {/* Floating sparkles around the icon */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-2 -right-2"
+            >
+              <Sparkles className="h-6 w-6 text-yellow-400" />
+            </motion.div>
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              className="absolute -bottom-2 -left-2"
+            >
+              <Sparkles className="h-5 w-5 text-pink-400" />
+            </motion.div>
           </motion.div>
 
-          <h1 className="text-2xl font-bold text-primary mb-2">
-            Password Set Successfully!
-          </h1>
-          <p className="text-muted-foreground mb-6">
-            Your account is now ready. You&apos;ll be redirected to the login
-            page shortly.
-          </p>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-3xl font-bold text-primary mb-3"
+          >
+            🎉 Welcome to QueztLearn!
+          </motion.h1>
 
-          <div className="flex items-center justify-center space-x-2 text-sm text-primary">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="text-lg text-muted-foreground mb-6"
+          >
+            Your account is all set up and ready to go! You&apos;ll be
+            redirected to the login page shortly.
+          </motion.p>
+
+          {/* Progress indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="flex items-center justify-center space-x-2 text-sm text-primary mb-6"
+          >
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
             <span>Redirecting to login...</span>
-          </div>
+          </motion.div>
+
+          {/* Fun mascot/character */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, type: "spring", stiffness: 100 }}
+            className="text-6xl mb-4"
+          >
+            🚀
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4 }}
+            className="text-sm text-muted-foreground"
+          >
+            Ready to start your journey!
+          </motion.p>
         </motion.div>
       </div>
     );
