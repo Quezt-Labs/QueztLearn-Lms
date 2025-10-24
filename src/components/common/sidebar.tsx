@@ -26,7 +26,7 @@ import { useRole } from "@/lib/store";
 import { getNavigationItems } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useLogout, useCurrentUser } from "@/hooks";
+import { useCurrentUser } from "@/hooks";
 
 const iconMap = {
   LayoutDashboard,
@@ -52,7 +52,6 @@ export function Sidebar({ className }: SidebarProps) {
   const role = useRole();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [hostname, setHostname] = useState("");
-  const logoutMutation = useLogout();
   const { data: user, isLoading: userLoading } = useCurrentUser();
 
   useEffect(() => {
@@ -65,10 +64,6 @@ export function Sidebar({ className }: SidebarProps) {
         ? prev.filter((item) => item !== itemTitle)
         : [...prev, itemTitle]
     );
-  };
-
-  const handleLogout = () => {
-    logoutMutation.mutate();
   };
 
   // Get navigation items based on current domain and role
@@ -89,18 +84,37 @@ export function Sidebar({ className }: SidebarProps) {
     <div
       className={cn("flex h-full w-64 flex-col border-r bg-card", className)}
     >
-      {/* Logo */}
+      {/* Welcome Section */}
       <div className="flex h-16 items-center border-b px-6">
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <BookOpen className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center space-x-3 w-full">
+          <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+            <span className="text-sm font-medium text-primary-foreground">
+              {userLoading
+                ? "..."
+                : user?.username?.charAt(0).toUpperCase() ||
+                  role?.charAt(0).toUpperCase()}
+            </span>
           </div>
-          <span className="text-xl font-bold">QueztLearn</span>
-        </Link>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground leading-none">
+              Welcome back,
+            </p>
+            <p className="text-sm font-medium truncate leading-tight">
+              {userLoading
+                ? "Loading..."
+                : user?.username ||
+                  (role === "admin"
+                    ? "Admin"
+                    : role === "teacher"
+                    ? "Teacher"
+                    : "Student")}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
+      <ScrollArea className="flex-1 px-6 py-4">
         <nav className="space-y-1">
           {filteredItems.map((item) => {
             const Icon = iconMap[item.icon as keyof typeof iconMap] || BookOpen;
@@ -186,48 +200,6 @@ export function Sidebar({ className }: SidebarProps) {
           })}
         </nav>
       </ScrollArea>
-
-      {/* User Info */}
-      <div className="border-t p-4">
-        <div className="flex items-center space-x-3 mb-3">
-          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-sm font-medium">
-              {userLoading
-                ? "..."
-                : user?.username?.charAt(0).toUpperCase() ||
-                  role?.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {userLoading
-                ? "Loading..."
-                : user?.username ||
-                  (role === "admin"
-                    ? "Admin User"
-                    : role === "teacher"
-                    ? "Teacher User"
-                    : "Student User")}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {userLoading
-                ? "Loading..."
-                : user?.email || `${role}@example.com`}
-            </p>
-          </div>
-        </div>
-
-        {/* Logout Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Log out
-        </Button>
-      </div>
     </div>
   );
 }
