@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useGetAllUsers, useDeleteUser } from "@/hooks";
+import { useGetAllUsers, useDeleteUser, useCurrentUser } from "@/hooks";
+import { InviteUserModal } from "@/components/common/invite-user-modal";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,7 +46,9 @@ interface User {
 export default function UsersPage() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { data: usersResponse, isLoading, error } = useGetAllUsers();
+  const { data: currentUser } = useCurrentUser();
   const deleteUserMutation = useDeleteUser();
 
   const users: User[] = usersResponse?.data || [];
@@ -122,7 +125,7 @@ export default function UsersPage() {
             View and manage all users in your organization
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsInviteModalOpen(true)}>
           <UserPlus className="h-4 w-4 mr-2" />
           Invite User
         </Button>
@@ -276,6 +279,15 @@ export default function UsersPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Invite User Modal */}
+      {currentUser?.organizationId && (
+        <InviteUserModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          organizationId={currentUser.organizationId}
+        />
+      )}
     </div>
   );
 }

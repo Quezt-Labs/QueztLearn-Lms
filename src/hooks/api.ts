@@ -147,7 +147,7 @@ export const useResendVerification = () => {
   });
 };
 
-export const useInviteUser = () => {
+export const useInviteTeacher = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -194,6 +194,22 @@ export const useDeleteUser = () => {
   return useMutation({
     mutationFn: (userId: string) =>
       apiClient.delete(`/admin/users/${userId}`).then((res) => res.data),
+    onSuccess: () => {
+      // Invalidate users query to refetch the list
+      queryClient.invalidateQueries({ queryKey: queryKeys.users });
+    },
+  });
+};
+
+export const useInviteAdmin = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {
+      organizationId: string;
+      email: string;
+      username: string;
+    }) => apiClient.post("/admin/auth/register", data).then((res) => res.data),
     onSuccess: () => {
       // Invalidate users query to refetch the list
       queryClient.invalidateQueries({ queryKey: queryKeys.users });

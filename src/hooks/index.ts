@@ -14,6 +14,8 @@ export {
   useAuth,
   useGetAllUsers,
   useDeleteUser,
+  useInviteTeacher,
+  useInviteAdmin,
   queryKeys,
 } from "./api";
 

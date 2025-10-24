@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -23,10 +24,14 @@ import {
 import { PageHeader } from "@/components/common/page-header";
 import { StatsSkeleton } from "@/components/common/loading-skeleton";
 // Removed dashboard stats and activity hooks - using mock data instead
-import { InviteUserDialog } from "@/components/admin/invite-user-dialog";
+import { InviteUserModal } from "@/components/common/invite-user-modal";
+import { useCurrentUser } from "@/hooks";
 import Link from "next/link";
 
 export default function AdminDashboard() {
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const { data: currentUser } = useCurrentUser();
+
   // Mock data since dashboard stats and activity endpoints are not available
   const stats = {
     data: {
@@ -76,12 +81,13 @@ export default function AdminDashboard() {
                 Add User
               </Link>
             </Button>
-            <InviteUserDialog>
-              <Button variant="secondary">
-                <UserCheck className="mr-2 h-4 w-4" />
-                Invite
-              </Button>
-            </InviteUserDialog>
+            <Button
+              variant="secondary"
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              <UserCheck className="mr-2 h-4 w-4" />
+              Invite
+            </Button>
             <Button asChild variant="outline">
               <Link href="/admin/courses">
                 <BookPlus className="mr-2 h-4 w-4" />
@@ -287,12 +293,14 @@ export default function AdminDashboard() {
                     Manage Users
                   </Link>
                 </Button>
-                <InviteUserDialog>
-                  <Button variant="outline" className="justify-start w-full">
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Invite Teacher
-                  </Button>
-                </InviteUserDialog>
+                <Button
+                  variant="outline"
+                  className="justify-start w-full"
+                  onClick={() => setIsInviteModalOpen(true)}
+                >
+                  <UserCheck className="mr-2 h-4 w-4" />
+                  Invite Teacher
+                </Button>
                 <Button asChild variant="outline" className="justify-start">
                   <Link href="/admin/courses">
                     <BookPlus className="mr-2 h-4 w-4" />
@@ -360,6 +368,15 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Invite User Modal */}
+      {currentUser?.organizationId && (
+        <InviteUserModal
+          isOpen={isInviteModalOpen}
+          onClose={() => setIsInviteModalOpen(false)}
+          organizationId={currentUser.organizationId}
+        />
+      )}
     </div>
   );
 }
