@@ -414,7 +414,7 @@ export function ChapterTopicStep({
                         placeholder="Add a new topic..."
                         value={newTopic.name}
                         onChange={(e) => setNewTopic({ name: e.target.value })}
-                        onKeyPress={(e) => {
+                        onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             handleAddTopic(chapter.id);
                           }

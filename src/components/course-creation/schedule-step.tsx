@@ -117,7 +117,12 @@ export function ScheduleStep({
   });
 
   const handleAddSchedule = () => {
-    if (newSchedule.dayOfWeek && newSchedule.startTime && newSchedule.endTime) {
+    if (
+      newSchedule.dayOfWeek &&
+      newSchedule.startTime &&
+      newSchedule.endTime &&
+      (newSchedule.isRecurring || newSchedule.date)
+    ) {
       const schedule: Schedule = {
         id: Date.now().toString(),
         dayOfWeek: newSchedule.dayOfWeek,

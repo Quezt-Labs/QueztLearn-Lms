@@ -33,9 +33,13 @@ interface Teacher {
   totalCourses: number;
 }
 
+interface TeacherSelectionData {
+  teacherId: string;
+}
+
 interface TeacherSelectionStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: TeacherSelectionData;
+  onUpdate: (data: Partial<TeacherSelectionData>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
@@ -149,6 +153,7 @@ export function TeacherSelectionStep({
   const getInitials = (name: string) => {
     return name
       .split(" ")
+      .filter((n) => n.length > 0)
       .map((n) => n[0])
       .join("")
       .toUpperCase();

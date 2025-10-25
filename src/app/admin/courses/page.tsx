@@ -131,11 +131,39 @@ const mockCourses = [
   },
 ];
 
+interface Course {
+  id: string;
+  name: string;
+  description: string;
+  class: string;
+  exam: string;
+  language: string;
+  imageUrl: string;
+  teacher: {
+    name: string;
+    imageUrl: string;
+  };
+  totalPrice: number;
+  discountedPrice: number;
+  discountPercentage: number;
+  startDate: string;
+  endDate: string;
+  validity: string;
+  status: string;
+  students: number;
+  rating: number;
+  subjects: number;
+  chapters: number;
+  lectures: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function AdminCoursesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const filteredCourses = mockCourses.filter((course) => {
@@ -167,7 +195,7 @@ export default function AdminCoursesPage() {
 
   const confirmDelete = () => {
     // TODO: Implement delete API call
-    console.log("Deleting course:", selectedCourse.id);
+    console.log("Deleting course:", selectedCourse?.id);
     setIsDeleteDialogOpen(false);
     setSelectedCourse(null);
   };
@@ -203,6 +231,7 @@ export default function AdminCoursesPage() {
   const getInitials = (name: string) => {
     return name
       .split(" ")
+      .filter((n) => n.length > 0)
       .map((n) => n[0])
       .join("")
       .toUpperCase();
@@ -432,6 +461,7 @@ export default function AdminCoursesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleViewCourse(course.id)}
+                        aria-label={`View ${course.name}`}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -439,6 +469,7 @@ export default function AdminCoursesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditCourse(course.id)}
+                        aria-label={`Edit ${course.name}`}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -447,6 +478,7 @@ export default function AdminCoursesPage() {
                         size="sm"
                         onClick={() => handleDeleteCourse(course)}
                         className="text-red-500 hover:text-red-700"
+                        aria-label={`Delete ${course.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

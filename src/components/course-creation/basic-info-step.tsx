@@ -126,8 +126,11 @@ export function BasicInfoStep({
     }
 
     // Fallback for very short durations
-    if (!result && days > 0) {
-      result = `${days} day${days > 1 ? "s" : ""}`;
+    if (!result) {
+      const totalDays = differenceInDays(end, start);
+      if (totalDays > 0) {
+        result = `${totalDays} day${totalDays > 1 ? "s" : ""}`;
+      }
     }
 
     return result;
