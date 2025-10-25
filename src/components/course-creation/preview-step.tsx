@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,8 +25,53 @@ import {
 } from "lucide-react";
 
 interface PreviewStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: {
+    name: string;
+    description: string;
+    class: string;
+    exam: string;
+    language: string;
+    startDate: string;
+    endDate: string;
+    validity: string;
+    totalPrice: number;
+    discountPercentage: number;
+    discountedPrice: number;
+    imageUrl: string;
+    teacherId: string;
+    subjects: Array<{
+      id: string;
+      name: string;
+      description: string;
+      thumbnailUrl: string;
+      teacherId: string;
+    }>;
+    chapters: Array<{
+      id: string;
+      subjectId: string;
+      name: string;
+      lectureCount: number;
+      lectureDuration: string;
+      topics: Array<{
+        id: string;
+        name: string;
+      }>;
+    }>;
+    schedules: Array<{
+      id: string;
+      dayOfWeek: string;
+      startTime: string;
+      endTime: string;
+      date?: string;
+      isRecurring: boolean;
+    }>;
+    faq: Array<{
+      id: string;
+      question: string;
+      description: string;
+    }>;
+  };
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
@@ -36,13 +82,9 @@ interface PreviewStepProps {
 
 export function PreviewStep({
   data,
-  onUpdate,
-  onNext,
   onPrevious,
   isFirstStep,
-  isLastStep,
   isSubmitting,
-  onSubmit,
 }: PreviewStepProps) {
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -57,8 +99,8 @@ export function PreviewStep({
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Call the parent onSubmit
-      onSubmit();
+      // Course published successfully
+      console.log("Course published successfully!");
     } catch (error) {
       console.error("Failed to publish course:", error);
     } finally {
@@ -92,12 +134,14 @@ export function PreviewStep({
 
   const totalLectures =
     data.chapters?.reduce(
-      (sum: number, chapter: any) => sum + (chapter.lectureCount || 0),
+      (sum: number, chapter: { lectureCount: number }) =>
+        sum + (chapter.lectureCount || 0),
       0
     ) || 0;
   const totalTopics =
     data.chapters?.reduce(
-      (sum: number, chapter: any) => sum + (chapter.topics?.length || 0),
+      (sum: number, chapter: { topics: Array<{ id: string; name: string }> }) =>
+        sum + (chapter.topics?.length || 0),
       0
     ) || 0;
 
@@ -125,9 +169,11 @@ export function PreviewStep({
           {/* Course Image and Basic Info */}
           <div className="flex items-start space-x-6">
             {data.imageUrl ? (
-              <img
+              <Image
                 src={data.imageUrl}
                 alt={data.name}
+                width={128}
+                height={128}
                 className="w-32 h-32 rounded-lg object-cover"
               />
             ) : (
@@ -275,30 +321,40 @@ export function PreviewStep({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.subjects.map((subject: any) => (
-                <div
-                  key={subject.id}
-                  className="flex items-center space-x-3 p-3 border rounded-lg"
-                >
-                  {subject.thumbnailUrl ? (
-                    <img
-                      src={subject.thumbnailUrl}
-                      alt={subject.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                      <FileText className="h-6 w-6 text-muted-foreground" />
+              {data.subjects.map(
+                (subject: {
+                  id: string;
+                  name: string;
+                  description: string;
+                  thumbnailUrl: string;
+                  teacherId: string;
+                }) => (
+                  <div
+                    key={subject.id}
+                    className="flex items-center space-x-3 p-3 border rounded-lg"
+                  >
+                    {subject.thumbnailUrl ? (
+                      <Image
+                        src={subject.thumbnailUrl}
+                        alt={subject.name}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="font-semibold">{subject.name}</h4>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {subject.description.replace(/<[^>]*>/g, "")}
+                      </p>
                     </div>
-                  )}
-                  <div>
-                    <h4 className="font-semibold">{subject.name}</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {subject.description.replace(/<[^>]*>/g, "")}
-                    </p>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           </CardContent>
         </Card>
@@ -312,30 +368,40 @@ export function PreviewStep({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {data.chapters.map((chapter: any) => (
-                <div key={chapter.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold">{chapter.name}</h4>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <span>{chapter.lectureCount} lectures</span>
-                      <span>{chapter.lectureDuration}</span>
+              {data.chapters.map(
+                (chapter: {
+                  id: string;
+                  name: string;
+                  lectureCount: number;
+                  lectureDuration: string;
+                  topics: Array<{ id: string; name: string }>;
+                }) => (
+                  <div key={chapter.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold">{chapter.name}</h4>
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                        <span>{chapter.lectureCount} lectures</span>
+                        <span>{chapter.lectureDuration}</span>
+                      </div>
                     </div>
+                    {chapter.topics && chapter.topics.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
+                        {chapter.topics.map(
+                          (topic: { id: string; name: string }) => (
+                            <div
+                              key={topic.id}
+                              className="flex items-center space-x-2 text-sm"
+                            >
+                              <div className="w-2 h-2 bg-primary rounded-full"></div>
+                              <span>{topic.name}</span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
                   </div>
-                  {chapter.topics && chapter.topics.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
-                      {chapter.topics.map((topic: any) => (
-                        <div
-                          key={topic.id}
-                          className="flex items-center space-x-2 text-sm"
-                        >
-                          <div className="w-2 h-2 bg-primary rounded-full"></div>
-                          <span>{topic.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                )
+              )}
             </div>
           </CardContent>
         </Card>
@@ -349,17 +415,23 @@ export function PreviewStep({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {data.faq.map((faq: any) => (
-                <div key={faq.id} className="border-l-4 border-primary pl-4">
-                  <h4 className="font-semibold mb-2">{faq.title}</h4>
-                  <div
-                    className="text-sm text-muted-foreground prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(faq.description),
-                    }}
-                  />
-                </div>
-              ))}
+              {data.faq.map(
+                (faq: {
+                  id: string;
+                  question: string;
+                  description: string;
+                }) => (
+                  <div key={faq.id} className="border-l-4 border-primary pl-4">
+                    <h4 className="font-semibold mb-2">{faq.question}</h4>
+                    <div
+                      className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(faq.description),
+                      }}
+                    />
+                  </div>
+                )
+              )}
             </div>
           </CardContent>
         </Card>

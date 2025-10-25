@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    domains: ["quezt-learn-lms.vercel.app", "images.unsplash.com"],
+  },
   async rewrites() {
     return [
       // Rewrite real subdomain requests to client pages (for production with custom domain)

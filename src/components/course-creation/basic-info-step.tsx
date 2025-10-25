@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,14 +41,25 @@ import {
 import { cn } from "@/lib/utils";
 
 interface BasicInfoStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: {
+    name: string;
+    description: string;
+    class: string;
+    exam: string;
+    language: string;
+    startDate: string;
+    endDate: string;
+    validity: string;
+    totalPrice: number;
+    discountPercentage: number;
+    discountedPrice: number;
+    imageUrl: string;
+  };
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
-  isLastStep: boolean;
   isSubmitting: boolean;
-  onSubmit: () => void;
 }
 
 export function BasicInfoStep({
@@ -55,9 +67,7 @@ export function BasicInfoStep({
   onUpdate,
   onNext,
   isFirstStep,
-  isLastStep,
   isSubmitting,
-  onSubmit,
 }: BasicInfoStepProps) {
   const [formData, setFormData] = useState({
     name: data.name || "",
@@ -74,7 +84,7 @@ export function BasicInfoStep({
     imageUrl: data.imageUrl || "",
   });
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
 
@@ -325,10 +335,11 @@ export function BasicInfoStep({
             {formData.imageUrl ? (
               <div className="space-y-2">
                 <div className="relative w-full h-48 border-2 border-dashed border-muted-foreground/25 rounded-lg overflow-hidden">
-                  <img
+                  <Image
                     src={formData.imageUrl}
                     alt="Course thumbnail"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </div>
                 <Button

@@ -154,7 +154,7 @@ interface CourseData {
   // FAQ
   faq: Array<{
     id: string;
-    title: string;
+    question: string;
     description: string;
   }>;
 }
@@ -220,6 +220,7 @@ export default function CreateCoursePage() {
       // Redirect to courses page
       router.push("/admin/courses");
     } catch (error) {
+      console.error("Failed to create course:", error);
       setErrorMessage("Failed to create course. Please try again.");
     } finally {
       setIsSubmitting(false);

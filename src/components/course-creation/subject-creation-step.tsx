@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import DOMPurify from "dompurify";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
@@ -33,14 +34,20 @@ interface Subject {
 }
 
 interface SubjectCreationStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: {
+    subjects: Array<{
+      id: string;
+      name: string;
+      description: string;
+      thumbnailUrl: string;
+      teacherId: string;
+    }>;
+  };
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
-  isLastStep: boolean;
   isSubmitting: boolean;
-  onSubmit: () => void;
 }
 
 export function SubjectCreationStep({
@@ -49,9 +56,7 @@ export function SubjectCreationStep({
   onNext,
   onPrevious,
   isFirstStep,
-  isLastStep,
   isSubmitting,
-  onSubmit,
 }: SubjectCreationStepProps) {
   const [subjects, setSubjects] = useState<Subject[]>(data.subjects || []);
   const [editingSubject, setEditingSubject] = useState<string | null>(null);
@@ -63,7 +68,7 @@ export function SubjectCreationStep({
     name: "",
     description: "",
     thumbnailUrl: "",
-    teacherId: data.teacherId || "",
+    teacherId: "",
   });
 
   const handleAddSubject = () => {
@@ -73,7 +78,7 @@ export function SubjectCreationStep({
         name: newSubject.name,
         description: newSubject.description,
         thumbnailUrl: newSubject.thumbnailUrl || "",
-        teacherId: newSubject.teacherId || data.teacherId,
+        teacherId: newSubject.teacherId || "",
       };
 
       const updatedSubjects = [...subjects, subject];
@@ -84,7 +89,7 @@ export function SubjectCreationStep({
         name: "",
         description: "",
         thumbnailUrl: "",
-        teacherId: data.teacherId || "",
+        teacherId: "",
       });
       setShowAddForm(false);
     }
@@ -110,7 +115,7 @@ export function SubjectCreationStep({
         name: "",
         description: "",
         thumbnailUrl: "",
-        teacherId: data.teacherId || "",
+        teacherId: "",
       });
     }
   };
@@ -128,7 +133,7 @@ export function SubjectCreationStep({
       name: "",
       description: "",
       thumbnailUrl: "",
-      teacherId: data.teacherId || "",
+      teacherId: "",
     });
   };
 
@@ -233,9 +238,11 @@ export function SubjectCreationStep({
                 {/* Thumbnail */}
                 <div className="shrink-0">
                   {subject.thumbnailUrl ? (
-                    <img
+                    <Image
                       src={subject.thumbnailUrl}
                       alt={subject.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                   ) : (

@@ -34,7 +34,7 @@ function VerifyEmailContent() {
   });
 
   // Loading state management
-  const { isLoading, error, setError, executeWithLoading } = useLoadingState({
+  const { error, setError, executeWithLoading } = useLoadingState({
     autoReset: true,
   });
 
@@ -99,7 +99,7 @@ function VerifyEmailContent() {
 
       processToken();
     }
-  }, [searchParams.get("token")]); // Only depend on the actual token value
+  }, [searchParams, handleVerifyEmail, updateField]); // Include all dependencies
 
   // Initialize and handle redirects
   useEffect(() => {

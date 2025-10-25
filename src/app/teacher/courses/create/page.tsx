@@ -24,7 +24,6 @@ import {
 
 // Step components
 import { BasicInfoStep } from "@/components/course-creation/basic-info-step";
-import { TeacherSelectionStep } from "@/components/course-creation/teacher-selection-step";
 import { SubjectCreationStep } from "@/components/course-creation/subject-creation-step";
 import { ChapterTopicStep } from "@/components/course-creation/chapter-topic-step";
 import { ContentUploadStep } from "@/components/course-creation/content-upload-step";
@@ -146,7 +145,7 @@ interface CourseData {
   // FAQ
   faq: Array<{
     id: string;
-    title: string;
+    question: string;
     description: string;
   }>;
 }

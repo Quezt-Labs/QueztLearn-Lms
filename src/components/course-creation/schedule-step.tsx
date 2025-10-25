@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -39,8 +38,17 @@ interface Schedule {
 }
 
 interface ScheduleStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: {
+    schedules: Array<{
+      id: string;
+      dayOfWeek: string;
+      startTime: string;
+      endTime: string;
+      date?: string;
+      isRecurring: boolean;
+    }>;
+  };
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;

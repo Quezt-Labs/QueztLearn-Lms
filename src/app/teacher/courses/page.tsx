@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,7 +125,10 @@ export default function TeacherCoursesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [selectedCourse, setSelectedCourse] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const filteredCourses = mockCourses.filter((course) => {
@@ -148,14 +152,14 @@ export default function TeacherCoursesPage() {
     router.push(`/teacher/courses/${courseId}`);
   };
 
-  const handleDeleteCourse = (course: any) => {
+  const handleDeleteCourse = (course: { id: string; name: string }) => {
     setSelectedCourse(course);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
     // TODO: Implement delete API call
-    console.log("Deleting course:", selectedCourse.id);
+    console.log("Deleting course:", selectedCourse?.id);
     setIsDeleteDialogOpen(false);
     setSelectedCourse(null);
   };
@@ -335,9 +339,11 @@ export default function TeacherCoursesPage() {
               className="overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="relative">
-                <img
+                <Image
                   src={course.imageUrl}
                   alt={course.name}
+                  width={400}
+                  height={192}
                   className="w-full h-48 object-cover"
                 />
                 <div className="absolute top-4 right-4">
@@ -469,9 +475,9 @@ export default function TeacherCoursesPage() {
             <DialogHeader>
               <DialogTitle>Delete Course</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete "{selectedCourse?.name}"? This
-                action cannot be undone. All associated data including student
-                enrollments will be permanently removed.
+                Are you sure you want to delete &quot;{selectedCourse?.name}
+                &quot;? This action cannot be undone. All associated data
+                including student enrollments will be permanently removed.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

@@ -43,9 +43,7 @@ interface TeacherSelectionStepProps {
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
-  isLastStep: boolean;
   isSubmitting: boolean;
-  onSubmit: () => void;
 }
 
 export function TeacherSelectionStep({
@@ -54,9 +52,7 @@ export function TeacherSelectionStep({
   onNext,
   onPrevious,
   isFirstStep,
-  isLastStep,
   isSubmitting,
-  onSubmit,
 }: TeacherSelectionStepProps) {
   const [selectedTeacher, setSelectedTeacher] = useState<string>(
     data.teacherId || ""

@@ -24,19 +24,23 @@ import {
 
 interface FAQ {
   id: string;
-  title: string;
+  question: string;
   description: string;
 }
 
 interface FAQStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: {
+    faq: Array<{
+      id: string;
+      question: string;
+      description: string;
+    }>;
+  };
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
-  isLastStep: boolean;
   isSubmitting: boolean;
-  onSubmit: () => void;
 }
 
 export function FAQStep({
@@ -45,9 +49,7 @@ export function FAQStep({
   onNext,
   onPrevious,
   isFirstStep,
-  isLastStep,
   isSubmitting,
-  onSubmit,
 }: FAQStepProps) {
   const [faqs, setFaqs] = useState<FAQ[]>(data.faq || []);
   const [editingFaq, setEditingFaq] = useState<string | null>(null);
@@ -56,15 +58,15 @@ export function FAQStep({
   // const { errors, validateField, validateForm } = useEnhancedFormValidation();
 
   const [newFaq, setNewFaq] = useState<Partial<FAQ>>({
-    title: "",
+    question: "",
     description: "",
   });
 
   const handleAddFaq = () => {
-    if (newFaq.title && newFaq.description) {
+    if (newFaq.question && newFaq.description) {
       const faq: FAQ = {
         id: Date.now().toString(),
-        title: newFaq.title,
+        question: newFaq.question,
         description: newFaq.description,
       };
 
@@ -73,7 +75,7 @@ export function FAQStep({
       onUpdate({ faq: updatedFaqs });
 
       setNewFaq({
-        title: "",
+        question: "",
         description: "",
       });
       setShowAddForm(false);
@@ -89,7 +91,7 @@ export function FAQStep({
   };
 
   const handleUpdateFaq = () => {
-    if (editingFaq && newFaq.title && newFaq.description) {
+    if (editingFaq && newFaq.question && newFaq.description) {
       const updatedFaqs = faqs.map((f) =>
         f.id === editingFaq ? { ...f, ...newFaq } : f
       );
@@ -97,7 +99,7 @@ export function FAQStep({
       onUpdate({ faq: updatedFaqs });
       setEditingFaq(null);
       setNewFaq({
-        title: "",
+        question: "",
         description: "",
       });
     }
@@ -113,7 +115,7 @@ export function FAQStep({
     setEditingFaq(null);
     setShowAddForm(false);
     setNewFaq({
-      title: "",
+      question: "",
       description: "",
     });
   };
@@ -146,9 +148,9 @@ export function FAQStep({
               <Label htmlFor="faqTitle">Question *</Label>
               <Input
                 id="faqTitle"
-                value={newFaq.title || ""}
+                value={newFaq.question || ""}
                 onChange={(e) =>
-                  setNewFaq({ ...newFaq, title: e.target.value })
+                  setNewFaq({ ...newFaq, question: e.target.value })
                 }
                 placeholder="e.g., What prerequisites do I need for this course?"
                 className=""
@@ -173,7 +175,7 @@ export function FAQStep({
               </Button>
               <Button
                 onClick={editingFaq ? handleUpdateFaq : handleAddFaq}
-                disabled={!newFaq.title || !newFaq.description}
+                disabled={!newFaq.question || !newFaq.description}
               >
                 {editingFaq ? "Update FAQ" : "Add FAQ"}
               </Button>
@@ -196,7 +198,7 @@ export function FAQStep({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-lg">{faq.title}</h3>
+                    <h3 className="font-semibold text-lg">{faq.question}</h3>
                     <div className="flex space-x-2">
                       <Button
                         variant="ghost"

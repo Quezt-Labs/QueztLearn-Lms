@@ -32,6 +32,15 @@ import {
 interface Topic {
   id: string;
   name: string;
+  content: Array<{
+    id: string;
+    name: string;
+    type: "lecture" | "pdf";
+    videoUrl?: string;
+    pdfUrl?: string;
+    videoThumbnail?: string;
+    videoDuration?: number;
+  }>;
 }
 
 interface Chapter {
@@ -44,14 +53,40 @@ interface Chapter {
 }
 
 interface ChapterTopicStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: {
+    subjects: Array<{
+      id: string;
+      name: string;
+      description: string;
+      thumbnailUrl: string;
+      teacherId: string;
+    }>;
+    chapters: Array<{
+      id: string;
+      subjectId: string;
+      name: string;
+      lectureCount: number;
+      lectureDuration: string;
+      topics: Array<{
+        id: string;
+        name: string;
+        content: Array<{
+          id: string;
+          name: string;
+          type: "lecture" | "pdf";
+          videoUrl?: string;
+          pdfUrl?: string;
+          videoThumbnail?: string;
+          videoDuration?: number;
+        }>;
+      }>;
+    }>;
+  };
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
-  isLastStep: boolean;
   isSubmitting: boolean;
-  onSubmit: () => void;
 }
 
 export function ChapterTopicStep({
@@ -60,19 +95,13 @@ export function ChapterTopicStep({
   onNext,
   onPrevious,
   isFirstStep,
-  isLastStep,
   isSubmitting,
-  onSubmit,
 }: ChapterTopicStepProps) {
   const [chapters, setChapters] = useState<Chapter[]>(data.chapters || []);
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(
     new Set()
   );
   const [editingChapter, setEditingChapter] = useState<string | null>(null);
-  const [editingTopic, setEditingTopic] = useState<{
-    chapterId: string;
-    topicId: string;
-  } | null>(null);
   const [showAddChapter, setShowAddChapter] = useState(false);
 
   // const { errors, validateField, validateForm } = useEnhancedFormValidation();
@@ -147,6 +176,7 @@ export function ChapterTopicStep({
       const topic: Topic = {
         id: uuidv4(),
         name: newTopic.name,
+        content: [],
       };
 
       const updatedChapters = chapters.map((c) =>
@@ -159,32 +189,10 @@ export function ChapterTopicStep({
   };
 
   const handleEditTopic = (chapterId: string, topicId: string) => {
-    setEditingTopic({ chapterId, topicId });
     const chapter = chapters.find((c) => c.id === chapterId);
     const topic = chapter?.topics.find((t) => t.id === topicId);
     if (topic) {
       setNewTopic({ name: topic.name });
-    }
-  };
-
-  const handleUpdateTopic = () => {
-    if (editingTopic && newTopic.name) {
-      const updatedChapters = chapters.map((c) =>
-        c.id === editingTopic.chapterId
-          ? {
-              ...c,
-              topics: c.topics.map((t) =>
-                t.id === editingTopic.topicId
-                  ? { ...t, name: newTopic.name }
-                  : t
-              ),
-            }
-          : c
-      );
-      setChapters(updatedChapters);
-      onUpdate({ chapters: updatedChapters });
-      setEditingTopic(null);
-      setNewTopic({ name: "" });
     }
   };
 
@@ -210,7 +218,6 @@ export function ChapterTopicStep({
 
   const handleCancelEdit = () => {
     setEditingChapter(null);
-    setEditingTopic(null);
     setShowAddChapter(false);
     setNewChapter({
       name: "",

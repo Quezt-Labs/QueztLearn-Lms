@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,14 +45,33 @@ interface Content {
 }
 
 interface ContentUploadStepProps {
-  data: any;
-  onUpdate: (data: any) => void;
+  data: {
+    chapters: Array<{
+      id: string;
+      subjectId: string;
+      name: string;
+      lectureCount: number;
+      lectureDuration: string;
+      topics: Array<{
+        id: string;
+        name: string;
+        content: Array<{
+          id: string;
+          name: string;
+          type: "lecture" | "pdf";
+          videoUrl?: string;
+          pdfUrl?: string;
+          videoThumbnail?: string;
+          videoDuration?: number;
+        }>;
+      }>;
+    }>;
+  };
+  onUpdate: (data: Record<string, unknown>) => void;
   onNext: () => void;
   onPrevious: () => void;
   isFirstStep: boolean;
-  isLastStep: boolean;
   isSubmitting: boolean;
-  onSubmit: () => void;
 }
 
 export function ContentUploadStep({
@@ -60,11 +80,9 @@ export function ContentUploadStep({
   onNext,
   onPrevious,
   isFirstStep,
-  isLastStep,
   isSubmitting,
-  onSubmit,
 }: ContentUploadStepProps) {
-  const [content, setContent] = useState<Content[]>(data.content || []);
+  const [content, setContent] = useState<Content[]>([]);
   const [editingContent, setEditingContent] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -345,9 +363,11 @@ export function ContentUploadStep({
                   {item.type === "lecture" ? (
                     <div className="relative">
                       {item.videoThumbnail ? (
-                        <img
+                        <Image
                           src={item.videoThumbnail}
                           alt={item.name}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 rounded-lg object-cover"
                         />
                       ) : (

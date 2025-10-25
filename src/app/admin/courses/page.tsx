@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -131,39 +132,14 @@ const mockCourses = [
   },
 ];
 
-interface Course {
-  id: string;
-  name: string;
-  description: string;
-  class: string;
-  exam: string;
-  language: string;
-  imageUrl: string;
-  teacher: {
-    name: string;
-    imageUrl: string;
-  };
-  totalPrice: number;
-  discountedPrice: number;
-  discountPercentage: number;
-  startDate: string;
-  endDate: string;
-  validity: string;
-  status: string;
-  students: number;
-  rating: number;
-  subjects: number;
-  chapters: number;
-  lectures: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export default function AdminCoursesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const filteredCourses = mockCourses.filter((course) => {
@@ -188,7 +164,7 @@ export default function AdminCoursesPage() {
     router.push(`/admin/courses/${courseId}`);
   };
 
-  const handleDeleteCourse = (course: any) => {
+  const handleDeleteCourse = (course: { id: string; name: string }) => {
     setSelectedCourse(course);
     setIsDeleteDialogOpen(true);
   };
@@ -378,9 +354,11 @@ export default function AdminCoursesPage() {
               className="overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="relative">
-                <img
+                <Image
                   src={course.imageUrl}
                   alt={course.name}
+                  width={400}
+                  height={192}
                   className="w-full h-48 object-cover"
                 />
                 <div className="absolute top-4 right-4">
@@ -521,9 +499,9 @@ export default function AdminCoursesPage() {
             <DialogHeader>
               <DialogTitle>Delete Course</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete "{selectedCourse?.name}"? This
-                action cannot be undone. All associated data including student
-                enrollments will be permanently removed.
+                Are you sure you want to delete &quot;{selectedCourse?.name}
+                &quot;? This action cannot be undone. All associated data
+                including student enrollments will be permanently removed.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

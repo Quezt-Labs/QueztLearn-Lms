@@ -89,14 +89,19 @@ export function InviteUserModal({
       setUsername("");
       setRole("ADMIN");
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to invite user:", error);
 
       // Handle specific error cases
-      if (error?.response?.status === 409) {
-        alert("User with this email already exists in your organization");
-      } else if (error?.response?.status === 400) {
-        alert("Invalid request. Please check your input and try again");
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 409) {
+          alert("User with this email already exists in your organization");
+        } else if (axiosError.response?.status === 400) {
+          alert("Invalid request. Please check your input and try again");
+        } else {
+          alert("Failed to send invitation. Please try again");
+        }
       } else {
         alert("Failed to send invitation. Please try again");
       }
