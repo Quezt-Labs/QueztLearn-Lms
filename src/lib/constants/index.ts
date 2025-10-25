@@ -27,6 +27,12 @@ export const ADMIN_NAVIGATION_ITEMS: NavigationItem[] = [
     roles: ["admin"],
   },
   {
+    title: "Create Course",
+    href: "/admin/courses/create",
+    icon: "Plus",
+    roles: ["admin"],
+  },
+  {
     title: "Analytics",
     href: "/admin/analytics",
     icon: "BarChart3",
@@ -64,6 +70,12 @@ export const TEACHER_NAVIGATION_ITEMS: NavigationItem[] = [
     title: "My Courses",
     href: "/teacher/courses",
     icon: "BookOpen",
+    roles: ["teacher"],
+  },
+  {
+    title: "Create Course",
+    href: "/teacher/courses/create",
+    icon: "Plus",
     roles: ["teacher"],
   },
   {
