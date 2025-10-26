@@ -98,19 +98,6 @@ export function CreateContentModal({
     onClose();
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "Video":
-        return <Video className="h-4 w-4" />;
-      case "PDF":
-        return <FileText className="h-4 w-4" />;
-      case "Assignment":
-        return <Clipboard className="h-4 w-4" />;
-      default:
-        return <BookOpen className="h-4 w-4" />;
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg max-w-[95vw] max-h-[90vh] overflow-y-auto">

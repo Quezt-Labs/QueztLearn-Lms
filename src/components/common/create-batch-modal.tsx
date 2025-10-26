@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -28,8 +27,6 @@ import {
   Plus,
   X,
   DollarSign,
-  Percent,
-  Globe,
   BookOpen,
   GraduationCap,
 } from "lucide-react";
@@ -44,6 +41,8 @@ import { cn } from "@/lib/utils";
 import { useCreateBatch } from "@/hooks";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { FileUpload } from "@/components/common/file-upload";
+import { Badge } from "../ui/badge";
+import Image from "next/image";
 
 interface CreateBatchModalProps {
   isOpen: boolean;
@@ -372,11 +371,13 @@ export function CreateBatchModal({
                 <div className="space-y-4">
                   {/* Image Preview */}
                   {formData.imageUrl && (
-                    <div className="relative">
-                      <img
+                    <div className="relative h-48 w-full rounded-lg border overflow-hidden">
+                      <Image
                         src={formData.imageUrl}
                         alt="Course preview"
-                        className="w-full h-48 object-cover rounded-lg border"
+                        className="object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 400px"
                       />
                       <Button
                         type="button"

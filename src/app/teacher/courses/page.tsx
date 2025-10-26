@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -347,10 +348,12 @@ export default function TeacherCoursesPage() {
                 {/* Course Image */}
                 <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/5 relative">
                   {batch.imageUrl ? (
-                    <img
+                    <Image
                       src={batch.imageUrl}
                       alt={batch.name}
                       className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">

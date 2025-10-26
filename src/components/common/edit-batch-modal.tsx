@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileUpload } from "@/components/common/file-upload";
 import { X, Plus } from "lucide-react";
+import Image from "next/image";
 import { useUpdateBatch } from "@/hooks";
 
 interface Batch {
@@ -275,11 +275,13 @@ export function EditBatchModal({
           <div className="space-y-2">
             <Label>Course Image (Optional)</Label>
             {formData.imageUrl && (
-              <div className="mb-2">
-                <img
+              <div className="mb-2 h-20 w-20 relative rounded-lg border overflow-hidden">
+                <Image
                   src={formData.imageUrl}
                   alt="Current course image"
-                  className="h-20 w-20 object-cover rounded-lg border"
+                  className="object-cover"
+                  fill
+                  sizes="80px"
                 />
               </div>
             )}

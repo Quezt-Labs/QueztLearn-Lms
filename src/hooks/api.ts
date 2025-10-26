@@ -259,7 +259,7 @@ export const useCreateBatch = () => {
         description: string;
       }>;
     }) => apiClient.post("/admin/batches", data).then((res) => res.data),
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalidate batches query to refetch the list
       queryClient.invalidateQueries({ queryKey: queryKeys.batches });
       // Redirect to batches page

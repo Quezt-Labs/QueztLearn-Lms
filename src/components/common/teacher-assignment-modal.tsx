@@ -100,6 +100,7 @@ export function TeacherAssignmentModal({
       // Use mock data for now
       setAssignedTeachers(mockAssignedTeachers);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [batchTeachers]);
 
   const filteredTeachers = mockAvailableTeachers.filter((teacher) => {

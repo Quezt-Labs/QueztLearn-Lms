@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -56,12 +55,6 @@ export function CreateTeacherModal({
     document.execCommand(command, false, value);
   };
 
-  const handleHighlightsChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setFormData((prev) => ({ ...prev, highlights: e.target.value }));
-  };
-
   const handleImageUpload = (fileData: {
     key: string;
     url: string;
@@ -107,14 +100,6 @@ export function CreateTeacherModal({
     setIsSubmitting(true);
 
     try {
-      const teacherData = {
-        name: formData.name,
-        imageUrl: formData.imageUrl || undefined,
-        subjects: formData.subjects,
-        highlights: formData.highlights,
-        batchIds: batchId ? [batchId] : [],
-      };
-
       await createTeacherMutation.mutateAsync({
         name: formData.name,
         imageUrl: formData.imageUrl || undefined,

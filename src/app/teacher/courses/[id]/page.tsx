@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,7 @@ import {
   BarChart3,
   FileText,
   Video,
-  Image,
+  ImageIcon,
   Download,
   Share2,
   X,
@@ -319,11 +320,13 @@ export default function TeacherCourseDetailPage() {
         {/* Course Image */}
         {courseData.imageUrl && (
           <div className="mb-8">
-            <div className="h-64 w-full rounded-lg overflow-hidden">
-              <img
+            <div className="h-64 w-full rounded-lg overflow-hidden relative">
+              <Image
                 src={courseData.imageUrl}
                 alt={`Course image for ${courseData.name}`}
                 className="w-full h-full object-cover"
+                fill
+                priority
               />
             </div>
           </div>
@@ -689,7 +692,7 @@ export default function TeacherCourseDetailPage() {
                     </Card>
                     <Card className="p-4">
                       <div className="flex items-center space-x-3">
-                        <Image className="h-8 w-8 text-purple-500" />
+                        <ImageIcon className="h-8 w-8 text-purple-500" />
                         <div>
                           <p className="font-medium">Images</p>
                           <p className="text-sm text-muted-foreground">

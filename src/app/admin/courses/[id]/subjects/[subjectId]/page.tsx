@@ -19,7 +19,6 @@ import {
   Plus,
   Edit,
   Trash2,
-  Eye,
   BookOpen,
   ChevronRight,
   FileText,
@@ -41,15 +40,6 @@ import { EditTopicModal } from "@/components/common/edit-topic-modal";
 import { CreateContentModal } from "@/components/common/create-content-modal";
 import { EditContentModal } from "@/components/common/edit-content-modal";
 import Image from "next/image";
-
-interface Subject {
-  id: string;
-  name: string;
-  batchId: string;
-  thumbnailUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
 
 interface Chapter {
   id: string;
@@ -338,7 +328,7 @@ export default function SubjectDetailPage() {
                   chapter={chapter}
                   isExpanded={expandedChapters.has(chapter.id)}
                   onToggle={() => toggleChapter(chapter.id)}
-                  onEdit={(e) => handleEditChapter(chapter)}
+                  onEdit={() => handleEditChapter(chapter)}
                   onDelete={() => handleDeleteChapter(chapter)}
                   onAddTopic={(e) => handleAddTopic(chapter.id, e)}
                   onEditTopic={(topic, e) => handleEditTopic(topic, e)}
@@ -477,9 +467,7 @@ function ChapterCard({
   onEditContent: (content: Content, e: React.MouseEvent) => void;
   onDeleteContent: (content: Content) => void;
 }) {
-  const { data: topicsData, isLoading: topicsLoading } = useGetTopicsByChapter(
-    chapter.id
-  );
+  const { data: topicsData } = useGetTopicsByChapter(chapter.id);
 
   const topics = topicsData?.data || [];
 

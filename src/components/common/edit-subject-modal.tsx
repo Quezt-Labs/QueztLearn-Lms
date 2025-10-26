@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FileUpload } from "@/components/common/file-upload";
+import Image from "next/image";
 import { useUpdateSubject } from "@/hooks";
 
 interface Subject {
@@ -140,11 +141,13 @@ export function EditSubjectModal({
           <div className="space-y-2">
             <Label>Subject Thumbnail (Optional)</Label>
             {formData.thumbnailUrl && (
-              <div className="mb-2">
-                <img
+              <div className="mb-2 h-20 w-20 relative rounded-lg border overflow-hidden">
+                <Image
                   src={formData.thumbnailUrl}
                   alt="Current thumbnail"
-                  className="h-20 w-20 object-cover rounded-lg border"
+                  className="object-cover"
+                  fill
+                  sizes="80px"
                 />
               </div>
             )}

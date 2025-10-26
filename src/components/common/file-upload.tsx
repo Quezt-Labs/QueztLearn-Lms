@@ -8,12 +8,11 @@ import {
   Upload,
   X,
   File,
-  Image,
+  Image as ImageIcon,
   FileText,
   Video,
-  CheckCircle,
-  AlertCircle,
 } from "lucide-react";
+import Image from "next/image";
 import { useDirectUpload } from "@/hooks";
 
 interface FileUploadProps {
@@ -65,6 +64,7 @@ export function FileUpload({
         uploadFile(file, fileIndex);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
   const handleFileSelect = (selectedFiles: FileList | null) => {
@@ -162,33 +162,14 @@ export function FileUpload({
     }
   };
 
-  const uploadAllFiles = async () => {
-    const pendingFiles = files.filter((f) => f.status === "pending");
-
-    for (let i = 0; i < pendingFiles.length; i++) {
-      const fileIndex = files.findIndex((f) => f === pendingFiles[i]);
-      await uploadFile(pendingFiles[i], fileIndex);
-    }
-  };
-
   const getFileIcon = (file: File | undefined) => {
     if (!file || !file.type) return <File className="h-4 w-4" />;
-    if (file.type.startsWith("image/")) return <Image className="h-4 w-4" />;
+    if (file.type.startsWith("image/"))
+      return <ImageIcon className="h-4 w-4" />;
     if (file.type.startsWith("video/")) return <Video className="h-4 w-4" />;
     if (file.type === "application/pdf")
       return <FileText className="h-4 w-4" />;
     return <File className="h-4 w-4" />;
-  };
-
-  const getStatusIcon = (status: UploadedFile["status"]) => {
-    switch (status) {
-      case "success":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "error":
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -198,9 +179,6 @@ export function FileUpload({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
-
-  const pendingFiles = files.filter((f) => f.status === "pending");
-  const hasPendingFiles = pendingFiles.length > 0;
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -247,11 +225,15 @@ export function FileUpload({
               >
                 <div className="flex items-center space-x-2 flex-1 min-w-0">
                   {file.preview ? (
-                    <img
-                      src={file.preview}
-                      alt={`Preview of ${file.file?.name || "file"}`}
-                      className="h-8 w-8 object-cover rounded"
-                    />
+                    <div className="h-8 w-8 relative rounded overflow-hidden">
+                      <Image
+                        src={file.preview}
+                        alt={`Preview of ${file.file?.name || "file"}`}
+                        className="object-cover"
+                        fill
+                        sizes="32px"
+                      />
+                    </div>
                   ) : (
                     <div className="h-8 w-8 bg-muted rounded flex items-center justify-center">
                       {getFileIcon(file.file)}

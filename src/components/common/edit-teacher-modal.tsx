@@ -23,6 +23,7 @@ import {
   List,
   ListOrdered,
 } from "lucide-react";
+import Image from "next/image";
 import { useUpdateTeacher } from "@/hooks";
 
 interface Teacher {
@@ -125,14 +126,6 @@ export function EditTeacherModal({
     setIsSubmitting(true);
 
     try {
-      const teacherData = {
-        name: formData.name,
-        imageUrl: formData.imageUrl || undefined,
-        subjects: formData.subjects,
-        highlights: formData.highlights,
-        batchId: batchId || teacher.batchIds?.[0] || "", // Use provided batchId or first batch ID
-      };
-
       await updateTeacherMutation.mutateAsync({
         id: teacher.id,
         data: {
@@ -197,11 +190,13 @@ export function EditTeacherModal({
           <div className="space-y-2">
             <Label>Teacher Image (Optional)</Label>
             {formData.imageUrl && (
-              <div className="mb-2">
-                <img
+              <div className="mb-2 h-20 w-20 relative rounded-lg border overflow-hidden">
+                <Image
                   src={formData.imageUrl}
                   alt="Current teacher image"
-                  className="h-20 w-20 object-cover rounded-lg border"
+                  className="object-cover"
+                  fill
+                  sizes="80px"
                 />
               </div>
             )}

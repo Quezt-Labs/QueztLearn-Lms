@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +31,7 @@ import {
   BarChart3,
   FileText,
   Video,
-  Image,
+  ImageIcon,
   Download,
   Share2,
   X,
@@ -43,7 +44,6 @@ import {
   useDeleteTeacher,
   useGetSubjectsByBatch,
   useDeleteSubject,
-  useUpdateSubject,
 } from "@/hooks";
 import { TeacherAssignmentModal } from "@/components/common/teacher-assignment-modal";
 import { CreateTeacherModal } from "@/components/common/create-teacher-modal";
@@ -378,11 +378,13 @@ export default function AdminCourseDetailPage() {
         {/* Course Image */}
         {courseData.imageUrl && (
           <div className="mb-8">
-            <div className="h-64 w-full rounded-lg overflow-hidden">
-              <img
+            <div className="h-64 w-full rounded-lg overflow-hidden relative">
+              <Image
                 src={courseData.imageUrl}
                 alt={`Course image for ${courseData.name}`}
                 className="w-full h-full object-cover"
+                fill
+                priority
               />
             </div>
           </div>
@@ -604,11 +606,15 @@ export default function AdminCourseDetailPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
                               {subject.thumbnailUrl && (
-                                <img
-                                  src={subject.thumbnailUrl}
-                                  alt={subject.name}
-                                  className="h-12 w-12 object-cover rounded"
-                                />
+                                <div className="h-12 w-12 relative rounded overflow-hidden">
+                                  <Image
+                                    src={subject.thumbnailUrl}
+                                    alt={subject.name}
+                                    className="object-cover"
+                                    fill
+                                    sizes="48px"
+                                  />
+                                </div>
                               )}
                               <div>
                                 <h3 className="font-semibold text-base">
@@ -851,7 +857,7 @@ export default function AdminCourseDetailPage() {
                     </Card>
                     <Card className="p-4">
                       <div className="flex items-center space-x-3">
-                        <Image className="h-8 w-8 text-purple-500" />
+                        <ImageIcon className="h-8 w-8 text-purple-500" />
                         <div>
                           <p className="font-medium">Images</p>
                           <p className="text-sm text-muted-foreground">
