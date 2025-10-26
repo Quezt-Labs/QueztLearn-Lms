@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { useGetAllBatches, useDeleteBatch } from "@/hooks";
 import { CreateBatchModal } from "@/components/common/create-batch-modal";
+import { EditBatchModal } from "@/components/common/edit-batch-modal";
 
 interface Batch {
   id: string;
@@ -76,6 +77,9 @@ export default function AdminCoursesPage() {
   } | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedBatchForEdit, setSelectedBatchForEdit] =
+    useState<Batch | null>(null);
 
   const { data: batches, isLoading } = useGetAllBatches();
   const deleteBatchMutation = useDeleteBatch();
@@ -111,7 +115,16 @@ export default function AdminCoursesPage() {
   };
 
   const handleEditCourse = (batchId: string) => {
-    router.push(`/admin/courses/${batchId}/edit`);
+    const batch = batches?.data?.find((b: Batch) => b.id === batchId);
+    if (batch) {
+      setSelectedBatchForEdit(batch);
+      setIsEditModalOpen(true);
+    }
+  };
+
+  const handleBatchUpdated = () => {
+    // Refresh the page or refetch data
+    window.location.reload();
   };
 
   const handleDeleteCourse = (batch: { id: string; name: string }) => {
@@ -337,145 +350,55 @@ export default function AdminCoursesPage() {
         </Card>
 
         {/* Courses Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Courses List */}
+        <div className="space-y-4">
           {filteredBatches.map((batch: Batch) => (
-            <Card
-              key={batch.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <div className="relative">
-                {/* Course Image */}
-                <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/5 relative">
-                  {batch.imageUrl ? (
-                    <img
-                      src={batch.imageUrl}
-                      alt={batch.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <BookOpen className="h-16 w-16 text-primary/50" />
+            <Card key={batch.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {/* Course Name */}
+                    <div>
+                      <h3 className="font-semibold text-lg">{batch.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Class {batch.class} • {batch.exam}
+                      </p>
                     </div>
-                  )}
-                  <div className="absolute top-4 right-4">
+
+                    {/* Status Badge */}
                     {getStatusBadge(batch)}
                   </div>
-                </div>
 
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {/* Course Info */}
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                        {batch.name}
-                      </h3>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-1">
-                          <Users className="h-4 w-4" />
-                          <span>Class {batch.class}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <BookOpen className="h-4 w-4" />
-                          <span>{batch.exam}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Teacher Info */}
-                    {batch.teacher && (
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={batch.teacher.imageUrl}
-                            alt={batch.teacher.name}
-                          />
-                          <AvatarFallback className="text-xs">
-                            {getInitials(batch.teacher.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {batch.teacher.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Instructor
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Dates */}
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>Starts: {formatDate(batch.startDate)}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>Ends: {formatDate(batch.endDate)}</span>
-                      </div>
-                    </div>
-
-                    {/* Language */}
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <span>{batch.language}</span>
-                    </div>
-
-                    {/* Price */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-lg font-bold text-primary">
-                          {formatPrice(
-                            calculateDiscountedPrice(
-                              batch.totalPrice,
-                              batch.discountPercentage
-                            )
-                          )}
-                        </p>
-                        {batch.discountPercentage > 0 && (
-                          <p className="text-sm text-muted-foreground line-through">
-                            {formatPrice(batch.totalPrice)}
-                          </p>
-                        )}
-                      </div>
-                      {batch.discountPercentage > 0 && (
-                        <Badge variant="destructive">
-                          {batch.discountPercentage}% OFF
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex space-x-2 pt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewCourse(batch.id)}
-                        className="flex-1"
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditCourse(batch.id)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteCourse(batch)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  {/* Action Buttons */}
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewCourse(batch.id)}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditCourse(batch.id)}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteCourse(batch)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </Button>
                   </div>
-                </CardContent>
-              </div>
+                </div>
+              </CardContent>
             </Card>
           ))}
         </div>
@@ -539,6 +462,17 @@ export default function AdminCoursesPage() {
             setIsCreateModalOpen(false);
             // The query will automatically refetch due to invalidation
           }}
+        />
+
+        {/* Edit Batch Modal */}
+        <EditBatchModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedBatchForEdit(null);
+          }}
+          batch={selectedBatchForEdit}
+          onSuccess={handleBatchUpdated}
         />
       </div>
     </div>
