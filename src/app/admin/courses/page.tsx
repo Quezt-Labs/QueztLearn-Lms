@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -29,13 +28,10 @@ import {
   Edit,
   Trash2,
   Eye,
-  Users,
   BookOpen,
   DollarSign,
   TrendingUp,
   Clock,
-  Calendar,
-  Globe,
 } from "lucide-react";
 import { useGetAllBatches, useDeleteBatch } from "@/hooks";
 import { CreateBatchModal } from "@/components/common/create-batch-modal";
@@ -143,35 +139,11 @@ export default function AdminCoursesPage() {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .filter((n) => n.length > 0)
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
     }).format(price);
-  };
-
-  const calculateDiscountedPrice = (
-    totalPrice: number,
-    discountPercentage: number
-  ) => {
-    return totalPrice - (totalPrice * discountPercentage) / 100;
   };
 
   const getStatusBadge = (batch: Batch) => {
@@ -351,16 +323,16 @@ export default function AdminCoursesPage() {
 
         {/* Courses Grid */}
         {/* Courses List */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredBatches.map((batch: Batch) => (
             <Card key={batch.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     {/* Course Name */}
                     <div>
-                      <h3 className="font-semibold text-lg">{batch.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-semibold text-base">{batch.name}</h3>
+                      <p className="text-xs text-muted-foreground">
                         Class {batch.class} • {batch.exam}
                       </p>
                     </div>
@@ -376,7 +348,7 @@ export default function AdminCoursesPage() {
                       size="sm"
                       onClick={() => handleViewCourse(batch.id)}
                     >
-                      <Eye className="mr-2 h-4 w-4" />
+                      <Eye className="mr-1 h-3 w-3" />
                       View
                     </Button>
                     <Button
@@ -384,7 +356,7 @@ export default function AdminCoursesPage() {
                       size="sm"
                       onClick={() => handleEditCourse(batch.id)}
                     >
-                      <Edit className="mr-2 h-4 w-4" />
+                      <Edit className="mr-1 h-3 w-3" />
                       Edit
                     </Button>
                     <Button
@@ -393,7 +365,7 @@ export default function AdminCoursesPage() {
                       onClick={() => handleDeleteCourse(batch)}
                       className="text-red-500 hover:text-red-700"
                     >
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="mr-1 h-3 w-3" />
                       Delete
                     </Button>
                   </div>
@@ -460,7 +432,6 @@ export default function AdminCoursesPage() {
           onClose={() => setIsCreateModalOpen(false)}
           onSuccess={() => {
             setIsCreateModalOpen(false);
-            // The query will automatically refetch due to invalidation
           }}
         />
 
