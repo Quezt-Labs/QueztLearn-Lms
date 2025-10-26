@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -32,11 +32,14 @@ import {
   useGetTopicsByChapter,
   useDeleteTopic,
   useGetContentsByTopic,
+  useDeleteContent,
 } from "@/hooks";
 import { CreateChapterModal } from "@/components/common/create-chapter-modal";
 import { EditChapterModal } from "@/components/common/edit-chapter-modal";
 import { CreateTopicModal } from "@/components/common/create-topic-modal";
 import { EditTopicModal } from "@/components/common/edit-topic-modal";
+import { CreateContentModal } from "@/components/common/create-content-modal";
+import { EditContentModal } from "@/components/common/edit-content-modal";
 import Image from "next/image";
 
 interface Subject {
@@ -91,8 +94,11 @@ export default function SubjectDetailPage() {
   const [isEditChapterOpen, setIsEditChapterOpen] = useState(false);
   const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
   const [isEditTopicOpen, setIsEditTopicOpen] = useState(false);
+  const [isCreateContentOpen, setIsCreateContentOpen] = useState(false);
+  const [isEditContentOpen, setIsEditContentOpen] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(
     new Set()
   );
@@ -103,6 +109,7 @@ export default function SubjectDetailPage() {
   const deleteSubjectMutation = useDeleteSubject();
   const deleteChapterMutation = useDeleteChapter();
   const deleteTopicMutation = useDeleteTopic();
+  const deleteContentMutation = useDeleteContent();
 
   const handleGoBack = () => {
     router.push(`/admin/courses/${courseId}`);
@@ -177,11 +184,6 @@ export default function SubjectDetailPage() {
     setIsCreateTopicOpen(true);
   };
 
-  const handleTopicCreated = () => {
-    // The query will be automatically invalidated by the hook
-    // No need to manually invalidate here
-  };
-
   const handleEditTopic = (topic: Topic, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedTopic(topic);
@@ -208,6 +210,42 @@ export default function SubjectDetailPage() {
         });
       } catch (error) {
         console.error("Failed to delete topic:", error);
+      }
+    }
+  };
+
+  const handleAddContent = (topicId: string) => {
+    setSelectedTopic({ id: topicId } as Topic);
+    setIsCreateContentOpen(true);
+  };
+
+  const handleContentCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ["contents"] });
+  };
+
+  const handleEditContent = (content: Content, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedContent(content);
+    setIsEditContentOpen(true);
+  };
+
+  const handleContentUpdated = () => {
+    queryClient.invalidateQueries({ queryKey: ["contents"] });
+  };
+
+  const handleDeleteContent = async (content: Content) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${content.name}"? This action cannot be undone.`
+      )
+    ) {
+      try {
+        await deleteContentMutation.mutateAsync(content.id);
+        queryClient.invalidateQueries({
+          queryKey: ["contents", "topic", content.topicId],
+        });
+      } catch (error) {
+        console.error("Failed to delete content:", error);
       }
     }
   };
@@ -305,6 +343,9 @@ export default function SubjectDetailPage() {
                   onAddTopic={(e) => handleAddTopic(chapter.id, e)}
                   onEditTopic={(topic, e) => handleEditTopic(topic, e)}
                   onDeleteTopic={(topic, e) => handleDeleteTopic(topic, e)}
+                  onAddContent={handleAddContent}
+                  onEditContent={handleEditContent}
+                  onDeleteContent={handleDeleteContent}
                 />
               ))}
             </div>
@@ -376,7 +417,6 @@ export default function SubjectDetailPage() {
           setSelectedChapter(null);
         }}
         chapterId={selectedChapter?.id || ""}
-        onSuccess={handleTopicCreated}
       />
 
       <EditTopicModal
@@ -387,6 +427,26 @@ export default function SubjectDetailPage() {
         }}
         topic={selectedTopic}
         onSuccess={handleTopicUpdated}
+      />
+
+      <CreateContentModal
+        isOpen={isCreateContentOpen}
+        onClose={() => {
+          setIsCreateContentOpen(false);
+          setSelectedTopic(null);
+        }}
+        topicId={selectedTopic?.id || ""}
+        onSuccess={handleContentCreated}
+      />
+
+      <EditContentModal
+        isOpen={isEditContentOpen}
+        onClose={() => {
+          setIsEditContentOpen(false);
+          setSelectedContent(null);
+        }}
+        content={selectedContent}
+        onSuccess={handleContentUpdated}
       />
     </div>
   );
@@ -401,6 +461,9 @@ function ChapterCard({
   onAddTopic,
   onEditTopic,
   onDeleteTopic,
+  onAddContent,
+  onEditContent,
+  onDeleteContent,
 }: {
   chapter: Chapter;
   isExpanded: boolean;
@@ -410,6 +473,9 @@ function ChapterCard({
   onAddTopic: (e: React.MouseEvent) => void;
   onEditTopic: (topic: Topic, e: React.MouseEvent) => void;
   onDeleteTopic: (topic: Topic, e: React.MouseEvent) => void;
+  onAddContent: (topicId: string) => void;
+  onEditContent: (content: Content, e: React.MouseEvent) => void;
+  onDeleteContent: (content: Content) => void;
 }) {
   const { data: topicsData, isLoading: topicsLoading } = useGetTopicsByChapter(
     chapter.id
@@ -468,6 +534,9 @@ function ChapterCard({
                       topic={topic}
                       onEdit={(e) => onEditTopic(topic, e)}
                       onDelete={(e) => onDeleteTopic(topic, e)}
+                      onAddContent={onAddContent}
+                      onEditContent={onEditContent}
+                      onDeleteContent={onDeleteContent}
                     />
                   ))}
                 </div>
@@ -488,10 +557,16 @@ function TopicContentDisplay({
   topic,
   onEdit,
   onDelete,
+  onAddContent,
+  onEditContent,
+  onDeleteContent,
 }: {
   topic: Topic;
   onEdit: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
+  onAddContent: (topicId: string) => void;
+  onEditContent: (content: Content, e: React.MouseEvent) => void;
+  onDeleteContent: (content: Content) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: contents, isLoading: contentsLoading } = useGetContentsByTopic(
@@ -593,6 +668,27 @@ function TopicContentDisplay({
                       Completed
                     </Badge>
                   )}
+                  <div
+                    className="flex space-x-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2"
+                      onClick={(e) => onEditContent(content, e)}
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-red-500 hover:text-red-700"
+                      onClick={() => onDeleteContent(content)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -601,6 +697,15 @@ function TopicContentDisplay({
               No content available yet
             </div>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mt-3"
+            onClick={() => onAddContent(topic.id)}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add Content
+          </Button>
         </div>
       )}
     </div>

@@ -18,14 +18,12 @@ interface CreateTopicModalProps {
   isOpen: boolean;
   onClose: () => void;
   chapterId: string;
-  onSuccess?: () => void;
 }
 
 export function CreateTopicModal({
   isOpen,
   onClose,
   chapterId,
-  onSuccess,
 }: CreateTopicModalProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -51,7 +49,6 @@ export function CreateTopicModal({
 
       await createTopicMutation.mutateAsync(topicData);
       handleClose();
-      onSuccess?.();
     } catch (error) {
       console.error("Failed to create topic:", error);
     } finally {
