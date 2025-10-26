@@ -40,10 +40,15 @@ import {
   useDeleteBatch,
   useGetTeachersByBatch,
   useDeleteTeacher,
+  useGetSubjectsByBatch,
+  useDeleteSubject,
+  useUpdateSubject,
 } from "@/hooks";
 import { TeacherAssignmentModal } from "@/components/common/teacher-assignment-modal";
 import { CreateTeacherModal } from "@/components/common/create-teacher-modal";
 import { EditTeacherModal } from "@/components/common/edit-teacher-modal";
+import { CreateSubjectModal } from "@/components/common/create-subject-modal";
+import { EditSubjectModal } from "@/components/common/edit-subject-modal";
 import { FileUpload } from "@/components/common/file-upload";
 
 interface Batch {
@@ -83,6 +88,15 @@ interface Teacher {
   updatedAt?: string;
 }
 
+interface Subject {
+  id: string;
+  name: string;
+  batchId: string;
+  thumbnailUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export default function AdminCourseDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -93,14 +107,20 @@ export default function AdminCourseDetailPage() {
   const [isTeacherAssignmentOpen, setIsTeacherAssignmentOpen] = useState(false);
   const [isCreateTeacherOpen, setIsCreateTeacherOpen] = useState(false);
   const [isEditTeacherOpen, setIsEditTeacherOpen] = useState(false);
+  const [isCreateSubjectOpen, setIsCreateSubjectOpen] = useState(false);
+  const [isEditSubjectOpen, setIsEditSubjectOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   const { data: batch, isLoading } = useGetBatch(courseId);
   const { data: teachers, isLoading: teachersLoading } =
     useGetTeachersByBatch(courseId);
+  const { data: subjects, isLoading: subjectsLoading } =
+    useGetSubjectsByBatch(courseId);
   const deleteBatchMutation = useDeleteBatch();
   const deleteTeacherMutation = useDeleteTeacher();
+  const deleteSubjectMutation = useDeleteSubject();
 
   const handleGoBack = () => {
     router.push("/admin/courses");
@@ -165,6 +185,44 @@ export default function AdminCourseDetailPage() {
         console.error("Failed to delete teacher:", error);
       }
     }
+  };
+
+  const handleCreateSubject = () => {
+    setIsCreateSubjectOpen(true);
+  };
+
+  const handleSubjectCreated = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["subjects", "batch", courseId],
+    });
+  };
+
+  const handleDeleteSubject = async (subject: Subject) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${subject.name}? This action cannot be undone.`
+      )
+    ) {
+      try {
+        await deleteSubjectMutation.mutateAsync(subject.id);
+        queryClient.invalidateQueries({
+          queryKey: ["subjects", "batch", courseId],
+        });
+      } catch (error) {
+        console.error("Failed to delete subject:", error);
+      }
+    }
+  };
+
+  const handleEditSubject = (subject: Subject) => {
+    setSelectedSubject(subject);
+    setIsEditSubjectOpen(true);
+  };
+
+  const handleSubjectUpdated = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["subjects", "batch", courseId],
+    });
   };
 
   const getInitials = (name: string) => {
@@ -336,8 +394,9 @@ export default function AdminCourseDetailPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="subjects">Subjects</TabsTrigger>
             <TabsTrigger value="teachers">Teachers</TabsTrigger>
             <TabsTrigger value="content">Content</TabsTrigger>
             <TabsTrigger value="students">Students</TabsTrigger>
@@ -512,6 +571,95 @@ export default function AdminCourseDetailPage() {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          {/* Subjects Tab */}
+          <TabsContent value="subjects">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Subjects</CardTitle>
+                  <Button variant="outline" onClick={handleCreateSubject}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Subject
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {subjectsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <span className="ml-2 text-muted-foreground">
+                      Loading subjects...
+                    </span>
+                  </div>
+                ) : subjects?.data && subjects.data.length > 0 ? (
+                  <div className="space-y-3">
+                    {subjects.data.map((subject: Subject) => (
+                      <Card
+                        key={subject.id}
+                        className="hover:shadow-md transition-shadow"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              {subject.thumbnailUrl && (
+                                <img
+                                  src={subject.thumbnailUrl}
+                                  alt={subject.name}
+                                  className="h-12 w-12 object-cover rounded"
+                                />
+                              )}
+                              <div>
+                                <h3 className="font-semibold text-base">
+                                  {subject.name}
+                                </h3>
+                              </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditSubject(subject)}
+                              >
+                                <Edit className="mr-1 h-3 w-3" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteSubject(subject)}
+                                className="text-red-500 hover:text-red-700"
+                                disabled={deleteSubjectMutation.isPending}
+                              >
+                                <Trash2 className="mr-1 h-3 w-3" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold mb-2">
+                      No subjects added yet
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start by adding subjects to this course.
+                    </p>
+                    <Button onClick={handleCreateSubject}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Subject
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Teachers Tab */}
@@ -828,6 +976,25 @@ export default function AdminCourseDetailPage() {
           teacher={selectedTeacher}
           batchId={courseId}
           onSuccess={handleTeacherUpdated}
+        />
+
+        {/* Create Subject Modal */}
+        <CreateSubjectModal
+          isOpen={isCreateSubjectOpen}
+          onClose={() => setIsCreateSubjectOpen(false)}
+          batchId={courseId}
+          onSuccess={handleSubjectCreated}
+        />
+
+        {/* Edit Subject Modal */}
+        <EditSubjectModal
+          isOpen={isEditSubjectOpen}
+          onClose={() => {
+            setIsEditSubjectOpen(false);
+            setSelectedSubject(null);
+          }}
+          subject={selectedSubject}
+          onSuccess={handleSubjectUpdated}
         />
       </div>
     </div>

@@ -29,6 +29,11 @@ export {
   useRemoveTeacherFromBatch,
   useGenerateSignedUrl,
   useDirectUpload,
+  useCreateSubject,
+  useGetSubjectsByBatch,
+  useGetSubject,
+  useUpdateSubject,
+  useDeleteSubject,
   queryKeys,
 } from "./api";
 

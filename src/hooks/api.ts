@@ -450,3 +450,80 @@ export const useDirectUpload = () => {
         .then((res) => res.data),
   });
 };
+
+// ==========================================
+// Subjects API Hooks
+// ==========================================
+
+// Subject query keys (using inline arrays for now)
+
+// Create Subject
+export const useCreateSubject = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      batchId: string;
+      thumbnailUrl?: string;
+    }) => apiClient.post("/admin/subjects", data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subjects"] });
+    },
+  });
+};
+
+// Get Subjects by Batch
+export const useGetSubjectsByBatch = (batchId: string) => {
+  return useQuery({
+    queryKey: ["subjects", "batch", batchId],
+    queryFn: () =>
+      apiClient.get(`/admin/subjects/batch/${batchId}`).then((res) => res.data),
+  });
+};
+
+// Get Subject by ID
+export const useGetSubject = (id: string) => {
+  return useQuery({
+    queryKey: ["subjects", id],
+    queryFn: () =>
+      apiClient.get(`/admin/subjects/${id}`).then((res) => res.data),
+  });
+};
+
+// Update Subject
+export const useUpdateSubject = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        name: string;
+        thumbnailUrl?: string;
+      };
+    }) => apiClient.put(`/admin/subjects/${id}`, data).then((res) => res.data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["subjects"] });
+      queryClient.invalidateQueries({
+        queryKey: ["subjects", variables.id],
+      });
+    },
+  });
+};
+
+// Delete Subject
+export const useDeleteSubject = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.delete(`/admin/subjects/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subjects"] });
+    },
+  });
+};
