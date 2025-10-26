@@ -605,8 +605,12 @@ export const useCreateTopic = () => {
   return useMutation({
     mutationFn: (data: { name: string; chapterId: string }) =>
       apiClient.post("/admin/topics", data).then((res) => res.data),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Invalidate all topics queries and specifically the chapter topics
       queryClient.invalidateQueries({ queryKey: ["topics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["topics", "chapter", variables.chapterId],
+      });
     },
   });
 };
@@ -654,6 +658,7 @@ export const useDeleteTopic = () => {
     mutationFn: (id: string) =>
       apiClient.delete(`/admin/topics/${id}`).then((res) => res.data),
     onSuccess: () => {
+      // Invalidate all topics queries
       queryClient.invalidateQueries({ queryKey: ["topics"] });
     },
   });

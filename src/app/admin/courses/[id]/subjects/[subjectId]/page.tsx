@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -178,9 +178,8 @@ export default function SubjectDetailPage() {
   };
 
   const handleTopicCreated = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["topics", "chapter", selectedChapter?.id],
-    });
+    // The query will be automatically invalidated by the hook
+    // No need to manually invalidate here
   };
 
   const handleEditTopic = (topic: Topic, e: React.MouseEvent) => {
@@ -412,16 +411,11 @@ function ChapterCard({
   onEditTopic: (topic: Topic, e: React.MouseEvent) => void;
   onDeleteTopic: (topic: Topic, e: React.MouseEvent) => void;
 }) {
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [topicsLoading, setTopicsLoading] = useState(false);
-  const { data } = useGetTopicsByChapter(chapter.id);
+  const { data: topicsData, isLoading: topicsLoading } = useGetTopicsByChapter(
+    chapter.id
+  );
 
-  useState(() => {
-    if (data?.data) {
-      setTopics(data.data);
-      setTopicsLoading(false);
-    }
-  });
+  const topics = topicsData?.data || [];
 
   return (
     <Card className="overflow-hidden">
