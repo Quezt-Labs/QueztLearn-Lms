@@ -31,6 +31,7 @@ import {
   useDeleteChapter,
   useGetTopicsByChapter,
   useDeleteTopic,
+  useGetContentsByTopic,
 } from "@/hooks";
 import { CreateChapterModal } from "@/components/common/create-chapter-modal";
 import { EditChapterModal } from "@/components/common/edit-chapter-modal";
@@ -59,6 +60,21 @@ interface Topic {
   id: string;
   name: string;
   chapterId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface Content {
+  id: string;
+  name: string;
+  topicId: string;
+  type: "Lecture" | "Video" | "PDF" | "Assignment";
+  pdfUrl?: string;
+  videoUrl?: string;
+  videoType?: "HLS" | "MP4";
+  videoThumbnail?: string;
+  videoDuration?: number;
+  isCompleted: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -453,32 +469,12 @@ function ChapterCard({
               {topics.length > 0 ? (
                 <div className="space-y-2">
                   {topics.map((topic: Topic) => (
-                    <div
+                    <TopicContentDisplay
                       key={topic.id}
-                      className="flex items-center justify-between p-3 bg-background rounded border"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{topic.name}</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => onEditTopic(topic, e)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => onDeleteTopic(topic, e)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
+                      topic={topic}
+                      onEdit={(e) => onEditTopic(topic, e)}
+                      onDelete={(e) => onDeleteTopic(topic, e)}
+                    />
                   ))}
                 </div>
               ) : (
@@ -491,5 +487,128 @@ function ChapterCard({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function TopicContentDisplay({
+  topic,
+  onEdit,
+  onDelete,
+}: {
+  topic: Topic;
+  onEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { data: contents, isLoading: contentsLoading } = useGetContentsByTopic(
+    topic.id
+  );
+
+  const toggleExpanded = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
+  const getContentTypeIcon = (type: string) => {
+    switch (type) {
+      case "Video":
+        return "🎥";
+      case "PDF":
+        return "📄";
+      case "Assignment":
+        return "📝";
+      default:
+        return "📚";
+    }
+  };
+
+  const getContentTypeBadge = (type: string) => {
+    const badges = {
+      Lecture: "bg-blue-100 text-blue-800",
+      Video: "bg-green-100 text-green-800",
+      PDF: "bg-purple-100 text-purple-800",
+      Assignment: "bg-orange-100 text-orange-800",
+    };
+    return badges[type as keyof typeof badges] || badges.Lecture;
+  };
+
+  return (
+    <div className="border rounded-lg bg-background">
+      <div className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+        <div className="flex items-center space-x-2 flex-1">
+          <button
+            onClick={toggleExpanded}
+            className="flex items-center space-x-2 flex-1"
+          >
+            <ChevronRight
+              className={`h-4 w-4 transition-transform ${
+                isExpanded ? "rotate-90" : ""
+              }`}
+            />
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{topic.name}</span>
+            {contents?.data && contents.data.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {contents.data.length} content
+              </Badge>
+            )}
+          </button>
+        </div>
+        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            <Edit className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDelete}
+            className="text-red-500 hover:text-red-700"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="border-t bg-muted/20 p-3">
+          {contentsLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+            </div>
+          ) : contents?.data && contents.data.length > 0 ? (
+            <div className="space-y-2">
+              {contents.data.map((content: Content) => (
+                <div
+                  key={content.id}
+                  className="flex items-center justify-between p-2 bg-background rounded border text-xs"
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg">
+                      {getContentTypeIcon(content.type)}
+                    </span>
+                    <span className="font-medium">{content.name}</span>
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs ${getContentTypeBadge(content.type)}`}
+                    >
+                      {content.type}
+                    </Badge>
+                  </div>
+                  {content.isCompleted && (
+                    <Badge variant="default" className="bg-green-600">
+                      Completed
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-2 text-muted-foreground text-xs">
+              No content available yet
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

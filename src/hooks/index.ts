@@ -44,6 +44,11 @@ export {
   useGetTopic,
   useUpdateTopic,
   useDeleteTopic,
+  useCreateContent,
+  useGetContentsByTopic,
+  useGetContent,
+  useUpdateContent,
+  useDeleteContent,
   queryKeys,
 } from "./api";
 

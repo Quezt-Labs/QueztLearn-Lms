@@ -658,3 +658,79 @@ export const useDeleteTopic = () => {
     },
   });
 };
+
+// ==========================================
+// Contents API Hooks
+// ==========================================
+
+interface ContentData {
+  name: string;
+  topicId?: string;
+  type: "Lecture" | "Video" | "PDF" | "Assignment";
+  pdfUrl?: string;
+  videoUrl?: string;
+  videoType?: "HLS" | "MP4";
+  videoThumbnail?: string;
+  videoDuration?: number;
+  isCompleted?: boolean;
+}
+
+// Create Content
+export const useCreateContent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ContentData) =>
+      apiClient.post("/admin/contents", data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contents"] });
+    },
+  });
+};
+
+// Get Contents by Topic
+export const useGetContentsByTopic = (topicId: string) => {
+  return useQuery({
+    queryKey: ["contents", "topic", topicId],
+    queryFn: () =>
+      apiClient.get(`/admin/contents/topic/${topicId}`).then((res) => res.data),
+  });
+};
+
+// Get Content by ID
+export const useGetContent = (id: string) => {
+  return useQuery({
+    queryKey: ["contents", id],
+    queryFn: () =>
+      apiClient.get(`/admin/contents/${id}`).then((res) => res.data),
+  });
+};
+
+// Update Content
+export const useUpdateContent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ContentData> }) =>
+      apiClient.put(`/admin/contents/${id}`, data).then((res) => res.data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["contents"] });
+      queryClient.invalidateQueries({
+        queryKey: ["contents", variables.id],
+      });
+    },
+  });
+};
+
+// Delete Content
+export const useDeleteContent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.delete(`/admin/contents/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contents"] });
+    },
+  });
+};
