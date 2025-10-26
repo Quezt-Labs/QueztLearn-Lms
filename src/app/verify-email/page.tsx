@@ -23,7 +23,7 @@ function VerifyEmailContent() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { organizationData, adminData, setEmailVerified } =
+  const { organizationData, adminData, setEmailVerified, setUserId } =
     useOnboardingStore();
   const verifyEmailMutation = useVerifyEmail();
   const resendVerificationMutation = useResendVerification();
@@ -51,11 +51,17 @@ function VerifyEmailContent() {
         await executeWithLoading(async () => {
           const result = (await verifyEmailMutation.mutateAsync({
             token: tokenToUse,
-          })) as { success: boolean; data?: { userId: string } };
+          })) as {
+            success: boolean;
+            data?: { userId: string; message: string };
+          };
 
           if (result.success && result.data?.userId) {
             setIsVerified(true);
             setEmailVerified(true);
+
+            // Store userId from API response
+            setUserId(result.data.userId);
 
             // Auto-redirect to password setup after 2 seconds
             setTimeout(() => {
@@ -76,6 +82,7 @@ function VerifyEmailContent() {
       verifyEmailMutation,
       router,
       setEmailVerified,
+      setUserId,
       setError,
     ]
   );

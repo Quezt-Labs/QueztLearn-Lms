@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,17 +32,21 @@ import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
 import { calculatePasswordStrength } from "@/lib/utils/validation";
 
-export default function SetPasswordPage() {
+function SetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isPasswordSet, setIsPasswordSet] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [localUserId, setLocalUserId] = useState<string | null>(null);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     organizationData,
     adminData,
     emailVerified,
+    userId: storeUserId,
+    setUserId,
     setPasswordSet,
     completeOnboarding,
   } = useOnboardingStore();
@@ -66,6 +70,18 @@ export default function SetPasswordPage() {
     autoReset: true,
   });
 
+  // Get userId from store or admin data
+  useEffect(() => {
+    // Try to get userId from store first (from email verification)
+    if (storeUserId) {
+      setLocalUserId(storeUserId);
+    } else if (adminData?.id) {
+      // For admin onboarding flow, use adminData
+      setLocalUserId(adminData.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Initialize and handle redirects
   useEffect(() => {
     // Set initializing to false after a short delay to allow store to load
@@ -73,7 +89,12 @@ export default function SetPasswordPage() {
       setIsInitializing(false);
     }, 100);
 
-    // Only redirect if we're not initializing
+    // If we have userId from store (coming from email verification), no redirects needed
+    if (storeUserId) {
+      return () => clearTimeout(initTimer);
+    }
+
+    // Only run redirect checks for admin onboarding flow
     if (!isInitializing) {
       // If we have no data at all, redirect to create organization
       if (!adminData && !organizationData) {
@@ -95,7 +116,14 @@ export default function SetPasswordPage() {
     }
 
     return () => clearTimeout(initTimer);
-  }, [adminData, organizationData, emailVerified, router, isInitializing]);
+  }, [
+    adminData,
+    organizationData,
+    emailVerified,
+    router,
+    isInitializing,
+    storeUserId,
+  ]);
 
   const handlePasswordChange = (value: string) => {
     updateField("password", value);
@@ -118,15 +146,17 @@ export default function SetPasswordPage() {
       return;
     }
 
-    if (!adminData?.id) {
-      setError("Admin data is missing");
+    if (!localUserId) {
+      setError(
+        "User information is missing. Please try again or contact support."
+      );
       return;
     }
 
     try {
       await executeWithLoading(async () => {
         await setPasswordMutation.mutateAsync({
-          userId: adminData.id!,
+          userId: localUserId,
           password: getFieldValue("password"),
         });
 
@@ -307,54 +337,63 @@ export default function SetPasswordPage() {
     );
   }
 
+  // Check if coming from email (has userId in store) vs admin onboarding
+  const isAdminOnboarding = !storeUserId && !!adminData;
+
   return (
     <div className="min-h-screen flex overflow-hidden">
-      {/* Left Side - Success State */}
-      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary to-primary/80 flex-col justify-center p-8 text-primary-foreground">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md"
-        >
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Secure Your Account</h1>
-            <p className="text-primary-foreground/80">
-              Create a strong password to protect your administrator account
-            </p>
-          </div>
+      {/* Left Side - Show only for admin onboarding */}
+      {isAdminOnboarding && (
+        <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary to-primary/80 flex-col justify-center p-8 text-primary-foreground">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-md"
+          >
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold mb-2">Secure Your Account</h1>
+              <p className="text-primary-foreground/80">
+                Create a strong password to protect your account
+              </p>
+            </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4" />
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+                <span className="text-sm">Organization created</span>
               </div>
-              <span className="text-sm">Organization created</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4" />
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+                <span className="text-sm">Admin account created</span>
               </div>
-              <span className="text-sm">Admin account created</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4" />
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+                <span className="text-sm">Email verified</span>
               </div>
-              <span className="text-sm">Email verified</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-foreground/30 rounded-full flex items-center justify-center">
-                <Shield className="h-4 w-4" />
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/30 rounded-full flex items-center justify-center">
+                  <Shield className="h-4 w-4" />
+                </div>
+                <span className="text-sm font-medium">Set secure password</span>
               </div>
-              <span className="text-sm font-medium">Set secure password</span>
             </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Right Side - Password Form */}
-      <div className="flex-1 lg:w-3/5 flex items-center justify-center p-6 bg-background">
+      <div
+        className={`${
+          isAdminOnboarding ? "flex-1 lg:w-3/5" : "flex-1 lg:w-full"
+        } flex items-center justify-center p-6 bg-background`}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -365,7 +404,7 @@ export default function SetPasswordPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Set Your Password</h2>
             <p className="text-muted-foreground">
-              Create a secure password for your administrator account
+              Create a secure password for your account
             </p>
           </div>
 
@@ -521,18 +560,35 @@ export default function SetPasswordPage() {
                 </Button>
               </form>
 
-              <div className="mt-6 text-center">
-                <Button variant="outline" asChild>
-                  <Link href="/verify-email">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Email Verification
-                  </Link>
-                </Button>
-              </div>
+              {/* Back button - only show for admin onboarding */}
+              {isAdminOnboarding && (
+                <div className="mt-6 text-center">
+                  <Button variant="outline" asChild>
+                    <Link href="/verify-email">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Email Verification
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function SetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <SetPasswordContent />
+    </Suspense>
   );
 }

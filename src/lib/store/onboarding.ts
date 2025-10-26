@@ -22,6 +22,10 @@ export interface OnboardingState {
   adminData: AdminData | null;
   setAdminData: (data: AdminData) => void;
 
+  // User ID for password setup
+  userId: string | null;
+  setUserId: (id: string | null) => void;
+
   // Current step
   currentStep: number;
   setCurrentStep: (step: number) => void;
@@ -52,6 +56,10 @@ export const useOnboardingStore = create<OnboardingState>()(
       adminData: null,
       setAdminData: (data) => set({ adminData: data }),
 
+      // User ID
+      userId: null,
+      setUserId: (id) => set({ userId: id }),
+
       // Current step
       currentStep: 1,
       setCurrentStep: (step) => set({ currentStep: step }),
@@ -69,6 +77,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         set({
           organizationData: null,
           adminData: null,
+          userId: null,
           currentStep: 1,
           emailVerified: false,
           passwordSet: false,
@@ -80,6 +89,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         set({
           organizationData: null,
           adminData: null,
+          userId: null,
           currentStep: 1,
           emailVerified: false,
           passwordSet: false,
@@ -91,6 +101,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       partialize: (state) => ({
         organizationData: state.organizationData,
         adminData: state.adminData,
+        userId: state.userId,
         currentStep: state.currentStep,
         emailVerified: state.emailVerified,
         passwordSet: state.passwordSet,
