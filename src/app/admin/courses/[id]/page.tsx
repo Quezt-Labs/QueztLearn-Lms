@@ -396,11 +396,10 @@ export default function AdminCourseDetailPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="subjects">Subjects</TabsTrigger>
             <TabsTrigger value="teachers">Teachers</TabsTrigger>
-            <TabsTrigger value="content">Content</TabsTrigger>
             <TabsTrigger value="students">Students</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -803,71 +802,6 @@ export default function AdminCourseDetailPage() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Content Tab */}
-          <TabsContent value="content">
-            <Card>
-              <CardHeader>
-                <CardTitle>Course Content</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {/* File Upload Section */}
-                  <div>
-                    <h3 className="font-semibold mb-4">
-                      Upload Course Materials
-                    </h3>
-                    <FileUpload
-                      onUploadComplete={(fileData) => {
-                        console.log("File uploaded:", fileData);
-                        // TODO: Handle file upload completion
-                      }}
-                      accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx"
-                      maxSize={100}
-                      folder="course-materials"
-                    />
-                  </div>
-
-                  {/* Content Categories */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <Video className="h-8 w-8 text-blue-500" />
-                        <div>
-                          <p className="font-medium">Videos</p>
-                          <p className="text-sm text-muted-foreground">
-                            0 uploaded
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                    <Card className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-8 w-8 text-green-500" />
-                        <div>
-                          <p className="font-medium">Documents</p>
-                          <p className="text-sm text-muted-foreground">
-                            0 uploaded
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                    <Card className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <ImageIcon className="h-8 w-8 text-purple-500" />
-                        <div>
-                          <p className="font-medium">Images</p>
-                          <p className="text-sm text-muted-foreground">
-                            0 uploaded
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
