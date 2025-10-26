@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,9 +33,17 @@ import {
   Image,
   Download,
   Share2,
+  X,
 } from "lucide-react";
-import { useGetBatch, useDeleteBatch } from "@/hooks";
+import {
+  useGetBatch,
+  useDeleteBatch,
+  useGetTeachersByBatch,
+  useDeleteTeacher,
+} from "@/hooks";
 import { TeacherAssignmentModal } from "@/components/common/teacher-assignment-modal";
+import { CreateTeacherModal } from "@/components/common/create-teacher-modal";
+import { EditTeacherModal } from "@/components/common/edit-teacher-modal";
 import { FileUpload } from "@/components/common/file-upload";
 
 interface Batch {
@@ -63,17 +72,35 @@ interface Batch {
   updatedAt?: string;
 }
 
+interface Teacher {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  subjects: string[];
+  highlights: string;
+  batchIds: string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export default function AdminCourseDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const courseId = params.id as string;
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTeacherAssignmentOpen, setIsTeacherAssignmentOpen] = useState(false);
+  const [isCreateTeacherOpen, setIsCreateTeacherOpen] = useState(false);
+  const [isEditTeacherOpen, setIsEditTeacherOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   const { data: batch, isLoading } = useGetBatch(courseId);
+  const { data: teachers, isLoading: teachersLoading } =
+    useGetTeachersByBatch(courseId);
   const deleteBatchMutation = useDeleteBatch();
+  const deleteTeacherMutation = useDeleteTeacher();
 
   const handleGoBack = () => {
     router.push("/admin/courses");
@@ -97,6 +124,47 @@ export default function AdminCourseDetailPage() {
 
   const handleAssignTeachers = () => {
     setIsTeacherAssignmentOpen(true);
+  };
+
+  const handleCreateTeacher = () => {
+    setIsCreateTeacherOpen(true);
+  };
+
+  const handleEditTeacher = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setIsEditTeacherOpen(true);
+  };
+
+  const handleTeacherCreated = () => {
+    // Invalidate teachers query to refetch data
+    queryClient.invalidateQueries({
+      queryKey: ["teachers", "batch", courseId],
+    });
+  };
+
+  const handleTeacherUpdated = () => {
+    // Invalidate teachers query to refetch data
+    queryClient.invalidateQueries({
+      queryKey: ["teachers", "batch", courseId],
+    });
+  };
+
+  const handleDeleteTeacher = async (teacher: Teacher) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${teacher.name}? This action cannot be undone.`
+      )
+    ) {
+      try {
+        await deleteTeacherMutation.mutateAsync(teacher.id);
+        // Invalidate teachers query to refetch data
+        queryClient.invalidateQueries({
+          queryKey: ["teachers", "batch", courseId],
+        });
+      } catch (error) {
+        console.error("Failed to delete teacher:", error);
+      }
+    }
   };
 
   const getInitials = (name: string) => {
@@ -452,24 +520,127 @@ export default function AdminCourseDetailPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Assigned Teachers</CardTitle>
-                  <Button onClick={handleAssignTeachers}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Assign Teachers
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" onClick={handleCreateTeacher}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Teacher
+                    </Button>
+                    <Button onClick={handleAssignTeachers}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Assign Teachers
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No teachers assigned</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Assign teachers to this course to get started.
-                  </p>
-                  <Button onClick={handleAssignTeachers}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Assign Teachers
-                  </Button>
-                </div>
+                {teachersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <span className="ml-2 text-muted-foreground">
+                      Loading teachers...
+                    </span>
+                  </div>
+                ) : teachers?.data && teachers.data.length > 0 ? (
+                  <div className="space-y-4">
+                    {teachers.data.map((teacher: Teacher) => (
+                      <Card
+                        key={teacher.id}
+                        className="border-l-4 border-l-primary"
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex items-start space-x-4">
+                            <Avatar className="h-16 w-16">
+                              <AvatarImage
+                                src={teacher.imageUrl}
+                                alt={teacher.name}
+                              />
+                              <AvatarFallback className="text-lg">
+                                {getInitials(teacher.name)}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold">
+                                  {teacher.name}
+                                </h3>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditTeacher(teacher)}
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-500 hover:text-red-700"
+                                    onClick={() => handleDeleteTeacher(teacher)}
+                                    disabled={deleteTeacherMutation.isPending}
+                                  >
+                                    <X className="h-4 w-4 mr-1" />
+                                    {deleteTeacherMutation.isPending
+                                      ? "Deleting..."
+                                      : "Remove"}
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {teacher.subjects &&
+                                teacher.subjects.length > 0 && (
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {teacher.subjects.map((subject) => (
+                                      <Badge key={subject} variant="secondary">
+                                        {subject}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+
+                              {teacher.highlights && (
+                                <div className="mt-3">
+                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                                    Highlights & Achievements
+                                  </h4>
+                                  <div
+                                    className="text-sm text-muted-foreground prose prose-sm max-w-none"
+                                    dangerouslySetInnerHTML={{
+                                      __html: teacher.highlights.replace(
+                                        /\n/g,
+                                        "<br>"
+                                      ),
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold mb-2">No teachers assigned</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create a new teacher or assign existing teachers to this
+                      course.
+                    </p>
+                    <div className="flex space-x-2 justify-center">
+                      <Button variant="outline" onClick={handleCreateTeacher}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Teacher
+                      </Button>
+                      <Button onClick={handleAssignTeachers}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Assign Teachers
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -637,6 +808,26 @@ export default function AdminCourseDetailPage() {
             // Refresh course data
             // This will be handled by the query invalidation in the hooks
           }}
+        />
+
+        {/* Create Teacher Modal */}
+        <CreateTeacherModal
+          isOpen={isCreateTeacherOpen}
+          onClose={() => setIsCreateTeacherOpen(false)}
+          batchId={courseId}
+          onSuccess={handleTeacherCreated}
+        />
+
+        {/* Edit Teacher Modal */}
+        <EditTeacherModal
+          isOpen={isEditTeacherOpen}
+          onClose={() => {
+            setIsEditTeacherOpen(false);
+            setSelectedTeacher(null);
+          }}
+          teacher={selectedTeacher}
+          batchId={courseId}
+          onSuccess={handleTeacherUpdated}
         />
       </div>
     </div>
