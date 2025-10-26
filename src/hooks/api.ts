@@ -527,3 +527,134 @@ export const useDeleteSubject = () => {
     },
   });
 };
+
+// ==========================================
+// Chapters API Hooks
+// ==========================================
+
+// Create Chapter
+export const useCreateChapter = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { name: string; subjectId: string }) =>
+      apiClient.post("/admin/chapters", data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chapters"] });
+    },
+  });
+};
+
+// Get Chapters by Subject
+export const useGetChaptersBySubject = (subjectId: string) => {
+  return useQuery({
+    queryKey: ["chapters", "subject", subjectId],
+    queryFn: () =>
+      apiClient
+        .get(`/admin/chapters/subject/${subjectId}`)
+        .then((res) => res.data),
+  });
+};
+
+// Get Chapter by ID
+export const useGetChapter = (id: string) => {
+  return useQuery({
+    queryKey: ["chapters", id],
+    queryFn: () =>
+      apiClient.get(`/admin/chapters/${id}`).then((res) => res.data),
+  });
+};
+
+// Update Chapter
+export const useUpdateChapter = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { name: string } }) =>
+      apiClient.put(`/admin/chapters/${id}`, data).then((res) => res.data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["chapters"] });
+      queryClient.invalidateQueries({
+        queryKey: ["chapters", variables.id],
+      });
+    },
+  });
+};
+
+// Delete Chapter
+export const useDeleteChapter = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.delete(`/admin/chapters/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chapters"] });
+    },
+  });
+};
+
+// ==========================================
+// Topics API Hooks
+// ==========================================
+
+// Create Topic
+export const useCreateTopic = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { name: string; chapterId: string }) =>
+      apiClient.post("/admin/topics", data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["topics"] });
+    },
+  });
+};
+
+// Get Topics by Chapter
+export const useGetTopicsByChapter = (chapterId: string) => {
+  return useQuery({
+    queryKey: ["topics", "chapter", chapterId],
+    queryFn: () =>
+      apiClient
+        .get(`/admin/topics/chapter/${chapterId}`)
+        .then((res) => res.data),
+  });
+};
+
+// Get Topic by ID
+export const useGetTopic = (id: string) => {
+  return useQuery({
+    queryKey: ["topics", id],
+    queryFn: () => apiClient.get(`/admin/topics/${id}`).then((res) => res.data),
+  });
+};
+
+// Update Topic
+export const useUpdateTopic = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { name: string } }) =>
+      apiClient.put(`/admin/topics/${id}`, data).then((res) => res.data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["topics"] });
+      queryClient.invalidateQueries({
+        queryKey: ["topics", variables.id],
+      });
+    },
+  });
+};
+
+// Delete Topic
+export const useDeleteTopic = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.delete(`/admin/topics/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["topics"] });
+    },
+  });
+};

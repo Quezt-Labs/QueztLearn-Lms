@@ -34,6 +34,16 @@ export {
   useGetSubject,
   useUpdateSubject,
   useDeleteSubject,
+  useCreateChapter,
+  useGetChaptersBySubject,
+  useGetChapter,
+  useUpdateChapter,
+  useDeleteChapter,
+  useCreateTopic,
+  useGetTopicsByChapter,
+  useGetTopic,
+  useUpdateTopic,
+  useDeleteTopic,
   queryKeys,
 } from "./api";
 

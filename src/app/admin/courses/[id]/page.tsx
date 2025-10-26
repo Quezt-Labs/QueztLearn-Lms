@@ -34,6 +34,7 @@ import {
   Download,
   Share2,
   X,
+  Eye,
 } from "lucide-react";
 import {
   useGetBatch,
@@ -214,9 +215,8 @@ export default function AdminCourseDetailPage() {
     }
   };
 
-  const handleEditSubject = (subject: Subject) => {
-    setSelectedSubject(subject);
-    setIsEditSubjectOpen(true);
+  const handleViewSubject = (subjectId: string) => {
+    router.push(`/admin/courses/${courseId}/subjects/${subjectId}`);
   };
 
   const handleSubjectUpdated = () => {
@@ -622,7 +622,15 @@ export default function AdminCourseDetailPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleEditSubject(subject)}
+                                onClick={() => handleViewSubject(subject.id)}
+                              >
+                                <Eye className="mr-1 h-3 w-3" />
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewSubject(subject.id)}
                               >
                                 <Edit className="mr-1 h-3 w-3" />
                                 Edit
