@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["quezt-learn-lms.vercel.app", "images.unsplash.com"],
+    domains: [
+      "quezt-learn-lms.vercel.app",
+      "images.unsplash.com",
+      "d2qbkdyhv7dt4j.cloudfront.net",
+    ],
   },
   async rewrites() {
     return [

@@ -21,15 +21,15 @@ export const ADMIN_NAVIGATION_ITEMS: NavigationItem[] = [
     roles: ["admin"],
   },
   {
-    title: "All Courses",
-    href: "/admin/courses",
-    icon: "BookOpen",
+    title: "Teachers",
+    href: "/admin/teachers",
+    icon: "GraduationCap",
     roles: ["admin"],
   },
   {
-    title: "Create Course",
-    href: "/admin/courses/create",
-    icon: "Plus",
+    title: "All Courses",
+    href: "/admin/courses",
+    icon: "BookOpen",
     roles: ["admin"],
   },
   {
@@ -73,12 +73,6 @@ export const TEACHER_NAVIGATION_ITEMS: NavigationItem[] = [
     roles: ["teacher"],
   },
   {
-    title: "Create Course",
-    href: "/teacher/courses/create",
-    icon: "Plus",
-    roles: ["teacher"],
-  },
-  {
     title: "Students",
     href: "/teacher/students",
     icon: "Users",
@@ -113,8 +107,8 @@ export const STUDENT_NAVIGATION_ITEMS: NavigationItem[] = [
     roles: ["student"],
   },
   {
-    title: "My Courses",
-    href: "/student/courses",
+    title: "My Batches",
+    href: "/student/batches",
     icon: "BookOpen",
     roles: ["student"],
   },
@@ -150,12 +144,6 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     title: "Dashboard",
     href: "/dashboard",
     icon: "LayoutDashboard",
-    roles: ["admin", "teacher", "student"],
-  },
-  {
-    title: "Courses",
-    href: "/courses",
-    icon: "BookOpen",
     roles: ["admin", "teacher", "student"],
   },
   {

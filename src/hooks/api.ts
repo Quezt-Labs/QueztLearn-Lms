@@ -12,6 +12,9 @@ export const queryKeys = {
   organization: ["organization"] as const,
   emailAvailability: (email: string) => ["emailAvailability", email] as const,
   users: ["users"] as const,
+  batches: ["batches"] as const,
+  batch: (id: string) => ["batch", id] as const,
+  teachers: ["teachers"] as const,
 };
 
 // Auth Hooks
@@ -214,5 +217,236 @@ export const useInviteAdmin = () => {
       // Invalidate users query to refetch the list
       queryClient.invalidateQueries({ queryKey: queryKeys.users });
     },
+  });
+};
+
+// Batch Management Hooks
+export const useGetAllBatches = () => {
+  return useQuery({
+    queryKey: queryKeys.batches,
+    queryFn: () => apiClient.get("/admin/batches").then((res) => res.data),
+    enabled: true,
+  });
+};
+
+export const useGetBatch = (id: string) => {
+  return useQuery({
+    queryKey: queryKeys.batch(id),
+    queryFn: () =>
+      apiClient.get(`/admin/batches/${id}`).then((res) => res.data),
+    enabled: !!id,
+  });
+};
+
+export const useCreateBatch = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      description: string;
+      class: string;
+      exam: string;
+      imageUrl?: string;
+      startDate: string;
+      endDate: string;
+      language: string;
+      totalPrice: number;
+      discountPercentage: number;
+      faq: Array<{
+        title: string;
+        description: string;
+      }>;
+    }) => apiClient.post("/admin/batches", data).then((res) => res.data),
+    onSuccess: (data) => {
+      // Invalidate batches query to refetch the list
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches });
+      // Redirect to batches page
+      router.push("/admin/batches");
+    },
+  });
+};
+
+export const useUpdateBatch = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        name: string;
+        description: string;
+        class: string;
+        exam: string;
+        imageUrl?: string;
+        startDate: string;
+        endDate: string;
+        language: string;
+        totalPrice: number;
+        discountPercentage: number;
+        faq: Array<{
+          title: string;
+          description: string;
+        }>;
+        teacherId: string;
+      };
+    }) => apiClient.put(`/admin/batches/${id}`, data).then((res) => res.data),
+    onSuccess: (data, variables) => {
+      // Invalidate both batches list and specific batch
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.batch(variables.id),
+      });
+      // Redirect to batches page
+      router.push("/admin/batches");
+    },
+  });
+};
+
+export const useDeleteBatch = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.delete(`/admin/batches/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      // Invalidate batches query to refetch the list
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches });
+    },
+  });
+};
+
+// Teacher Management Hooks
+export const useCreateTeacher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      batchIds: string[];
+      highlights: Record<string, unknown>;
+      imageUrl?: string;
+      subjects: string[];
+    }) => apiClient.post("/admin/teachers", data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teachers });
+    },
+  });
+};
+
+export const useGetTeachersByBatch = (batchId: string) => {
+  return useQuery({
+    queryKey: ["teachers", "batch", batchId],
+    queryFn: () =>
+      apiClient.get(`/admin/teachers/batch/${batchId}`).then((res) => res.data),
+    enabled: !!batchId,
+  });
+};
+
+export const useUpdateTeacher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        name: string;
+        highlights: Record<string, unknown>;
+        imageUrl?: string;
+        subjects: string[];
+        batchId?: string;
+      };
+    }) => apiClient.put(`/admin/teachers/${id}`, data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teachers });
+    },
+  });
+};
+
+export const useDeleteTeacher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient.delete(`/admin/teachers/${id}`).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teachers });
+    },
+  });
+};
+
+export const useAssignTeacherToBatch = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      teacherId,
+      batchId,
+    }: {
+      teacherId: string;
+      batchId: string;
+    }) =>
+      apiClient
+        .post(`/admin/teachers/${teacherId}/batches/${batchId}`)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teachers });
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches });
+    },
+  });
+};
+
+export const useRemoveTeacherFromBatch = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      teacherId,
+      batchId,
+    }: {
+      teacherId: string;
+      batchId: string;
+    }) =>
+      apiClient
+        .delete(`/admin/teachers/${teacherId}/batches/${batchId}`)
+        .then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teachers });
+      queryClient.invalidateQueries({ queryKey: queryKeys.batches });
+    },
+  });
+};
+
+// File Upload Hooks
+export const useGenerateSignedUrl = () => {
+  return useMutation({
+    mutationFn: (data: {
+      fileName: string;
+      fileType: string;
+      fileSize: number;
+      folder: string;
+    }) =>
+      apiClient.post("/admin/upload/signed-url", data).then((res) => res.data),
+  });
+};
+
+export const useDirectUpload = () => {
+  return useMutation({
+    mutationFn: (formData: FormData) =>
+      apiClient
+        .post("/admin/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((res) => res.data),
   });
 };

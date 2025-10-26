@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,173 +34,100 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
-  Star,
+  Calendar,
+  Globe,
 } from "lucide-react";
+import { useGetAllBatches, useDeleteBatch } from "@/hooks";
+import { CreateBatchModal } from "@/components/common/create-batch-modal";
 
-// Mock data for courses
-const mockCourses = [
-  {
-    id: "1",
-    name: "JEE Main Physics Complete Course",
-    description:
-      "Comprehensive physics course covering all JEE Main topics with detailed explanations and practice problems.",
-    class: "12th",
-    exam: "JEE Main",
-    language: "English",
-    imageUrl:
-      "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=300&fit=crop",
-    teacher: {
-      name: "Dr. Sarah Johnson",
-      imageUrl:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-    },
-    totalPrice: 15000,
-    discountedPrice: 12000,
-    discountPercentage: 20,
-    startDate: "2024-01-15",
-    endDate: "2024-12-15",
-    validity: "1 year",
-    status: "published",
-    students: 1250,
-    rating: 4.8,
-    subjects: 3,
-    chapters: 15,
-    lectures: 120,
-    createdAt: "2024-01-10",
-    updatedAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "NEET Biology Masterclass",
-    description:
-      "Complete biology preparation for NEET with focus on conceptual understanding and problem-solving.",
-    class: "12th",
-    exam: "NEET",
-    language: "English",
-    imageUrl:
-      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=300&fit=crop",
-    teacher: {
-      name: "Dr. Priya Sharma",
-      imageUrl:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    },
-    totalPrice: 18000,
-    discountedPrice: 15000,
-    discountPercentage: 16.67,
-    startDate: "2024-02-01",
-    endDate: "2024-12-31",
-    validity: "1 year",
-    status: "published",
-    students: 2100,
-    rating: 4.9,
-    subjects: 4,
-    chapters: 20,
-    lectures: 150,
-    createdAt: "2024-01-20",
-    updatedAt: "2024-02-01",
-  },
-  {
-    id: "3",
-    name: "Mathematics for JEE Advanced",
-    description:
-      "Advanced mathematics concepts and problem-solving techniques for JEE Advanced preparation.",
-    class: "12th",
-    exam: "JEE Advanced",
-    language: "English",
-    imageUrl:
-      "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&h=300&fit=crop",
-    teacher: {
-      name: "Prof. Michael Chen",
-      imageUrl:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    },
-    totalPrice: 20000,
-    discountedPrice: 18000,
-    discountPercentage: 10,
-    startDate: "2024-03-01",
-    endDate: "2025-02-28",
-    validity: "1 year",
-    status: "draft",
-    students: 0,
-    rating: 0,
-    subjects: 2,
-    chapters: 12,
-    lectures: 80,
-    createdAt: "2024-02-15",
-    updatedAt: "2024-02-20",
-  },
-];
+interface Batch {
+  id: string;
+  name: string;
+  description: string;
+  class: string;
+  exam: string;
+  imageUrl?: string;
+  startDate: string;
+  endDate: string;
+  language: string;
+  totalPrice: number;
+  discountPercentage: number;
+  faq: Array<{
+    title: string;
+    description: string;
+  }>;
+  teacherId: string;
+  teacher?: {
+    id: string;
+    name: string;
+    imageUrl?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export default function AdminCoursesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedCourse, setSelectedCourse] = useState<{
+  const [selectedBatch, setSelectedBatch] = useState<{
     id: string;
     name: string;
   } | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const filteredCourses = mockCourses.filter((course) => {
+  const { data: batches, isLoading } = useGetAllBatches();
+  const deleteBatchMutation = useDeleteBatch();
+
+  const filteredBatches = (batches?.data || []).filter((batch: Batch) => {
     const matchesSearch =
-      course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.teacher.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || course.status === statusFilter;
+      batch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      batch.exam.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      batch.class.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const now = new Date();
+    const startDate = new Date(batch.startDate);
+    const endDate = new Date(batch.endDate);
+
+    let matchesStatus = true;
+    if (statusFilter === "upcoming") {
+      matchesStatus = startDate > now;
+    } else if (statusFilter === "ongoing") {
+      matchesStatus = startDate <= now && endDate >= now;
+    } else if (statusFilter === "completed") {
+      matchesStatus = endDate < now;
+    }
+
     return matchesSearch && matchesStatus;
   });
 
   const handleCreateCourse = () => {
-    router.push("/admin/courses/create");
+    setIsCreateModalOpen(true);
   };
 
-  const handleEditCourse = (courseId: string) => {
-    router.push(`/admin/courses/${courseId}/edit`);
+  const handleViewCourse = (batchId: string) => {
+    router.push(`/admin/courses/${batchId}`);
   };
 
-  const handleViewCourse = (courseId: string) => {
-    router.push(`/admin/courses/${courseId}`);
+  const handleEditCourse = (batchId: string) => {
+    router.push(`/admin/courses/${batchId}/edit`);
   };
 
-  const handleDeleteCourse = (course: { id: string; name: string }) => {
-    setSelectedCourse(course);
+  const handleDeleteCourse = (batch: { id: string; name: string }) => {
+    setSelectedBatch(batch);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
-    // TODO: Implement delete API call
-    console.log("Deleting course:", selectedCourse?.id);
-    setIsDeleteDialogOpen(false);
-    setSelectedCourse(null);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "published":
-        return <Badge className="bg-green-100 text-green-800">Published</Badge>;
-      case "draft":
-        return <Badge variant="secondary">Draft</Badge>;
-      case "archived":
-        return <Badge variant="outline">Archived</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+    if (selectedBatch) {
+      deleteBatchMutation.mutate(selectedBatch.id, {
+        onSuccess: () => {
+          setIsDeleteDialogOpen(false);
+          setSelectedBatch(null);
+        },
+      });
     }
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(price);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const getInitials = (name: string) => {
@@ -213,6 +139,57 @@ export default function AdminCoursesPage() {
       .toUpperCase();
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(price);
+  };
+
+  const calculateDiscountedPrice = (
+    totalPrice: number,
+    discountPercentage: number
+  ) => {
+    return totalPrice - (totalPrice * discountPercentage) / 100;
+  };
+
+  const getStatusBadge = (batch: Batch) => {
+    const now = new Date();
+    const startDate = new Date(batch.startDate);
+    const endDate = new Date(batch.endDate);
+
+    if (startDate > now) {
+      return <Badge variant="secondary">Upcoming</Badge>;
+    } else if (startDate <= now && endDate >= now) {
+      return <Badge variant="default">Ongoing</Badge>;
+    } else {
+      return <Badge variant="outline">Completed</Badge>;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading courses...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -222,7 +199,7 @@ export default function AdminCoursesPage() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">All Courses</h1>
               <p className="text-muted-foreground mt-2">
-                Manage and monitor all courses in your organization
+                Manage your courses and batch assignments
               </p>
             </div>
             <Button onClick={handleCreateCourse} className="bg-primary">
@@ -244,7 +221,9 @@ export default function AdminCoursesPage() {
                   <p className="text-sm font-medium text-muted-foreground">
                     Total Courses
                   </p>
-                  <p className="text-2xl font-bold">{mockCourses.length}</p>
+                  <p className="text-2xl font-bold">
+                    {batches?.data?.length || 0}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -254,16 +233,21 @@ export default function AdminCoursesPage() {
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="p-2 bg-green-100 rounded-lg">
-                  <Users className="h-6 w-6 text-green-600" />
+                  <TrendingUp className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
-                    Total Students
+                    Active Courses
                   </p>
                   <p className="text-2xl font-bold">
-                    {mockCourses
-                      .reduce((sum, course) => sum + course.students, 0)
-                      .toLocaleString()}
+                    {
+                      filteredBatches.filter((batch: Batch) => {
+                        const now = new Date();
+                        const startDate = new Date(batch.startDate);
+                        const endDate = new Date(batch.endDate);
+                        return startDate <= now && endDate >= now;
+                      }).length
+                    }
                   </p>
                 </div>
               </div>
@@ -274,14 +258,20 @@ export default function AdminCoursesPage() {
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="p-2 bg-yellow-100 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-yellow-600" />
+                  <Clock className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
-                    Published
+                    Upcoming
                   </p>
                   <p className="text-2xl font-bold">
-                    {mockCourses.filter((c) => c.status === "published").length}
+                    {
+                      filteredBatches.filter((batch: Batch) => {
+                        const now = new Date();
+                        const startDate = new Date(batch.startDate);
+                        return startDate > now;
+                      }).length
+                    }
                   </p>
                 </div>
               </div>
@@ -300,9 +290,9 @@ export default function AdminCoursesPage() {
                   </p>
                   <p className="text-2xl font-bold">
                     {formatPrice(
-                      mockCourses.reduce(
-                        (sum, course) =>
-                          sum + course.discountedPrice * course.students,
+                      (batches?.data || []).reduce(
+                        (sum: number, batch: Batch) =>
+                          sum + (batch.totalPrice || 0),
                         0
                       )
                     )}
@@ -321,7 +311,7 @@ export default function AdminCoursesPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
-                    placeholder="Search courses, teachers, or descriptions..."
+                    placeholder="Search courses, exams, classes..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -335,10 +325,10 @@ export default function AdminCoursesPage() {
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
+                    <SelectItem value="all">All Courses</SelectItem>
+                    <SelectItem value="upcoming">Upcoming</SelectItem>
+                    <SelectItem value="ongoing">Ongoing</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -348,132 +338,149 @@ export default function AdminCoursesPage() {
 
         {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
+          {filteredBatches.map((batch: Batch) => (
             <Card
-              key={course.id}
+              key={batch.id}
               className="overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="relative">
-                <Image
-                  src={course.imageUrl}
-                  alt={course.name}
-                  width={400}
-                  height={192}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="absolute top-4 right-4">
-                  {getStatusBadge(course.status)}
+                {/* Course Image */}
+                <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/5 relative">
+                  {batch.imageUrl ? (
+                    <img
+                      src={batch.imageUrl}
+                      alt={batch.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <BookOpen className="h-16 w-16 text-primary/50" />
+                    </div>
+                  )}
+                  <div className="absolute top-4 right-4">
+                    {getStatusBadge(batch)}
+                  </div>
                 </div>
-                <div className="absolute top-4 left-4">
-                  <Badge variant="secondary" className="bg-white/90 text-black">
-                    {course.class}
-                  </Badge>
-                </div>
-              </div>
 
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-lg line-clamp-2">
-                      {course.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                      {course.description}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={course.teacher.imageUrl}
-                        alt={course.teacher.name}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {getInitials(course.teacher.name)}
-                      </AvatarFallback>
-                    </Avatar>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {/* Course Info */}
                     <div>
-                      <p className="text-sm font-medium">
-                        {course.teacher.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {course.exam}
-                      </p>
+                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                        {batch.name}
+                      </h3>
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                        <div className="flex items-center space-x-1">
+                          <Users className="h-4 w-4" />
+                          <span>Class {batch.class}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <BookOpen className="h-4 w-4" />
+                          <span>{batch.exam}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>{course.students.toLocaleString()} students</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <BookOpen className="h-4 w-4 text-muted-foreground" />
-                      <span>{course.lectures} lectures</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Star className="h-4 w-4 text-muted-foreground" />
-                      <span>
-                        {course.rating > 0 ? course.rating : "No rating"}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{course.validity}</span>
-                    </div>
-                  </div>
+                    {/* Teacher Info */}
+                    {batch.teacher && (
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={batch.teacher.imageUrl}
+                            alt={batch.teacher.name}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {getInitials(batch.teacher.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {batch.teacher.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Instructor
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-lg font-bold text-primary">
-                        {formatPrice(course.discountedPrice)}
-                      </p>
-                      {course.discountPercentage > 0 && (
-                        <p className="text-sm text-muted-foreground line-through">
-                          {formatPrice(course.totalPrice)}
+                    {/* Dates */}
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>Starts: {formatDate(batch.startDate)}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>Ends: {formatDate(batch.endDate)}</span>
+                      </div>
+                    </div>
+
+                    {/* Language */}
+                    <div className="flex items-center space-x-2 text-sm">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <span>{batch.language}</span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-bold text-primary">
+                          {formatPrice(
+                            calculateDiscountedPrice(
+                              batch.totalPrice,
+                              batch.discountPercentage
+                            )
+                          )}
                         </p>
+                        {batch.discountPercentage > 0 && (
+                          <p className="text-sm text-muted-foreground line-through">
+                            {formatPrice(batch.totalPrice)}
+                          </p>
+                        )}
+                      </div>
+                      {batch.discountPercentage > 0 && (
+                        <Badge variant="destructive">
+                          {batch.discountPercentage}% OFF
+                        </Badge>
                       )}
                     </div>
-                    <div className="flex space-x-2">
+
+                    {/* Actions */}
+                    <div className="flex space-x-2 pt-4">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleViewCourse(course.id)}
-                        aria-label={`View ${course.name}`}
+                        onClick={() => handleViewCourse(batch.id)}
+                        className="flex-1"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="mr-2 h-4 w-4" />
+                        View
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleEditCourse(course.id)}
-                        aria-label={`Edit ${course.name}`}
+                        onClick={() => handleEditCourse(batch.id)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteCourse(course)}
+                        onClick={() => handleDeleteCourse(batch)}
                         className="text-red-500 hover:text-red-700"
-                        aria-label={`Delete ${course.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-
-                  <div className="text-xs text-muted-foreground">
-                    Created: {formatDate(course.createdAt)} • Updated:{" "}
-                    {formatDate(course.updatedAt)}
-                  </div>
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
             </Card>
           ))}
         </div>
 
-        {filteredCourses.length === 0 && (
+        {filteredBatches.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -499,7 +506,7 @@ export default function AdminCoursesPage() {
             <DialogHeader>
               <DialogTitle>Delete Course</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete &quot;{selectedCourse?.name}
+                Are you sure you want to delete &quot;{selectedBatch?.name}
                 &quot;? This action cannot be undone. All associated data
                 including student enrollments will be permanently removed.
               </DialogDescription>
@@ -511,12 +518,28 @@ export default function AdminCoursesPage() {
               >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={confirmDelete}>
-                Delete Course
+              <Button
+                variant="destructive"
+                onClick={confirmDelete}
+                disabled={deleteBatchMutation.isPending}
+              >
+                {deleteBatchMutation.isPending
+                  ? "Deleting..."
+                  : "Delete Course"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Create Batch Modal */}
+        <CreateBatchModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            setIsCreateModalOpen(false);
+            // The query will automatically refetch due to invalidation
+          }}
+        />
       </div>
     </div>
   );
