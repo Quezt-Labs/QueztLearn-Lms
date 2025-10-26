@@ -100,7 +100,7 @@ export function TeacherAssignmentModal({
       // Use mock data for now
       setAssignedTeachers(mockAssignedTeachers);
     }
-  }, [batchTeachers, mockAssignedTeachers]);
+  }, [batchTeachers]);
 
   const filteredTeachers = mockAvailableTeachers.filter((teacher) => {
     const matchesSearch =
