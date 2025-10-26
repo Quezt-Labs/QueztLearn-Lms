@@ -293,7 +293,7 @@ export const useUpdateBatch = () => {
           title: string;
           description: string;
         }>;
-        teacherId: string;
+        teacherId?: string;
       };
     }) => apiClient.put(`/admin/batches/${id}`, data).then((res) => res.data),
     onSuccess: (data, variables) => {
