@@ -32,30 +32,6 @@ export const ADMIN_NAVIGATION_ITEMS: NavigationItem[] = [
     icon: "BookOpen",
     roles: ["admin"],
   },
-  {
-    title: "Analytics",
-    href: "/admin/analytics",
-    icon: "BarChart3",
-    roles: ["admin"],
-  },
-  {
-    title: "Clients",
-    href: "/admin/clients",
-    icon: "Building2",
-    roles: ["admin"],
-  },
-  {
-    title: "Settings",
-    href: "/admin/settings",
-    icon: "Settings",
-    roles: ["admin"],
-  },
-  {
-    title: "Billing",
-    href: "/admin/billing",
-    icon: "CreditCard",
-    roles: ["admin"],
-  },
 ];
 
 // Teacher navigation items (main domain)
@@ -76,24 +52,6 @@ export const TEACHER_NAVIGATION_ITEMS: NavigationItem[] = [
     title: "Students",
     href: "/teacher/students",
     icon: "Users",
-    roles: ["teacher"],
-  },
-  {
-    title: "Analytics",
-    href: "/teacher/analytics",
-    icon: "BarChart3",
-    roles: ["teacher"],
-  },
-  {
-    title: "Assignments",
-    href: "/teacher/assignments",
-    icon: "FileText",
-    roles: ["teacher"],
-  },
-  {
-    title: "Schedule",
-    href: "/teacher/schedule",
-    icon: "Calendar",
     roles: ["teacher"],
   },
 ];
@@ -153,27 +111,9 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     roles: ["admin", "teacher"],
   },
   {
-    title: "Analytics",
-    href: "/analytics",
-    icon: "BarChart3",
-    roles: ["admin", "teacher"],
-  },
-  {
     title: "Manage Users",
     href: "/admin/users",
     icon: "UserCog",
-    roles: ["admin"],
-  },
-  {
-    title: "Settings",
-    href: "/admin/settings",
-    icon: "Settings",
-    roles: ["admin"],
-  },
-  {
-    title: "Billing",
-    href: "/admin/billing",
-    icon: "CreditCard",
     roles: ["admin"],
   },
   {
