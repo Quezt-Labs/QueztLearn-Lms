@@ -10,49 +10,9 @@ export function middleware(request: NextRequest) {
       ? hostname.replace(".queztlearn.com", "")
       : null;
 
-  // Handle Vercel domain with path-based subdomains FIRST (e.g., quezt-learn-lms.vercel.app/{client}/login)
-  if (
-    hostname === "quezt-learn-lms.vercel.app" &&
-    pathname.startsWith("/") &&
-    pathname.length > 1 &&
-    !pathname.startsWith("/admin") &&
-    !pathname.startsWith("/teacher") &&
-    !pathname.startsWith("/login")
-  ) {
-    const url = new URL(request.url);
-    const subdomainPath = pathname.substring(1); // Remove leading slash
-    const pathParts = subdomainPath.split("/");
-    const clientSubdomain = pathParts[0]; // Dynamic client subdomain
-    const remainingPath = pathParts.slice(1).join("/"); // "login" or "student/dashboard"
-
-    url.searchParams.set("subdomain", clientSubdomain);
-
-    if (remainingPath === "") {
-      // Root of subdomain
-      url.pathname = `/[client]`;
-      return NextResponse.rewrite(url);
-    } else if (remainingPath === "login") {
-      // Login on subdomain
-      url.pathname = `/[client]/login`;
-      return NextResponse.rewrite(url);
-    } else if (remainingPath.startsWith("student")) {
-      // Student routes on subdomain
-      url.pathname = `/[client]/${remainingPath}`;
-      return NextResponse.rewrite(url);
-    } else {
-      // Other routes on subdomain
-      url.pathname = `/[client]/${remainingPath}`;
-      return NextResponse.rewrite(url);
-    }
-  }
-
-  // Handle main domain (queztlearn.com) - admin and teacher dashboards
-  if (
-    hostname === "queztlearn.com" ||
-    hostname === "www.queztlearn.com" ||
-    hostname === "quezt-learn-lms.vercel.app"
-  ) {
-    // Allow admin, teacher, login, and root routes
+  // Handle main domain (queztlearn.com or www.queztlearn.com) - admin and teacher dashboards
+  if (hostname === "queztlearn.com" || hostname === "www.queztlearn.com") {
+    // Allow admin, teacher, login, and root routes on main domain
     if (
       pathname.startsWith("/admin") ||
       pathname.startsWith("/teacher") ||
@@ -69,9 +29,11 @@ export function middleware(request: NextRequest) {
   // Handle subdomain requests (e.g., mit.queztlearn.com)
   if (hostname.endsWith(".queztlearn.com") && subdomain) {
     const url = new URL(request.url);
+
+    // Add subdomain to search params for client identification
     url.searchParams.set("subdomain", subdomain);
 
-    // If accessing root of subdomain, show client homepage
+    // Rewrite to [client] route structure
     if (pathname === "/") {
       url.pathname = `/[client]`;
       return NextResponse.rewrite(url);
@@ -92,6 +54,48 @@ export function middleware(request: NextRequest) {
     // For other routes on subdomain, rewrite to client routes
     url.pathname = `/[client]${pathname}`;
     return NextResponse.rewrite(url);
+  }
+
+  // Handle Vercel preview/staging environment with path-based routing
+  // e.g., quezt-learn-lms-xyz.vercel.app/{tenant}/
+  if (hostname.includes("vercel.app")) {
+    // Only handle path-based routing for the main vercel app (not preview deployments)
+    if (
+      hostname === "quezt-learn-lms.vercel.app" &&
+      pathname.startsWith("/[client]")
+    ) {
+      return NextResponse.next();
+    }
+
+    // For preview deployments, support path-based tenant routing
+    const pathParts = pathname.split("/").filter(Boolean);
+    if (
+      pathParts.length > 0 &&
+      !pathParts[0].startsWith("_") &&
+      ![
+        "admin",
+        "teacher",
+        "login",
+        "api",
+        "register-admin",
+        "set-password",
+        "verify-email",
+      ].includes(pathParts[0])
+    ) {
+      const tenant = pathParts[0];
+      const remainingPath = "/" + pathParts.slice(1).join("/");
+
+      const url = new URL(request.url);
+      url.searchParams.set("subdomain", tenant);
+
+      if (remainingPath === "/" || remainingPath === "") {
+        url.pathname = `/[client]`;
+      } else {
+        url.pathname = `/[client]${remainingPath}`;
+      }
+
+      return NextResponse.rewrite(url);
+    }
   }
 
   // Handle localhost development - simulate subdomain behavior

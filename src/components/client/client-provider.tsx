@@ -64,6 +64,11 @@ export function ClientProvider({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Inject tenant-based theming
+  useEffect(() => {
+    // This will be called after client data is loaded to inject CSS variables
+  }, []);
+
   useEffect(() => {
     // Simulate API call
     const fetchClient = async () => {
@@ -71,7 +76,7 @@ export function ClientProvider({
       setError(null);
 
       try {
-        // Mock client data
+        // Mock client data - in production, fetch from API
         const mockClient: Client = {
           id: "client-1",
           name: "Demo University",
@@ -102,6 +107,19 @@ export function ClientProvider({
         };
 
         setClient(mockClient);
+
+        // Inject tenant-specific CSS variables for theming
+        if (mockClient.settings.theme && typeof window !== "undefined") {
+          const root = document.documentElement;
+          root.style.setProperty(
+            "--tenant-primary",
+            mockClient.settings.theme.primaryColor
+          );
+          root.style.setProperty(
+            "--tenant-secondary",
+            mockClient.settings.theme.secondaryColor
+          );
+        }
       } catch {
         setError("Failed to load client data");
       } finally {

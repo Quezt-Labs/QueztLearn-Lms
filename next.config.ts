@@ -7,33 +7,14 @@ const nextConfig: NextConfig = {
       "images.unsplash.com",
       "d2qbkdyhv7dt4j.cloudfront.net",
     ],
-  },
-  async rewrites() {
-    return [
-      // Rewrite real subdomain requests to client pages (for production with custom domain)
+    remotePatterns: [
       {
-        source: "/:path*",
-        destination: "/[client]/:path*",
-        has: [
-          {
-            type: "host",
-            value: "(?<subdomain>[^.]+)\\.queztlearn\\.com",
-          },
-        ],
+        protocol: "https",
+        hostname: "**.queztlearn.com",
       },
-      // Rewrite Vercel path-based subdomains to client pages
-      {
-        source: "/:client/:path*",
-        destination: "/[client]/:path*",
-        has: [
-          {
-            type: "host",
-            value: "quezt-learn-lms\\.vercel\\.app",
-          },
-        ],
-      },
-    ];
+    ],
   },
+  // Configure to handle subdomains
   async headers() {
     return [
       {
@@ -46,6 +27,10 @@ const nextConfig: NextConfig = {
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
         ],
       },

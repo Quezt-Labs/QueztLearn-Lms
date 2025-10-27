@@ -76,6 +76,10 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.712 0.194 13.428);
+
+  /* Tenant-specific CSS variables for theming */
+  --tenant-primary: #3b82f6;
+  --tenant-secondary: #1e40af;
 }
 
 .dark {
