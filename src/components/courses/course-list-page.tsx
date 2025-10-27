@@ -42,6 +42,7 @@ import { useGetAllBatches, useDeleteBatch } from "@/hooks";
 import { CreateBatchModal } from "@/components/common/create-batch-modal";
 import { EditBatchModal } from "@/components/common/edit-batch-modal";
 import { useRolePermissions } from "@/hooks/common";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Batch {
   id: string;
@@ -99,6 +100,7 @@ export function CourseListPage({
   const [selectedBatchForEdit, setSelectedBatchForEdit] =
     useState<Batch | null>(null);
 
+  const queryClient = useQueryClient();
   const { data: batches, isLoading } = useGetAllBatches();
   const deleteBatchMutation = useDeleteBatch();
   const { isAdmin, isTeacher, canDeleteCourses } = useRolePermissions();
@@ -158,8 +160,7 @@ export function CourseListPage({
   };
 
   const handleBatchUpdated = () => {
-    // Refresh the page or refetch data
-    window.location.reload();
+    queryClient.invalidateQueries({ queryKey: ["batches"] });
   };
 
   const handleDeleteCourse = (batch: { id: string; name: string }) => {
@@ -647,6 +648,7 @@ export function CourseListPage({
           onClose={() => setIsCreateModalOpen(false)}
           onSuccess={() => {
             setIsCreateModalOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["batches"] });
           }}
         />
 
