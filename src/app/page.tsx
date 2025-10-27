@@ -14,7 +14,6 @@ import {
   FileText,
 } from "lucide-react";
 import { tokenManager } from "@/lib/api/client";
-import { useLogout } from "@/hooks";
 import { HeroSection } from "@/components/ui/3d-hero-section-boxes";
 import { TeamSection } from "@/components/ui/team-section";
 import { FeatureSection } from "@/components/ui/feature-section";
@@ -24,9 +23,7 @@ import HoverFooter from "@/components/ui/hover-footer";
 
 export default function Home() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
-  const logoutMutation = useLogout();
 
   // Check if user is already authenticated and redirect accordingly
   useEffect(() => {
@@ -50,7 +47,6 @@ export default function Home() {
               "Homepage: User role:",
               (userData as { role?: string }).role
             );
-            setIsAuthenticated(true);
             // Don't auto-redirect, let user choose
             setIsCheckingAuth(false);
             return;

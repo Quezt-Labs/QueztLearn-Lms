@@ -7,7 +7,6 @@ import Link from "next/link";
 interface VerticalMarqueeProps {
   children: ReactNode;
   pauseOnHover?: boolean;
-  reverse?: boolean;
   className?: string;
   speed?: number;
   onItemsRef?: (items: HTMLElement[]) => void;
@@ -16,7 +15,6 @@ interface VerticalMarqueeProps {
 function VerticalMarquee({
   children,
   pauseOnHover = false,
-  reverse = false,
   className,
   speed = 30,
   onItemsRef,

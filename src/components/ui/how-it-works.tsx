@@ -1,18 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import {
-  UserPlus,
-  BookOpen,
-  GraduationCap,
-  Users,
-  Settings,
-  Rocket,
-} from "lucide-react";
+import { UserPlus, BookOpen, GraduationCap } from "lucide-react";
 import type React from "react";
 
 // The main props for the HowItWorks component
-interface HowItWorksProps extends React.HTMLAttributes<HTMLElement> {}
+interface HowItWorksProps extends React.HTMLAttributes<HTMLElement> {
+  className?: string;
+}
 
 // The props for a single step card
 interface StepCardProps {

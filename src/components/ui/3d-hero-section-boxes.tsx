@@ -175,12 +175,12 @@ function Navbar() {
         </div>
 
         <div className="flex items-center">
-          <a
+          <Link
             href="/login"
             className="border-2 border-primary text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-primary hover:text-primary-foreground transition duration-300"
           >
             Sign In
-          </a>
+          </Link>
         </div>
       </div>
     </nav>
