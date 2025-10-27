@@ -4,17 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -25,24 +17,23 @@ import {
 } from "@/components/ui/dialog";
 import {
   Plus,
-  Search,
-  Filter,
   Edit,
   Trash2,
-  Eye,
-  Users,
   BookOpen,
-  DollarSign,
   TrendingUp,
   Clock,
+  Eye,
+  Users,
   Calendar,
   Globe,
+  DollarSign,
 } from "lucide-react";
 import { useGetAllBatches, useDeleteBatch } from "@/hooks";
 import { CreateBatchModal } from "@/components/common/create-batch-modal";
 import { EditBatchModal } from "@/components/common/edit-batch-modal";
 import { useRolePermissions } from "@/hooks/common";
 import { useQueryClient } from "@tanstack/react-query";
+import { BatchDataTable } from "./batch-data-table";
 
 interface Batch {
   id: string;
@@ -88,8 +79,6 @@ export function CourseListPage({
   headerTitle,
 }: CourseListPageProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedBatch, setSelectedBatch] = useState<{
     id: string;
     name: string;
@@ -99,6 +88,8 @@ export function CourseListPage({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBatchForEdit, setSelectedBatchForEdit] =
     useState<Batch | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const queryClient = useQueryClient();
   const { data: batches, isLoading } = useGetAllBatches();
@@ -354,98 +345,17 @@ export function CourseListPage({
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    placeholder="Search courses, exams, classes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Courses</SelectItem>
-                    <SelectItem value="upcoming">Upcoming</SelectItem>
-                    <SelectItem value="ongoing">Ongoing</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Courses Display */}
         {displayMode === "list" ? (
-          // List View (Admin Style)
-          <div className="space-y-3">
-            {filteredBatches.map((batch: Batch) => (
-              <Card
-                key={batch.id}
-                className="hover:shadow-md transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <h3 className="font-semibold text-base">
-                          {batch.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          Class {batch.class} • {batch.exam}
-                        </p>
-                      </div>
-                      {getStatusBadge(batch)}
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewCourse(batch.id)}
-                      >
-                        <Eye className="mr-1 h-3 w-3" />
-                        View
-                      </Button>
-                      {canManageCourse && showEditButton && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditCourse(batch.id)}
-                        >
-                          <Edit className="mr-1 h-3 w-3" />
-                          Edit
-                        </Button>
-                      )}
-                      {canManageCourse && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteCourse(batch)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="mr-1 h-3 w-3" />
-                          Delete
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          // Data Table View (Admin Style)
+          <BatchDataTable
+            batches={batches?.data || []}
+            basePath={basePath}
+            onEdit={handleEditCourse}
+            onDelete={handleDeleteCourse}
+            canManageCourse={canManageCourse}
+            showEditButton={showEditButton}
+          />
         ) : (
           // Grid View (Teacher Style)
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -591,7 +501,7 @@ export function CourseListPage({
           </div>
         )}
 
-        {filteredBatches.length === 0 && (
+        {filteredBatches.length === 0 && displayMode === "grid" && (
           <Card>
             <CardContent className="p-8 text-center">
               <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
