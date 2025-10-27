@@ -13,11 +13,11 @@ const nextConfig: NextConfig = {
       // Rewrite real subdomain requests to client pages (for production with custom domain)
       {
         source: "/:path*",
-        destination: "/:subdomain/:path*",
+        destination: "/[client]/:path*",
         has: [
           {
             type: "host",
-            value: "(?<subdomain>[^.]+)\\.queztlearn\\.in",
+            value: "(?<subdomain>[^.]+)\\.queztlearn\\.com",
           },
         ],
       },

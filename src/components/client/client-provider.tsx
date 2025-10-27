@@ -38,8 +38,8 @@ export function ClientProvider({
     if (!subdomain && typeof window !== "undefined") {
       const hostname = window.location.hostname;
 
-      // Handle production subdomains (e.g., mit.queztlearn.in)
-      if (hostname.endsWith(".queztlearn.in")) {
+      // Handle production subdomains (e.g., mit.queztlearn.com)
+      if (hostname.endsWith(".queztlearn.com")) {
         const parts = hostname.split(".");
         if (parts.length > 2) {
           const subdomainFromHost = parts[0];
@@ -76,8 +76,8 @@ export function ClientProvider({
           id: "client-1",
           name: "Demo University",
           domain: finalSubdomain
-            ? `${finalSubdomain}.queztlearn.in`
-            : "demo.queztlearn.in",
+            ? `${finalSubdomain}.queztlearn.com`
+            : "demo.queztlearn.com",
           subdomain: finalSubdomain || "demo",
           basePath: "queztlearn",
           logo: "/images/Logo.png",

@@ -4,10 +4,10 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get("host") || "";
 
-  // Extract subdomain from hostname (e.g., "mit" from "mit.queztlearn.in")
+  // Extract subdomain from hostname (e.g., "mit" from "mit.queztlearn.com")
   const subdomain =
-    hostname.endsWith(".queztlearn.in") && hostname !== "queztlearn.in"
-      ? hostname.replace(".queztlearn.in", "")
+    hostname.endsWith(".queztlearn.com") && hostname !== "queztlearn.com"
+      ? hostname.replace(".queztlearn.com", "")
       : null;
 
   // Handle Vercel domain with path-based subdomains FIRST (e.g., quezt-learn-lms.vercel.app/{client}/login)
@@ -66,8 +66,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle subdomain requests (e.g., mit.queztlearn.in)
-  if (hostname.endsWith(".queztlearn.in") && subdomain) {
+  // Handle subdomain requests (e.g., mit.queztlearn.com)
+  if (hostname.endsWith(".queztlearn.com") && subdomain) {
     const url = new URL(request.url);
     url.searchParams.set("subdomain", subdomain);
 
