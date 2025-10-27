@@ -89,6 +89,11 @@ function SetPasswordContent() {
       setIsInitializing(false);
     }, 100);
 
+    // Don't run redirect checks if password is already set (celebration screen)
+    if (isPasswordSet) {
+      return () => clearTimeout(initTimer);
+    }
+
     // If we have userId from store (coming from email verification), no redirects needed
     if (storeUserId) {
       return () => clearTimeout(initTimer);
@@ -123,6 +128,7 @@ function SetPasswordContent() {
     router,
     isInitializing,
     storeUserId,
+    isPasswordSet, // Add isPasswordSet to dependencies
   ]);
 
   const handlePasswordChange = (value: string) => {
@@ -166,9 +172,9 @@ function SetPasswordContent() {
         // Complete onboarding
         completeOnboarding();
 
-        // Redirect to login after celebration
+        // Show celebration screen for everyone and redirect after 4 seconds
         setTimeout(() => {
-          router.push("/login");
+          window.location.href = "/login";
         }, 4000);
       });
     } catch (error: unknown) {
