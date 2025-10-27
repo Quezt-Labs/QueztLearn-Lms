@@ -245,6 +245,10 @@ export function CourseDetailPage({
     }
   };
 
+  const handleViewSubject = (subject: Subject) => {
+    router.push(`/${basePath}/courses/${courseId}/subjects/${subject.id}`);
+  };
+
   // Helper functions
   const getStatusBadge = (course: Batch) => {
     const now = new Date();
@@ -506,7 +510,10 @@ export function CourseDetailPage({
                   ) : subjects?.data && subjects.data.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {subjects.data.map((subject: Subject) => (
-                        <Card key={subject.id}>
+                        <Card
+                          key={subject.id}
+                          className="hover:shadow-md transition-shadow cursor-pointer"
+                        >
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-semibold">{subject.name}</h4>
@@ -529,9 +536,20 @@ export function CourseDetailPage({
                                 </div>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground mb-3">
                               {subject.description || "No description"}
                             </p>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => handleViewSubject(subject)}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View Details
+                              </Button>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
