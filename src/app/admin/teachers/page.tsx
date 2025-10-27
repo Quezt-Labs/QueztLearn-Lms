@@ -35,67 +35,28 @@ import {
   Star,
   Clock,
 } from "lucide-react";
+import { useGetAllTeachers, useDeleteTeacher } from "@/hooks";
+import { ViewTeacherModal } from "@/components/common/view-teacher-modal";
+import { EditTeacherModal } from "@/components/common/edit-teacher-modal";
 
-// Mock data for teachers
-const mockTeachers = [
-  {
-    id: "1",
-    name: "Dr. Sarah Johnson",
-    imageUrl:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Physics", "Mathematics"],
-    highlights: {
-      experience: "10+ years",
-      education: "PhD in Physics",
-      achievements: ["Best Teacher Award 2023", "Published 15 Research Papers"],
-    },
-    batchIds: ["batch-1", "batch-2"],
-    batches: [
-      { id: "batch-1", name: "JEE 2026 Master Batch" },
-      { id: "batch-2", name: "NEET Biology Masterclass" },
-    ],
-    rating: 4.9,
-    students: 1250,
-    createdAt: "2024-01-10",
-    updatedAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Prof. Michael Chen",
-    imageUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Mathematics", "Chemistry"],
-    highlights: {
-      experience: "8+ years",
-      education: "MSc in Mathematics",
-      achievements: ["IIT Graduate", "JEE Expert"],
-    },
-    batchIds: ["batch-3"],
-    batches: [{ id: "batch-3", name: "Mathematics for JEE Advanced" }],
-    rating: 4.8,
-    students: 800,
-    createdAt: "2024-01-20",
-    updatedAt: "2024-02-01",
-  },
-  {
-    id: "3",
-    name: "Dr. Priya Sharma",
-    imageUrl:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    subjects: ["Biology", "Chemistry"],
-    highlights: {
-      experience: "12+ years",
-      education: "PhD in Biology",
-      achievements: ["NEET Expert", "Medical College Professor"],
-    },
-    batchIds: ["batch-2"],
-    batches: [{ id: "batch-2", name: "NEET Biology Masterclass" }],
-    rating: 4.9,
-    students: 2100,
-    createdAt: "2024-01-15",
-    updatedAt: "2024-01-20",
-  },
-];
+interface Teacher {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  subjects?: string[];
+  highlights?: {
+    experience?: string;
+    education?: string;
+    achievements?: string[];
+    content?: string;
+  };
+  batchIds?: string[];
+  batches?: Array<{ id: string; name: string }>;
+  rating?: number;
+  students?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export default function AdminTeachersPage() {
   const router = useRouter();
@@ -106,15 +67,26 @@ export default function AdminTeachersPage() {
     name: string;
   } | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTeacherForView, setSelectedTeacherForView] =
+    useState<Teacher | null>(null);
+  const [selectedTeacherForEdit, setSelectedTeacherForEdit] =
+    useState<Teacher | null>(null);
 
-  const filteredTeachers = mockTeachers.filter((teacher) => {
+  const { data: teachersResponse, isLoading } = useGetAllTeachers();
+  const deleteTeacherMutation = useDeleteTeacher();
+
+  const teachers = (teachersResponse?.data || []) as Teacher[];
+
+  const filteredTeachers = teachers.filter((teacher) => {
     const matchesSearch =
-      teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      teacher.subjects.some((subject) =>
+      teacher.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      teacher.subjects?.some((subject: string) =>
         subject.toLowerCase().includes(searchQuery.toLowerCase())
       );
     const matchesSubject =
-      subjectFilter === "all" || teacher.subjects.includes(subjectFilter);
+      subjectFilter === "all" || teacher.subjects?.includes(subjectFilter);
     return matchesSearch && matchesSubject;
   });
 
@@ -123,11 +95,24 @@ export default function AdminTeachersPage() {
   };
 
   const handleEditTeacher = (teacherId: string) => {
-    router.push(`/admin/teachers/${teacherId}/edit`);
+    const teacher = teachers.find((t) => t.id === teacherId);
+    if (teacher) {
+      setSelectedTeacherForEdit(teacher);
+      setIsEditModalOpen(true);
+    }
   };
 
   const handleViewTeacher = (teacherId: string) => {
-    router.push(`/admin/teachers/${teacherId}`);
+    const teacher = teachers.find((t) => t.id === teacherId);
+    if (teacher) {
+      setSelectedTeacherForView(teacher);
+      setIsViewModalOpen(true);
+    }
+  };
+
+  const handleTeacherUpdated = () => {
+    setIsEditModalOpen(false);
+    setSelectedTeacherForEdit(null);
   };
 
   const handleDeleteTeacher = (teacher: { id: string; name: string }) => {
@@ -136,10 +121,14 @@ export default function AdminTeachersPage() {
   };
 
   const confirmDelete = () => {
-    // TODO: Implement delete API call
-    console.log("Deleting teacher:", selectedTeacher?.id);
-    setIsDeleteDialogOpen(false);
-    setSelectedTeacher(null);
+    if (selectedTeacher) {
+      deleteTeacherMutation.mutate(selectedTeacher.id, {
+        onSuccess: () => {
+          setIsDeleteDialogOpen(false);
+          setSelectedTeacher(null);
+        },
+      });
+    }
   };
 
   const getInitials = (name: string) => {
@@ -151,7 +140,8 @@ export default function AdminTeachersPage() {
       .toUpperCase();
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -160,8 +150,23 @@ export default function AdminTeachersPage() {
   };
 
   const allSubjects = Array.from(
-    new Set(mockTeachers.flatMap((teacher) => teacher.subjects))
+    new Set(teachers.flatMap((teacher) => teacher.subjects || []))
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading teachers...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -196,7 +201,7 @@ export default function AdminTeachersPage() {
                   <p className="text-sm font-medium text-muted-foreground">
                     Total Teachers
                   </p>
-                  <p className="text-2xl font-bold">{mockTeachers.length}</p>
+                  <p className="text-2xl font-bold">{teachers.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -213,8 +218,11 @@ export default function AdminTeachersPage() {
                     Total Students
                   </p>
                   <p className="text-2xl font-bold">
-                    {mockTeachers
-                      .reduce((sum, teacher) => sum + teacher.students, 0)
+                    {teachers
+                      .reduce(
+                        (sum, teacher) => sum + (teacher.students || 0),
+                        0
+                      )
                       .toLocaleString()}
                   </p>
                 </div>
@@ -233,12 +241,14 @@ export default function AdminTeachersPage() {
                     Avg Rating
                   </p>
                   <p className="text-2xl font-bold">
-                    {(
-                      mockTeachers.reduce(
-                        (sum, teacher) => sum + teacher.rating,
-                        0
-                      ) / mockTeachers.length
-                    ).toFixed(1)}
+                    {teachers.length > 0
+                      ? (
+                          teachers.reduce(
+                            (sum, teacher) => sum + (teacher.rating || 0),
+                            0
+                          ) / teachers.length
+                        ).toFixed(1)
+                      : "0.0"}
                   </p>
                 </div>
               </div>
@@ -256,8 +266,8 @@ export default function AdminTeachersPage() {
                     Active Batches
                   </p>
                   <p className="text-2xl font-bold">
-                    {mockTeachers.reduce(
-                      (sum, teacher) => sum + teacher.batchIds.length,
+                    {teachers.reduce(
+                      (sum, teacher) => sum + (teacher.batchIds?.length || 0),
                       0
                     )}
                   </p>
@@ -330,7 +340,7 @@ export default function AdminTeachersPage() {
                             {teacher.rating}
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            ({teacher.students.toLocaleString()} students)
+                            ({teacher.students?.toLocaleString() || 0} students)
                           </span>
                         </div>
                       </div>
@@ -365,7 +375,7 @@ export default function AdminTeachersPage() {
 
                     <div className="mt-3">
                       <div className="flex flex-wrap gap-1 mb-2">
-                        {teacher.subjects.map((subject) => (
+                        {teacher.subjects?.map((subject: string) => (
                           <Badge
                             key={subject}
                             variant="secondary"
@@ -377,35 +387,46 @@ export default function AdminTeachersPage() {
                       </div>
 
                       <div className="space-y-1 text-sm text-muted-foreground">
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4" />
-                          <span>{teacher.highlights.experience}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <GraduationCap className="h-4 w-4" />
-                          <span>{teacher.highlights.education}</span>
-                        </div>
+                        {teacher.highlights?.experience && (
+                          <div className="flex items-center space-x-2">
+                            <Clock className="h-4 w-4" />
+                            <span>{teacher.highlights.experience}</span>
+                          </div>
+                        )}
+                        {teacher.highlights?.education && (
+                          <div className="flex items-center space-x-2">
+                            <GraduationCap className="h-4 w-4" />
+                            <span>{teacher.highlights.education}</span>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="mt-3">
-                        <p className="text-sm font-medium mb-1">
-                          Assigned Batches:
-                        </p>
-                        <div className="space-y-1">
-                          {teacher.batches.map((batch) => (
-                            <div
-                              key={batch.id}
-                              className="text-sm text-muted-foreground bg-muted/50 px-2 py-1 rounded"
-                            >
-                              {batch.name}
-                            </div>
-                          ))}
+                      {teacher.batches && teacher.batches.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm font-medium mb-1">
+                            Assigned Batches:
+                          </p>
+                          <div className="space-y-1">
+                            {teacher.batches.map((batch) => (
+                              <div
+                                key={batch.id}
+                                className="text-sm text-muted-foreground bg-muted/50 px-2 py-1 rounded"
+                              >
+                                {batch.name}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       <div className="text-xs text-muted-foreground mt-3">
-                        Added: {formatDate(teacher.createdAt)} • Updated:{" "}
-                        {formatDate(teacher.updatedAt)}
+                        {teacher.createdAt && (
+                          <span>Added: {formatDate(teacher.createdAt)}</span>
+                        )}
+                        {teacher.createdAt && teacher.updatedAt && " • "}
+                        {teacher.updatedAt && (
+                          <span>Updated: {formatDate(teacher.updatedAt)}</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -459,6 +480,45 @@ export default function AdminTeachersPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* View Teacher Modal */}
+        <ViewTeacherModal
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedTeacherForView(null);
+          }}
+          teacher={selectedTeacherForView}
+          onEdit={(teacherId: string) => {
+            setIsViewModalOpen(false);
+            handleEditTeacher(teacherId);
+          }}
+        />
+
+        {/* Edit Teacher Modal */}
+        {selectedTeacherForEdit && (
+          <EditTeacherModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedTeacherForEdit(null);
+            }}
+            teacher={{
+              id: selectedTeacherForEdit.id,
+              name: selectedTeacherForEdit.name,
+              imageUrl: selectedTeacherForEdit.imageUrl,
+              subjects: selectedTeacherForEdit.subjects || [],
+              highlights:
+                typeof selectedTeacherForEdit.highlights === "string"
+                  ? selectedTeacherForEdit.highlights
+                  : JSON.stringify(selectedTeacherForEdit.highlights || {}),
+              batchIds: selectedTeacherForEdit.batchIds || [],
+              createdAt: selectedTeacherForEdit.createdAt,
+              updatedAt: selectedTeacherForEdit.updatedAt,
+            }}
+            onSuccess={handleTeacherUpdated}
+          />
+        )}
       </div>
     </div>
   );

@@ -339,6 +339,13 @@ export const useCreateTeacher = () => {
   });
 };
 
+export const useGetAllTeachers = () => {
+  return useQuery({
+    queryKey: ["teachers", "all"],
+    queryFn: () => apiClient.get(`/admin/teachers`).then((res) => res.data),
+  });
+};
+
 export const useGetTeachersByBatch = (batchId: string) => {
   return useQuery({
     queryKey: ["teachers", "batch", batchId],

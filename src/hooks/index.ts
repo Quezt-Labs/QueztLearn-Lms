@@ -22,6 +22,7 @@ export {
   useUpdateBatch,
   useDeleteBatch,
   useCreateTeacher,
+  useGetAllTeachers,
   useGetTeachersByBatch,
   useUpdateTeacher,
   useDeleteTeacher,
