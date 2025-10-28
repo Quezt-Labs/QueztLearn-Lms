@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { StatsSkeleton } from "@/components/common/loading-skeleton";
-// Removed dashboard stats and activity hooks - using mock data instead
 import { InviteUserModal } from "@/components/common/invite-user-modal";
 import { useCurrentUser } from "@/hooks";
 import Link from "next/link";

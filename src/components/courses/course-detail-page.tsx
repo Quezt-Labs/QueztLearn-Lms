@@ -45,6 +45,7 @@ import { CreateSubjectModal } from "@/components/common/create-subject-modal";
 import { EditSubjectModal } from "@/components/common/edit-subject-modal";
 import { useCurrentUser } from "@/hooks";
 import { ROLES } from "@/lib/constants";
+import { SubjectDataTable } from "@/components/courses/subject-data-table";
 
 // Interfaces
 interface Batch {
@@ -365,19 +366,6 @@ export function CourseDetailPage({
           </div>
         </div>
 
-        {/* Course Image */}
-        {courseData.imageUrl && (
-          <div className="mb-8 rounded-lg overflow-hidden">
-            <Image
-              src={courseData.imageUrl}
-              alt={courseData.name}
-              width={1200}
-              height={400}
-              className="w-full h-[400px] object-cover"
-            />
-          </div>
-        )}
-
         {/* Tabs */}
         <Tabs
           value={activeTab}
@@ -467,26 +455,6 @@ export function CourseDetailPage({
                     </div>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button className="w-full" variant="default">
-                      <Eye className="mr-2 h-4 w-4" />
-                      Preview Course
-                    </Button>
-                    <Button className="w-full" variant="outline">
-                      <Download className="mr-2 h-4 w-4" />
-                      Export Data
-                    </Button>
-                    <Button className="w-full" variant="outline">
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share Link
-                    </Button>
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </TabsContent>
@@ -508,52 +476,14 @@ export function CourseDetailPage({
                   {subjectsLoading ? (
                     <div className="text-center py-8">Loading subjects...</div>
                   ) : subjects?.data && subjects.data.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {subjects.data.map((subject: Subject) => (
-                        <Card
-                          key={subject.id}
-                          className="hover:shadow-md transition-shadow cursor-pointer"
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold">{subject.name}</h4>
-                              {canManageCourse && (
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEditSubject(subject)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteSubject(subject)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {subject.description || "No description"}
-                            </p>
-                            <div className="flex space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1"
-                                onClick={() => handleViewSubject(subject)}
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                View Details
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                    <SubjectDataTable
+                      subjects={subjects.data as Subject[]}
+                      basePath={basePath}
+                      courseId={courseId}
+                      onEdit={handleEditSubject}
+                      onDelete={handleDeleteSubject}
+                      canManageCourse={canManageCourse}
+                    />
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       No subjects added yet
