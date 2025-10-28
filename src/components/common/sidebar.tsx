@@ -20,6 +20,7 @@ import {
   FileText,
   Award,
   LogOut,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/store";
@@ -41,6 +42,7 @@ const iconMap = {
   Building2,
   FileText,
   Award,
+  GraduationCap,
 };
 
 interface SidebarProps {
@@ -97,6 +99,9 @@ export function Sidebar({ className }: SidebarProps) {
     }
     if (href === "/admin/billing") {
       return pathname === "/admin/billing";
+    }
+    if (href === "/admin/test-series") {
+      return pathname === "/admin/test-series";
     }
     return pathname.startsWith(href);
   };

@@ -32,6 +32,12 @@ export const ADMIN_NAVIGATION_ITEMS: NavigationItem[] = [
     icon: "BookOpen",
     roles: ["admin"],
   },
+  {
+    title: "Test Series",
+    href: "/admin/test-series",
+    icon: "FileText",
+    roles: ["admin"],
+  },
 ];
 
 // Teacher navigation items (main domain)
@@ -46,6 +52,12 @@ export const TEACHER_NAVIGATION_ITEMS: NavigationItem[] = [
     title: "My Courses",
     href: "/teacher/courses",
     icon: "BookOpen",
+    roles: ["teacher"],
+  },
+  {
+    title: "Test Series",
+    href: "/teacher/test-series",
+    icon: "FileText",
     roles: ["teacher"],
   },
   {
