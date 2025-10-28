@@ -115,78 +115,6 @@ function HeroContent() {
   );
 }
 
-function Navbar() {
-  return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-20 border-b border-white/10"
-      style={{
-        backgroundColor: "hsla(0, 0%, 3%, 0.3)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-      }}
-    >
-      <div className="container mx-auto px-4 py-4 md:px-6 lg:px-8 flex items-center justify-between">
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-primary"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M16 32C24.8366 32 32 24.8366 32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32ZM12.4306 9.70695C12.742 9.33317 13.2633 9.30058 13.6052 9.62118L19.1798 14.8165C19.4894 15.1054 19.4894 15.5841 19.1798 15.873L13.6052 21.0683C13.2633 21.3889 12.742 21.3563 12.4306 20.9825V9.70695Z"
-                fill="currentColor"
-              />
-            </svg>
-            <span className="text-xl font-bold text-white">QueztLearn</span>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-6">
-            <a
-              href="#"
-              className="text-gray-300 hover:text-white text-sm font-medium transition duration-150"
-            >
-              Home
-            </a>
-            <a
-              href="#features"
-              className="text-gray-300 hover:text-white text-sm font-medium transition duration-150"
-            >
-              Features
-            </a>
-            <a
-              href="#"
-              className="text-gray-300 hover:text-white text-sm font-medium transition duration-150"
-            >
-              Resources
-            </a>
-            <a
-              href="#"
-              className="text-gray-300 hover:text-white text-sm font-medium transition duration-150"
-            >
-              Contact
-            </a>
-          </div>
-        </div>
-
-        <div className="flex items-center">
-          <Link
-            href="/login"
-            className="border-2 border-primary text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-primary hover:text-primary-foreground transition duration-300"
-          >
-            Sign In
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
-}
-
 const HeroSection = () => {
   const screenshotRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
@@ -217,8 +145,6 @@ const HeroSection = () => {
 
   return (
     <div className="relative">
-      <Navbar />
-
       <div className="relative min-h-screen">
         <div className="absolute inset-0 z-0 pointer-events-auto">
           <HeroSplineBackground />
