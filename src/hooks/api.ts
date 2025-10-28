@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 export const queryKeys = {
   user: ["user"] as const,
   organization: ["organization"] as const,
+  organizationConfig: (slug: string) => ["organizationConfig", slug] as const,
   emailAvailability: (email: string) => ["emailAvailability", email] as const,
   users: ["users"] as const,
   batches: ["batches"] as const,
@@ -95,6 +96,17 @@ export const useCreateOrganization = () => {
     onError: (error) => {
       console.error("Failed to create organization:", error);
     },
+  });
+};
+
+// Organization Configuration Hook (Public endpoint)
+export const useOrganizationConfig = (slug: string) => {
+  return useQuery({
+    queryKey: queryKeys.organizationConfig(slug),
+    queryFn: () => api.getOrganizationConfig(slug).then((res) => res.data),
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 };
 

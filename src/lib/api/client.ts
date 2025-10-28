@@ -10,6 +10,7 @@ import {
   Organization,
   CreateOrganizationData,
   CreateCourseData,
+  OrganizationConfigResponse,
 } from "@/lib/types/api";
 
 // API Configuration
@@ -219,6 +220,12 @@ export const api = {
 
   createCourse: (data: CreateCourseData) =>
     apiClient.post<ApiResponse<unknown>>("/admin/courses", data),
+
+  // Organization Configuration (Public endpoint)
+  getOrganizationConfig: (slug: string) =>
+    apiClient.get<OrganizationConfigResponse>(
+      `/api/organization-config/${slug}`
+    ),
 };
 
 export default apiClient;

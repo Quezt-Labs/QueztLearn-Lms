@@ -186,3 +186,39 @@ export interface Enrollment {
   progress: number;
   lastAccessedAt: Date;
 }
+
+// Organization Configuration API Types
+export interface OrganizationConfig {
+  id: string;
+  organizationId: string;
+  name: string;
+  slug: string;
+  domain: string;
+  contactEmail: string;
+  contactPhone: string;
+  currency: string;
+  logoUrl: string;
+  faviconUrl: string;
+  bannerUrls: string[];
+  motto: string;
+  description: string;
+  theme: Record<string, any>;
+  heroTitle: string;
+  heroSubtitle: string;
+  ctaText: string;
+  ctaUrl: string;
+  socialLinks: Record<string, any>;
+  metaTitle: string;
+  metaDescription: string;
+  ogImage: string;
+  supportEmail: string;
+  featuresEnabled: Record<string, any>;
+  maintenanceMode: boolean;
+  customCSS: string;
+  customJS: string;
+}
+
+export interface OrganizationConfigResponse {
+  success: boolean;
+  data: OrganizationConfig;
+}
