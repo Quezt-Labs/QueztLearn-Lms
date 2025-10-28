@@ -92,44 +92,44 @@ export default function Home() {
       {/* Advanced Features Section */}
       <FeatureSection
         mainIcon={<GraduationCap className="h-8 w-8" />}
-        title="Comprehensive Learning Tools"
-        subtitle="Empower your educational institution with advanced features designed for modern learning experiences."
+        title="Comprehensive Learning Management"
+        subtitle="The complete solution for your institution—from course creation to student analytics, all in one powerful platform."
         features={[
           {
             icon: <BookOpen className="h-6 w-6" />,
-            title: "Interactive Course Content",
+            title: "Rich Course Builder",
             description:
-              "Create engaging courses with rich media content, interactive quizzes, and multimedia resources to enhance student learning.",
+              "Create comprehensive courses with multimedia content, interactive modules, downloadable resources, and structured lesson plans that adapt to your curriculum needs.",
           },
           {
             icon: <Video className="h-6 w-6" />,
-            title: "Live Streaming & Video Lessons",
+            title: "Live Classes & Video Content",
             description:
-              "Deliver real-time classes and recorded video lessons with seamless playback on any device for flexible learning.",
+              "Conduct real-time virtual classrooms, host recorded lecture series, and deliver on-demand video content. Students learn anytime, anywhere.",
           },
           {
             icon: <FileText className="h-6 w-6" />,
-            title: "Automated Assessments",
+            title: "Smart Assessment Engine",
             description:
-              "Build comprehensive tests with auto-grading capabilities, detailed analytics, and personalized feedback for students.",
+              "Design comprehensive tests with auto-grading, question banks, timed exams, and detailed performance analytics. Track student progress in real-time.",
           },
           {
             icon: <Users className="h-6 w-6" />,
-            title: "Collaborative Learning",
+            title: "Community & Collaboration",
             description:
-              "Enable group projects, discussion forums, and peer-to-peer learning to foster a collaborative educational environment.",
+              "Foster engagement with discussion forums, group projects, peer reviews, and collaborative workspaces. Build a thriving learning community.",
           },
         ]}
         callToAction={{
-          title: "Start Your Free Trial Today",
+          title: "Ready to Transform Your Institution?",
           description:
-            "Experience the power of QueztLearn with a 14-day free trial. No credit card required.",
+            "Join leading educational institutions already using QueztLearn. Start your free 14-day trial—no credit card required.",
           primaryAction: {
-            text: "Get Started Free",
+            text: "Start Free Trial",
             url: "/create-organization",
           },
           secondaryAction: {
-            text: "Schedule a Demo",
+            text: "Request Demo",
             url: "/login",
           },
         }}
@@ -139,11 +139,11 @@ export default function Home() {
       <section className="py-20 bg-background">
         <div className="container mx-auto">
           <h2 className="text-4xl font-bold text-center mb-4 text-foreground">
-            What Our Users Say
+            Trusted by Leading Institutions
           </h2>
           <p className="text-xl text-center mb-12 text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of educators who trust QueztLearn for their learning
-            management needs.
+            See how educational institutions worldwide are transforming their
+            learning experience with QueztLearn.
           </p>
           <AnimatedTestimonials
             testimonials={[

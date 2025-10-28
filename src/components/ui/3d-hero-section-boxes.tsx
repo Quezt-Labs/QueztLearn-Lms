@@ -69,21 +69,26 @@ function HeroContent() {
     <div className="text-foreground px-4 max-w-7xl mx-auto w-full flex flex-col lg:flex-row justify-between items-start lg:items-center py-16">
       <div className="w-full lg:w-1/2 pr-0 lg:pr-8 mb-8 lg:mb-0">
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight tracking-wide text-white drop-shadow-lg">
-          Modern Learning
+          Your Institute
           <br />
-          <span className="bg-gradient-to-r from-primary to-chart-3 bg-clip-text text-transparent">
-            Management System
+          <span className="bg-linear-to-r from-primary to-chart-3 bg-clip-text text-transparent">
+            One Platform
+          </span>
+          <br />
+          <span className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white">
+            Infinite Learning
           </span>
         </h1>
         <div className="text-sm text-gray-200 opacity-90 mt-4 font-medium">
-          EDUCATION \ LMS \ MULTI-TENANT \ SCALABLE
+          UNIFIED LMS \ MULTI-TENANT \ SCALABLE \ SECURE
         </div>
       </div>
 
       <div className="w-full lg:w-1/2 pl-0 lg:pl-8 flex flex-col items-start">
         <p className="text-base sm:text-lg opacity-90 mb-6 max-w-md text-gray-100">
-          Empower educators and students with comprehensive course management,
-          real-time analytics, and seamless collaboration tools.
+          The all-in-one learning management platform that unifies your entire
+          educational ecosystem. Manage courses, students, content, and
+          analytics from one powerful system.
         </p>
         <div className="flex pointer-events-auto flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-3">
           <Link
@@ -169,12 +174,12 @@ const HeroSection = () => {
       >
         <ScreenshotSection screenshotRef={screenshotRef} />
         <div className="container mx-auto text-foreground">
-          <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-chart-3 bg-clip-text text-transparent">
-            Powerful Features for Modern Education
+          <h2 className="text-4xl font-bold text-center mb-8 bg-linear-to-r from-primary to-chart-3 bg-clip-text text-transparent">
+            Everything Your Institution Needs
           </h2>
-          <p className="text-center max-w-xl mx-auto opacity-80 text-muted-foreground">
-            Comprehensive learning management tools designed to empower
-            educators and engage students.
+          <p className="text-center max-w-2xl mx-auto opacity-80 text-muted-foreground text-lg">
+            A complete learning management solution that grows with you. From
+            small academic departments to enterprise-level educational networks.
           </p>
         </div>
       </div>

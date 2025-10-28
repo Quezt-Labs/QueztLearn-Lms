@@ -65,18 +65,18 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
   const stepsData = [
     {
       icon: <UserPlus className="h-6 w-6" />,
-      title: "Create Your Organization",
+      title: "Set Up Your Institution",
       description:
-        "Sign up and create your educational organization. Set up your branding, customize your domain, and invite your team members.",
+        "Create your organization account with custom branding, secure authentication, and team member management.",
       benefits: [
-        "Multi-tenant architecture for secure isolation",
-        "Custom branding and domain support",
-        "Role-based access control setup",
+        "Multi-tenant architecture with secure data isolation",
+        "Custom domain and branding options",
+        "Role-based permissions for admins and staff",
       ],
     },
     {
       icon: <BookOpen className="h-6 w-6" />,
-      title: "Build Your Courses",
+      title: "Create & Launch Courses",
       description:
         "Create engaging courses with rich content, upload materials, add quizzes, and organize your curriculum into subjects and chapters.",
       benefits: [
@@ -108,12 +108,12 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
         {/* Section Header */}
         <div className="mx-auto mb-16 max-w-4xl text-center">
           <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            How QueztLearn Works
+            Get Started in Three Simple Steps
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Get started with QueztLearn in three simple steps. Transform your
-            educational institution with our comprehensive LMS platform in
-            minutes.
+            Set up your institution's learning platform in minutes. From
+            registration to launching your first course, QueztLearn makes it
+            seamless.
           </p>
         </div>
 
