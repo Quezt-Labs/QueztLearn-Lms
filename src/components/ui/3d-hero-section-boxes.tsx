@@ -87,13 +87,7 @@ function HeroContent() {
         </p>
         <div className="flex pointer-events-auto flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-3">
           <Link
-            href="#features"
-            className="border-2 border-primary text-white font-semibold py-2.5 sm:py-3.5 px-6 sm:px-8 rounded-full transition duration-300 w-full sm:w-auto hover:bg-primary hover:text-primary-foreground text-center"
-          >
-            Learn More
-          </Link>
-          <Link
-            href="/login"
+            href="/create-organization"
             className="pointer-events-auto bg-primary text-primary-foreground font-semibold py-2.5 sm:py-3.5 px-6 sm:px-8 rounded-full transition duration-300 hover:bg-primary/90 hover:scale-105 flex items-center justify-center w-full sm:w-auto shadow-lg"
           >
             <svg

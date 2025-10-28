@@ -6,7 +6,6 @@ import {
   BookOpen,
   Users,
   Loader2,
-  Mail,
   GraduationCap,
   Video,
   FileText,
