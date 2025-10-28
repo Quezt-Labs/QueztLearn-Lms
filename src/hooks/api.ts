@@ -275,7 +275,17 @@ export const useCreateBatch = () => {
       // Invalidate batches query to refetch the list
       queryClient.invalidateQueries({ queryKey: queryKeys.batches });
       // Redirect to created batch detail when possible
-      const createdId = (created as any)?.data?.id || (created as any)?.id;
+      const extractId = (payload: unknown): string | undefined => {
+        if (!payload || typeof payload !== "object") return undefined;
+        const maybeWithData = payload as { data?: unknown; id?: unknown };
+        if (maybeWithData.data && typeof maybeWithData.data === "object") {
+          const inner = maybeWithData.data as { id?: unknown };
+          if (typeof inner.id === "string") return inner.id;
+        }
+        if (typeof maybeWithData.id === "string") return maybeWithData.id;
+        return undefined;
+      };
+      const createdId = extractId(created);
       if (createdId) {
         router.push(`/admin/courses/${createdId}`);
       } else {

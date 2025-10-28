@@ -24,22 +24,36 @@ const mapOrganizationConfigToClient = (
     subdomain: subdomain,
     basePath: "queztlearn",
     logo: config.logoUrl,
-    primaryColor: config.theme?.primaryColor || "#3b82f6",
-    secondaryColor: config.theme?.secondaryColor || "#1e40af",
+    primaryColor:
+      ((config.theme as Record<string, unknown>)?.primaryColor as string) ||
+      "#3b82f6",
+    secondaryColor:
+      ((config.theme as Record<string, unknown>)?.secondaryColor as string) ||
+      "#1e40af",
     theme: "light", // Default theme, can be enhanced based on config
     isActive: !config.maintenanceMode,
     createdAt: new Date().toISOString(), // API doesn't provide this, using current time
     settings: {
-      allowSelfRegistration: config.featuresEnabled?.selfRegistration || true,
+      allowSelfRegistration:
+        ((config.featuresEnabled as Record<string, unknown>)
+          ?.selfRegistration as boolean) || true,
       maxUsers: 1000, // Default value, can be configured
       features: Object.keys(config.featuresEnabled || {}),
       customBranding: true,
       customDomain: !!config.domain,
-      analytics: config.featuresEnabled?.analytics || false,
-      apiAccess: config.featuresEnabled?.apiAccess || false,
+      analytics:
+        ((config.featuresEnabled as Record<string, unknown>)
+          ?.analytics as boolean) || false,
+      apiAccess:
+        ((config.featuresEnabled as Record<string, unknown>)
+          ?.apiAccess as boolean) || false,
       theme: {
-        primaryColor: config.theme?.primaryColor || "#3b82f6",
-        secondaryColor: config.theme?.secondaryColor || "#1e40af",
+        primaryColor:
+          ((config.theme as Record<string, unknown>)?.primaryColor as string) ||
+          "#3b82f6",
+        secondaryColor:
+          ((config.theme as Record<string, unknown>)
+            ?.secondaryColor as string) || "#1e40af",
       },
     },
   };
