@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import React, { useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface NavbarProps {
   children: React.ReactNode;
@@ -104,7 +105,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         minWidth: "800px",
       }}
       className={cn(
-        "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-background/40 backdrop-blur-xl border border-border/50 px-4 py-2 lg:flex shadow-lg",
+        "relative z-60 mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-background/40 backdrop-blur-xl border border-border/50 px-4 py-2 lg:flex shadow-lg",
         className
       )}
     >
@@ -235,23 +236,15 @@ export const NavbarLogo = () => {
       href="/"
       className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal"
     >
-      <div className="flex items-center space-x-2">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 32 32"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="text-primary"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M16 32C24.8366 32 32 24.8366 32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32ZM12.4306 9.70695C12.742 9.33317 13.2633 9.30058 13.6052 9.62118L19.1798 14.8165C19.4894 15.1054 19.4894 15.5841 19.1798 15.873L13.6052 21.0683C13.2633 21.3889 12.742 21.3563 12.4306 20.9825V9.70695Z"
-            fill="currentColor"
-          />
-        </svg>
-        <span className="font-bold text-foreground">QueztLearn</span>
+      <div className="flex items-center space-x-3">
+        <div className="hidden sm:flex flex-col">
+          <span className="font-bold text-foreground leading-tight">
+            QueztLearn
+          </span>
+          <span className="text-xs text-muted-foreground leading-none">
+            Online Learning
+          </span>
+        </div>
       </div>
     </Link>
   );
