@@ -316,9 +316,6 @@ export function CourseDetailPage({
                 </h1>
                 {getStatusBadge(courseData)}
               </div>
-              <p className="text-muted-foreground text-lg mb-4">
-                {courseData.description}
-              </p>
               <div className="flex items-center space-x-6 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
                   <Users className="h-4 w-4" />
@@ -355,10 +352,6 @@ export function CourseDetailPage({
                   </Button>
                 </>
               )}
-              <Button variant="outline">
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </Button>
             </div>
           </div>
         </div>
@@ -404,9 +397,12 @@ export function CourseDetailPage({
                   <CardContent className="space-y-4">
                     <div>
                       <h3 className="font-semibold mb-2">Description</h3>
-                      <p className="text-muted-foreground">
-                        {courseData.description}
-                      </p>
+                      <div
+                        className="prose prose-sm max-w-none text-muted-foreground"
+                        dangerouslySetInnerHTML={{
+                          __html: courseData.description || "",
+                        }}
+                      />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-2">FAQ</h3>
@@ -415,9 +411,12 @@ export function CourseDetailPage({
                           {courseData.faq.map((faq, index) => (
                             <div key={index}>
                               <h4 className="font-medium">{faq.title}</h4>
-                              <p className="text-muted-foreground">
-                                {faq.description}
-                              </p>
+                              <div
+                                className="prose prose-sm max-w-none text-muted-foreground"
+                                dangerouslySetInnerHTML={{
+                                  __html: faq.description || "",
+                                }}
+                              />
                             </div>
                           ))}
                         </div>
