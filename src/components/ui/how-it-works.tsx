@@ -111,7 +111,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
             Get Started in Three Simple Steps
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Set up your institution's learning platform in minutes. From
+            Set up your institution&apos;s learning platform in minutes. From
             registration to launching your first course, QueztLearn makes it
             seamless.
           </p>
