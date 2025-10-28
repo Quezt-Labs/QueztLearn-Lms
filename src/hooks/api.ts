@@ -84,7 +84,7 @@ export const useCreateOrganization = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { name: string }) =>
+    mutationFn: (data: { name: string; slug: string }) =>
       api.createOrganization(data).then((res) => res.data),
     onSuccess: (data: ApiResponse<Organization>) => {
       if (data.success && data.data) {
