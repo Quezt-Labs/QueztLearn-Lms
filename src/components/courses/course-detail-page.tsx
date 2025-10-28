@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,9 +25,7 @@ import {
   Calendar,
   Globe,
   Plus,
-  Download,
   Share2,
-  Eye,
 } from "lucide-react";
 import {
   useGetBatch,

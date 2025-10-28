@@ -88,6 +88,7 @@ export interface InviteUserResponse {
 // Organization API Types
 export interface CreateOrganizationData {
   name: string;
+  slug: string;
   subdomain?: string;
   branding?: {
     primaryColor: string;
