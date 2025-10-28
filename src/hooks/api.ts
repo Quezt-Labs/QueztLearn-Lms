@@ -259,11 +259,16 @@ export const useCreateBatch = () => {
         description: string;
       }>;
     }) => apiClient.post("/admin/batches", data).then((res) => res.data),
-    onSuccess: () => {
+    onSuccess: (created) => {
       // Invalidate batches query to refetch the list
       queryClient.invalidateQueries({ queryKey: queryKeys.batches });
-      // Redirect to batches page
-      router.push("/admin/courses");
+      // Redirect to created batch detail when possible
+      const createdId = (created as any)?.data?.id || (created as any)?.id;
+      if (createdId) {
+        router.push(`/admin/courses/${createdId}`);
+      } else {
+        router.push("/admin/courses");
+      }
     },
   });
 };
@@ -302,8 +307,8 @@ export const useUpdateBatch = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.batch(variables.id),
       });
-      // Redirect to batches page
-      router.push("/admin/batches");
+      // Redirect to updated batch detail page
+      router.push(`/admin/courses/${variables.id}`);
     },
   });
 };
