@@ -61,3 +61,6 @@ export * from "./auth";
 
 // Common hooks
 export * from "./common";
+
+// Test Series hooks
+export * from "./test-series";

@@ -9,84 +9,72 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   FileText,
   Plus,
   Search,
-  MoreVertical,
-  Clock,
   Users,
   CheckCircle,
-  Edit,
-  Trash2,
+  Filter,
+  X,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useTestSeriesList, ExamType, TestSeries } from "@/hooks/test-series";
+import { TestSeriesDataTable } from "@/components/test-series/test-series-data-table";
+import { CreateTestSeriesModal } from "@/components/test-series/create-test-series-modal";
 
-// Mock data for test series
-const mockTestSeries = [
-  {
-    id: "1",
-    title: "JEE Main Mock Test Series",
-    description: "Complete test series for JEE Main preparation",
-    totalTests: 10,
-    completedTests: 5,
-    enrolledStudents: 45,
-    duration: "3 hours",
-    status: "active",
-    createdAt: new Date("2024-01-15"),
-  },
-  {
-    id: "2",
-    title: "NEET Practice Tests",
-    description: "Comprehensive NEET practice test series",
-    totalTests: 8,
-    completedTests: 3,
-    enrolledStudents: 32,
-    duration: "2.5 hours",
-    status: "active",
-    createdAt: new Date("2024-02-01"),
-  },
-  {
-    id: "3",
-    title: "Advanced Mathematics Series",
-    description: "Advanced level mathematics test series",
-    totalTests: 12,
-    completedTests: 12,
-    enrolledStudents: 28,
-    duration: "2 hours",
-    status: "completed",
-    createdAt: new Date("2024-01-10"),
-  },
+const EXAM_FILTERS: (ExamType | "ALL")[] = [
+  "ALL",
+  "JEE",
+  "NEET",
+  "UPSC",
+  "BANK",
+  "SSC",
+  "GATE",
+  "CAT",
+  "NDA",
+  "CLAT",
+  "OTHER",
 ];
 
 export default function TestSeriesPage() {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredTestSeries = mockTestSeries.filter((series) =>
-    series.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const [examFilter, setExamFilter] = useState<ExamType | "ALL">("ALL");
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined
   );
+  const [page, setPage] = useState(1);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "completed":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "draft":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
+  const { data, isLoading, refetch } = useTestSeriesList({
+    page,
+    limit: 10,
+    exam: examFilter !== "ALL" ? examFilter : undefined,
+    isActive: isActiveFilter,
+    search: searchQuery || undefined,
+  });
+
+  const testSeries = data?.data?.series || [];
+  const pagination = data?.data?.pagination;
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setExamFilter("ALL");
+    setIsActiveFilter(undefined);
+    setPage(1);
   };
+
+  const hasActiveFilters =
+    searchQuery || examFilter !== "ALL" || isActiveFilter !== undefined;
 
   return (
     <div className="space-y-6">
@@ -98,216 +86,241 @@ export default function TestSeriesPage() {
           { label: "Test Series" },
         ]}
         actions={
-          <Button>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Create Test Series
           </Button>
         }
       />
 
-      {/* Search and Filter */}
+      {/* Search and Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>All Test Series</CardTitle>
-          <CardDescription>
-            Browse and manage all test series in your platform
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>All Test Series</CardTitle>
+              <CardDescription>
+                Browse and manage all test series in your platform
+              </CardDescription>
+            </div>
+            {hasActiveFilters && (
+              <Button variant="outline" size="sm" onClick={handleClearFilters}>
+                <X className="mr-2 h-4 w-4" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center space-x-2 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search test series..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
                 className="pl-10"
               />
             </div>
+
+            {/* Exam Filter */}
+            <Select
+              value={examFilter}
+              onValueChange={(value) => {
+                setExamFilter(value as ExamType | "ALL");
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="All Exams" />
+              </SelectTrigger>
+              <SelectContent>
+                {EXAM_FILTERS.map((exam) => (
+                  <SelectItem key={exam} value={exam}>
+                    {exam === "ALL" ? "All Exams" : exam}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Status Filter */}
+            <Select
+              value={
+                isActiveFilter === undefined
+                  ? "ALL"
+                  : isActiveFilter
+                  ? "ACTIVE"
+                  : "INACTIVE"
+              }
+              onValueChange={(value) => {
+                setIsActiveFilter(
+                  value === "ALL"
+                    ? undefined
+                    : value === "ACTIVE"
+                    ? true
+                    : false
+                );
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Status</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="INACTIVE">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Test Series Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTestSeries.map((series, index) => (
-              <motion.div
-                key={series.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-3">
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-base line-clamp-1">
-                            {series.title}
-                          </CardTitle>
-                          <CardDescription className="text-xs mt-1 line-clamp-2">
-                            {series.description}
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <Badge className={getStatusColor(series.status)}>
-                        {series.status}
-                      </Badge>
-                      <span className="text-muted-foreground">
-                        {series.createdAt.toLocaleDateString()}
-                      </span>
-                    </div>
+          {/* Data Table */}
+          <TestSeriesDataTable
+            data={testSeries}
+            isLoading={isLoading}
+            onRefetch={() => refetch()}
+          />
 
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {series.totalTests} tests
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {series.enrolledStudents} enrolled
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {series.duration}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {series.completedTests}/{series.totalTests} done
-                        </span>
-                      </div>
-                    </div>
-
-                    <Button variant="outline" className="w-full">
-                      View Details
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {filteredTestSeries.length === 0 && (
-            <div className="text-center py-12">
-              <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                No test series found
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {searchQuery
-                  ? "Try adjusting your search query"
-                  : "Get started by creating your first test series"}
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                Page {pagination.currentPage} of {pagination.totalPages} (
+                {pagination.totalCount} total)
               </p>
-              {!searchQuery && (
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Test Series
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!pagination.hasPrevious}
+                  onClick={() => setPage(page - 1)}
+                >
+                  Previous
                 </Button>
-              )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!pagination.hasNext}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Test Series
-              </CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{mockTestSeries.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Across all subjects
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+      {!isLoading && testSeries.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Test Series
+                </CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {pagination?.totalCount || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Across all subjects
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Enrollments
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {mockTestSeries.reduce(
-                  (acc, series) => acc + series.enrolledStudents,
-                  0
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Students taking tests
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Tests
+                </CardTitle>
+                <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {testSeries.reduce(
+                    (acc: number, series: TestSeries) =>
+                      acc + (series.testCount || 0),
+                    0
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  All tests combined
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Series
-              </CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {mockTestSeries.filter((s) => s.status === "active").length}
-              </div>
-              <p className="text-xs text-muted-foreground">Currently running</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Active Series
+                </CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {testSeries.filter((s: TestSeries) => s.isActive).length}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Currently available
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && testSeries.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No test series found</h3>
+            <p className="text-muted-foreground mb-4">
+              {hasActiveFilters
+                ? "Try adjusting your filters"
+                : "Get started by creating your first test series"}
+            </p>
+            {!hasActiveFilters && (
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Test Series
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Create Modal */}
+      <CreateTestSeriesModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }
