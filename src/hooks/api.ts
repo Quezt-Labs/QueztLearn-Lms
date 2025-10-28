@@ -681,7 +681,7 @@ interface ContentData {
   type: "Lecture" | "Video" | "PDF" | "Assignment";
   pdfUrl?: string;
   videoUrl?: string;
-  videoType?: "HLS" | "MP4";
+  videoType?: "HLS" | "MP4" | "YouTube";
   videoThumbnail?: string;
   videoDuration?: number;
   isCompleted?: boolean;

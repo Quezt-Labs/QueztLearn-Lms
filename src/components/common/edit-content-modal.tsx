@@ -56,13 +56,14 @@ export function EditContentModal({
     type: "Lecture" as "Lecture" | "Video" | "PDF" | "Assignment",
     pdfUrl: "",
     videoUrl: "",
-    videoType: "HLS" as "HLS" | "MP4",
+    videoType: "HLS" as "HLS" | "MP4" | "YouTube",
     videoThumbnail: "",
     videoDuration: 0,
     isCompleted: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pdfFile, setPdfFile] = useState<string>("");
+  const [videoFile, setVideoFile] = useState<string>("");
 
   const updateContentMutation = useUpdateContent();
 
@@ -96,7 +97,7 @@ export function EditContentModal({
         name: formData.name,
         type: formData.type,
         pdfUrl: pdfFile || formData.pdfUrl || undefined,
-        videoUrl: formData.videoUrl || undefined,
+        videoUrl: videoFile || formData.videoUrl || undefined,
         videoType: formData.videoType,
         videoThumbnail: formData.videoThumbnail || undefined,
         videoDuration: formData.videoDuration,
@@ -128,6 +129,7 @@ export function EditContentModal({
       isCompleted: false,
     });
     setPdfFile("");
+    setVideoFile("");
     onClose();
   };
 
@@ -204,10 +206,26 @@ export function EditContentModal({
           {formData.type === "Video" && (
             <>
               <div className="space-y-2">
+                <Label htmlFor="videoFile">Upload Video File</Label>
+                <FileUpload
+                  accept="video/*"
+                  onUploadComplete={(fileData) => {
+                    setVideoFile(fileData.url);
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Upload video files (MP4, WebM, etc.) or use YouTube URLs
+                </p>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="videoUrl">Video URL</Label>
                 <Input
                   id="videoUrl"
-                  placeholder="Enter video URL"
+                  placeholder={
+                    formData.videoType === "YouTube"
+                      ? "https://www.youtube.com/watch?v=VIDEO_ID"
+                      : "Enter video URL"
+                  }
                   value={formData.videoUrl}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -216,6 +234,11 @@ export function EditContentModal({
                     }))
                   }
                 />
+                {formData.videoType === "YouTube" && (
+                  <p className="text-xs text-muted-foreground">
+                    Supports YouTube URLs (youtube.com or youtu.be)
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="videoType">Video Type</Label>
@@ -232,8 +255,9 @@ export function EditContentModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="HLS">HLS</SelectItem>
-                    <SelectItem value="MP4">MP4</SelectItem>
+                    <SelectItem value="HLS">HLS (Streaming)</SelectItem>
+                    <SelectItem value="MP4">MP4 (Direct)</SelectItem>
+                    <SelectItem value="YouTube">YouTube</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
