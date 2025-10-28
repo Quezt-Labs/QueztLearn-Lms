@@ -20,13 +20,10 @@ import {
   Edit,
   Trash2,
   BookOpen,
-  TrendingUp,
-  Clock,
   Eye,
   Users,
   Calendar,
   Globe,
-  DollarSign,
 } from "lucide-react";
 import { useGetAllBatches, useDeleteBatch } from "@/hooks";
 import { CreateBatchModal } from "@/components/common/create-batch-modal";
@@ -251,103 +248,8 @@ export function CourseListPage({
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <BookOpen className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Total Courses
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {batches?.data?.length || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Active Courses
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {
-                      filteredBatches.filter((batch: Batch) => {
-                        const now = new Date();
-                        const startDate = new Date(batch.startDate);
-                        const endDate = new Date(batch.endDate);
-                        return startDate <= now && endDate >= now;
-                      }).length
-                    }
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Upcoming
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {
-                      filteredBatches.filter((batch: Batch) => {
-                        const now = new Date();
-                        const startDate = new Date(batch.startDate);
-                        return startDate > now;
-                      }).length
-                    }
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Total Revenue
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {formatPrice(
-                      (batches?.data || []).reduce(
-                        (sum: number, batch: Batch) =>
-                          sum + (batch.totalPrice || 0),
-                        0
-                      )
-                    )}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Courses Display */}
         {displayMode === "list" ? (
-          // Data Table View (Admin Style)
           <BatchDataTable
             batches={batches?.data || []}
             basePath={basePath}

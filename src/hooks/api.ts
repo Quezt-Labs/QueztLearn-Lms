@@ -263,7 +263,7 @@ export const useCreateBatch = () => {
       // Invalidate batches query to refetch the list
       queryClient.invalidateQueries({ queryKey: queryKeys.batches });
       // Redirect to batches page
-      router.push("/admin/batches");
+      router.push("/admin/courses");
     },
   });
 };
