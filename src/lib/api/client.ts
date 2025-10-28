@@ -11,6 +11,8 @@ import {
   CreateOrganizationData,
   CreateCourseData,
   OrganizationConfigResponse,
+  CreateOrganizationConfigData,
+  CreateOrganizationConfigResponse,
 } from "@/lib/types/api";
 
 // API Configuration
@@ -225,6 +227,13 @@ export const api = {
   getOrganizationConfig: (slug: string) =>
     apiClient.get<OrganizationConfigResponse>(
       `/api/organization-config/${slug}`
+    ),
+
+  // Organization Configuration (Admin endpoint)
+  createOrganizationConfig: (data: CreateOrganizationConfigData) =>
+    apiClient.post<CreateOrganizationConfigResponse>(
+      "/admin/organization-config",
+      data
     ),
 };
 

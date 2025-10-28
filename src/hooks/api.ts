@@ -3,7 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, tokenManager } from "@/lib/api/client";
 import apiClient from "@/lib/api/client";
-import { ApiResponse, Organization, LoginResponse } from "@/lib/types/api";
+import {
+  ApiResponse,
+  Organization,
+  LoginResponse,
+  CreateOrganizationConfigData,
+  CreateOrganizationConfigResponse,
+} from "@/lib/types/api";
 import { useRouter } from "next/navigation";
 
 // Query Keys
@@ -107,6 +113,28 @@ export const useOrganizationConfig = (slug: string) => {
     enabled: !!slug,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
+  });
+};
+
+// Organization Configuration Hook (Admin endpoint)
+export const useCreateOrganizationConfig = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateOrganizationConfigData) =>
+      api.createOrganizationConfig(data).then((res) => res.data),
+    onSuccess: (data: CreateOrganizationConfigResponse) => {
+      if (data.success && data.data) {
+        // Cache the organization configuration
+        queryClient.setQueryData(
+          queryKeys.organizationConfig(data.data.slug),
+          data
+        );
+      }
+    },
+    onError: (error) => {
+      console.error("Failed to create organization configuration:", error);
+    },
   });
 };
 

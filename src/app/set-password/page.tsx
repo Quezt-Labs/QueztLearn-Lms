@@ -17,13 +17,14 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
 // import Image from "next/image";
-import { useSetPassword } from "@/hooks";
+import { useSetPassword, useCreateOrganizationConfig } from "@/hooks";
 import { useOnboardingStore } from "@/lib/store/onboarding";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
 import { calculatePasswordStrength } from "@/lib/utils/validation";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
+import { CreateOrganizationConfigData } from "@/lib/types/api";
 
 function SetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
@@ -38,11 +39,12 @@ function SetPasswordContent() {
     adminData,
     emailVerified,
     userId: storeUserId,
-    setUserId,
     setPasswordSet,
+    setOrganizationConfig,
     completeOnboarding,
   } = useOnboardingStore();
   const setPasswordMutation = useSetPassword();
+  const createOrganizationConfigMutation = useCreateOrganizationConfig();
 
   // Form validation
   const {
@@ -135,6 +137,69 @@ function SetPasswordContent() {
     updateField("confirmPassword", value);
   };
 
+  // Helper function to create organization configuration data
+  const createOrganizationConfigData = (): CreateOrganizationConfigData => {
+    if (!organizationData) {
+      throw new Error("Organization data is missing");
+    }
+
+    if (!organizationData.domain) {
+      throw new Error("Organization domain is missing");
+    }
+
+    // Extract slug from domain (e.g., "mit.queztlearn.in" -> "mit")
+    // Handle cases where domain might be malformed
+    const domainParts = organizationData?.domain?.split(".");
+    const slug =
+      domainParts?.length > 0
+        ? domainParts[0]
+        : organizationData?.name?.toLowerCase().replace(/\s+/g, "-");
+
+    return {
+      organizationId: organizationData.id,
+      name: organizationData.name,
+      slug: slug,
+      domain: organizationData.domain,
+      contactEmail: adminData?.email || "",
+      contactPhone: "",
+      razorpayKeyId: "",
+      razorpayKeySecret: "",
+      currency: "INR",
+      logoUrl: "",
+      faviconUrl: "",
+      bannerUrls: [],
+      motto: "",
+      description: `${organizationData.name} Learning Management System`,
+      theme: {
+        primaryColor: "#3b82f6",
+        secondaryColor: "#1e40af",
+        fontFamily: "Inter",
+      },
+      heroTitle: `Welcome to ${organizationData.name}`,
+      heroSubtitle: "Your learning journey starts here",
+      features: [
+        {
+          title: "Interactive Learning",
+          description:
+            "Engage with multimedia content and interactive exercises",
+          icon: "book-open",
+        },
+        {
+          title: "Progress Tracking",
+          description: "Monitor your learning progress and achievements",
+          icon: "chart-line",
+        },
+        {
+          title: "Expert Instructors",
+          description: "Learn from experienced and qualified instructors",
+          icon: "users",
+        },
+      ],
+      supportEmail: adminData?.email || "",
+      maintenanceMode: false,
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -171,6 +236,47 @@ function SetPasswordContent() {
           userId: localUserId,
           password: getFieldValue("password"),
         });
+
+        // Create organization configuration after password is set
+        if (organizationData && adminData) {
+          try {
+            console.log("Creating organization config with data:", {
+              organizationData,
+              adminData,
+              domain: organizationData?.domain,
+            });
+
+            const configData = createOrganizationConfigData();
+            console.log("Generated config data:", configData);
+
+            const configResult =
+              await createOrganizationConfigMutation.mutateAsync(configData);
+
+            if (configResult.success && configResult.data) {
+              // Store the organization configuration
+              setOrganizationConfig(configResult.data);
+              console.log(
+                "Organization configuration created successfully:",
+                configResult.data
+              );
+            }
+          } catch (configError) {
+            console.error(
+              "Failed to create organization configuration:",
+              configError
+            );
+            console.error("Organization data:", organizationData);
+            console.error("Admin data:", adminData);
+            // Don't fail the entire flow if config creation fails
+          }
+        } else {
+          console.warn("Missing data for organization config creation:", {
+            hasOrganizationData: !!organizationData,
+            hasAdminData: !!adminData,
+            organizationData,
+            adminData,
+          });
+        }
 
         setPasswordSet(true);
 
