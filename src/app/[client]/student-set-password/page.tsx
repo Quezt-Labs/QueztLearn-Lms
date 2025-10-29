@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,35 +16,29 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
-import { useSetPassword, useCreateOrganizationConfig, useLogin } from "@/hooks";
-import { useOnboardingStore } from "@/lib/store/onboarding";
+import { useStudentSetPassword, useStudentLogin } from "@/hooks/api";
+import { useStudentAuthStore } from "@/lib/store/student-auth";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
 import { calculatePasswordStrength } from "@/lib/utils/validation";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
-import { CreateOrganizationConfigData } from "@/lib/types/api";
+import { ClientProvider, useClient } from "@/components/client/client-provider";
+import Image from "next/image";
 
-function SetPasswordContent() {
+// Client Student Set Password Component
+function ClientStudentSetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isPasswordSet, setIsPasswordSet] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [localUserId, setLocalUserId] = useState<string | null>(null);
 
   const router = useRouter();
-  const {
-    organizationData,
-    adminData,
-    emailVerified,
-    userId: storeUserId,
-    setPasswordSet,
-    setOrganizationConfig,
-    completeOnboarding,
-  } = useOnboardingStore();
-  const setPasswordMutation = useSetPassword();
-  const createOrganizationConfigMutation = useCreateOrganizationConfig();
-  const loginMutation = useLogin();
+  const { client } = useClient();
+  const { studentData, userId, setPasswordSet, completeStudentAuth } =
+    useStudentAuthStore();
+  const setPasswordMutation = useStudentSetPassword();
+  const loginMutation = useStudentLogin();
 
   // Form validation
   const {
@@ -64,66 +58,14 @@ function SetPasswordContent() {
     autoReset: true,
   });
 
-  // Get userId from store or admin data
+  // Initialize
   useEffect(() => {
-    // Try to get userId from store first (from email verification)
-    if (storeUserId) {
-      setLocalUserId(storeUserId);
-    } else if (adminData?.id) {
-      // For admin onboarding flow, use adminData
-      setLocalUserId(adminData.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Initialize and handle redirects
-  useEffect(() => {
-    // Set initializing to false after a short delay to allow store to load
     const initTimer = setTimeout(() => {
       setIsInitializing(false);
     }, 100);
 
-    // Don't run redirect checks if password is already set (celebration screen)
-    if (isPasswordSet) {
-      return () => clearTimeout(initTimer);
-    }
-
-    // If we have userId from store (coming from email verification), no redirects needed
-    if (storeUserId) {
-      return () => clearTimeout(initTimer);
-    }
-
-    // Only run redirect checks for admin onboarding flow
-    if (!isInitializing) {
-      // If we have no data at all, redirect to create organization
-      if (!adminData && !organizationData) {
-        router.push("/create-organization");
-        return;
-      }
-
-      // If we have admin data but no organization, redirect to create organization
-      if (adminData && !organizationData) {
-        router.push("/create-organization");
-        return;
-      }
-
-      // If we have both but email not verified, redirect to verify email
-      if (adminData && organizationData && !emailVerified) {
-        router.push("/verify-email");
-        return;
-      }
-    }
-
     return () => clearTimeout(initTimer);
-  }, [
-    adminData,
-    organizationData,
-    emailVerified,
-    router,
-    isInitializing,
-    storeUserId,
-    isPasswordSet,
-  ]);
+  }, []);
 
   const handlePasswordChange = (value: string) => {
     updateField("password", value);
@@ -137,37 +79,6 @@ function SetPasswordContent() {
     updateField("confirmPassword", value);
   };
 
-  // Helper function to create organization configuration data
-  const createOrganizationConfigData = (): CreateOrganizationConfigData => {
-    if (!organizationData) {
-      throw new Error("Organization data is missing");
-    }
-
-    // Generate a default domain if not provided
-    const domain =
-      organizationData.domain ||
-      `${organizationData.name
-        .toLowerCase()
-        .replace(/\s+/g, "-")}.queztlearn.in`;
-
-    // Extract slug from domain (e.g., "mit.queztlearn.in" -> "mit")
-    // Handle cases where domain might be malformed
-    const domainParts = domain.split(".");
-    const slug =
-      domainParts?.length > 0
-        ? domainParts[0]
-        : organizationData?.name?.toLowerCase().replace(/\s+/g, "-");
-
-    console.log(organizationData, "org data");
-
-    return {
-      organizationId: organizationData.id,
-      name: organizationData.name,
-      slug: slug,
-      domain: domain,
-    };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -177,7 +88,7 @@ function SetPasswordContent() {
       return;
     }
 
-    if (!localUserId) {
+    if (!userId) {
       setError(
         "User information is missing. Please try again or contact support."
       );
@@ -189,88 +100,41 @@ function SetPasswordContent() {
         // Start showing the multi-step loader
         setIsPasswordSet(true);
 
-        // We'll handle the actual password setting here
+        // Set the password
         await setPasswordMutation.mutateAsync({
-          userId: localUserId,
+          userId: userId,
           password: getFieldValue("password"),
         });
 
         setPasswordSet(true);
 
-        // Complete onboarding
-        completeOnboarding();
+        // Complete student auth
+        completeStudentAuth();
 
-        // Auto-login the admin after password setup
-        if (adminData?.email && getFieldValue("password")) {
+        // Auto-login the student after password setup
+        if (studentData?.email && getFieldValue("password")) {
           try {
-            console.log("Auto-logging in admin:", adminData.email);
+            console.log("Auto-logging in student:", studentData.email);
             const loginResult = await loginMutation.mutateAsync({
-              email: adminData.email,
+              email: studentData.email,
               password: getFieldValue("password"),
             });
 
-            // After successful login, create organization configuration
-            if (loginResult.success && organizationData && adminData) {
-              try {
-                console.log(
-                  "Creating organization config after login with data:",
-                  {
-                    organizationData,
-                    adminData,
-                    domain: organizationData?.domain,
-                  }
-                );
-
-                const configData = createOrganizationConfigData();
-                console.log("Generated config data:", configData);
-
-                const configResult =
-                  await createOrganizationConfigMutation.mutateAsync(
-                    configData
-                  );
-
-                if (configResult.success && configResult.data) {
-                  // Store the organization configuration
-                  setOrganizationConfig(configResult.data);
-                  console.log(
-                    "Organization configuration created successfully:",
-                    configResult.data
-                  );
-                }
-              } catch (configError) {
-                console.error(
-                  "Failed to create organization configuration:",
-                  configError
-                );
-                console.error("Organization data:", organizationData);
-                console.error("Admin data:", adminData);
-                // Don't fail the entire flow if config creation fails
-              }
-            } else {
-              console.warn("Missing data for organization config creation:", {
-                hasOrganizationData: !!organizationData,
-                hasAdminData: !!adminData,
-                loginSuccess: loginResult?.success,
-                organizationData,
-                adminData,
-              });
-            }
-
-            // Login hook will handle redirect to admin dashboard
-            return; // Exit early since login will redirect
+            // Login hook will handle redirect to student dashboard
+            return;
           } catch (loginError) {
             console.error("Auto-login failed:", loginError);
             // If auto-login fails, redirect to login page
             setTimeout(() => {
-              window.location.href = "/login";
+              window.location.href = `/${client?.subdomain}/login`;
             }, 2000);
             return;
           }
         }
 
-        // Fallback: redirect to login page if no admin data
+        // Fallback: redirect to login page if no student data
         setTimeout(() => {
-          window.location.href = "/login";
+          window.location.href = `/${client?.subdomain}/login`;
         }, 4000);
       });
     } catch (error: unknown) {
@@ -282,9 +146,7 @@ function SetPasswordContent() {
     { text: "Setting up your account" },
     { text: "Creating your secure profile" },
     { text: "Logging you in automatically" },
-    { text: "Configuring your organization" },
-    { text: "Setting up organization branding" },
-    { text: "Welcome to QueztLearn!" },
+    { text: `Welcome to ${client?.name || "QueztLearn"}!` },
   ];
 
   const passwordStrength = calculatePasswordStrength(getFieldValue("password"));
@@ -318,9 +180,6 @@ function SetPasswordContent() {
     );
   }
 
-  // Check if coming from email (has userId in store) vs admin onboarding
-  const isAdminOnboarding = !storeUserId && !!adminData;
-
   return (
     <>
       {/* Multi-step loader - shown during password setup */}
@@ -334,60 +193,63 @@ function SetPasswordContent() {
       )}
 
       <div className="min-h-screen flex overflow-hidden">
-        {/* Left Side - Show only for admin onboarding */}
-        {isAdminOnboarding && (
-          <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary to-primary/80 flex-col justify-center p-8 text-primary-foreground">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-md"
-            >
-              <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">Secure Your Account</h1>
-                <p className="text-primary-foreground/80">
-                  Create a strong password to protect your account
-                </p>
+        {/* Left Side - Progress State */}
+        <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-primary to-primary/80 flex-col justify-center p-8 text-primary-foreground">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-md"
+          >
+            <div className="mb-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Image
+                    src={client?.logo || "/images/Logo.png"}
+                    alt={client?.name || "Organization"}
+                    width={32}
+                    height={32}
+                    className="rounded"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">
+                    {client?.name || "Organization"}
+                  </h1>
+                  <p className="text-primary-foreground/80">Password Setup</p>
+                </div>
               </div>
+              <p className="text-primary-foreground/80">
+                Create a strong password to protect your account with{" "}
+                {client?.name || "our platform"}.
+              </p>
+            </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm">Organization created</span>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4" />
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm">Admin account created</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm">Email verified</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary-foreground/30 rounded-full flex items-center justify-center">
-                    <Shield className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium">
-                    Set secure password
-                  </span>
-                </div>
+                <span className="text-sm">Account created</span>
               </div>
-            </motion.div>
-          </div>
-        )}
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+                <span className="text-sm">Email verified</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/30 rounded-full flex items-center justify-center">
+                  <Shield className="h-4 w-4" />
+                </div>
+                <span className="text-sm font-medium">Set secure password</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
 
         {/* Right Side - Password Form */}
-        <div
-          className={`${
-            isAdminOnboarding ? "flex-1 lg:w-3/5" : "flex-1 lg:w-full"
-          } flex items-center justify-center p-6 bg-background`}
-        >
+        <div className="flex-1 lg:w-3/5 flex items-center justify-center p-6 bg-background">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -557,17 +419,15 @@ function SetPasswordContent() {
                   </Button>
                 </form>
 
-                {/* Back button - only show for admin onboarding */}
-                {isAdminOnboarding && (
-                  <div className="mt-6 text-center">
-                    <Button variant="outline" asChild>
-                      <Link href="/verify-email">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Email Verification
-                      </Link>
-                    </Button>
-                  </div>
-                )}
+                {/* Back button */}
+                <div className="mt-6 text-center">
+                  <Button variant="outline" asChild>
+                    <Link href={`/${client?.subdomain}/student-verify-email`}>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Email Verification
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -577,7 +437,10 @@ function SetPasswordContent() {
   );
 }
 
-export default function SetPasswordPage() {
+export default function ClientStudentSetPassword() {
+  const params = useParams();
+  const clientSlug = params.client as string;
+
   return (
     <Suspense
       fallback={
@@ -586,7 +449,9 @@ export default function SetPasswordPage() {
         </div>
       }
     >
-      <SetPasswordContent />
+      <ClientProvider subdomain={clientSlug}>
+        <ClientStudentSetPasswordContent />
+      </ClientProvider>
     </Suspense>
   );
 }

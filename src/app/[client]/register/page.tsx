@@ -102,7 +102,7 @@ function ClientStudentRegisterContent() {
           alert(
             "Registration successful! Please check your email for verification link."
           );
-          router.push("/verify-email");
+          router.push(`/${client.subdomain}/student-verify-email`);
         }
       });
     } catch (error: unknown) {
