@@ -185,6 +185,8 @@ export const API_ENDPOINTS = {
     GET: "/api/admin/test-series/:id",
     UPDATE: "/api/admin/test-series/:id",
     DELETE: "/api/admin/test-series/:id",
+    PUBLISH: "/api/admin/test-series/:id/publish",
+    STATS: "/api/admin/test-series/:id/stats",
     ANALYTICS: "/api/admin/test-series/:id/analytics",
   },
   TESTS: {
@@ -195,12 +197,20 @@ export const API_ENDPOINTS = {
     DELETE: "/api/admin/tests/:id",
     ANALYTICS: "/api/admin/tests/:id/analytics",
   },
+  TESTS_SECTIONS: {
+    LIST: "/api/admin/tests/:testId/sections",
+    CREATE: "/api/admin/tests/:testId/sections",
+  },
   SECTIONS: {
     LIST: "/api/admin/sections/test/:testId",
     CREATE: "/api/admin/sections",
     GET: "/api/admin/sections/:id",
     UPDATE: "/api/admin/sections/:id",
     DELETE: "/api/admin/sections/:id",
+  },
+  SECTIONS_QUESTIONS: {
+    LIST: "/api/admin/tests/sections/:sectionId/questions",
+    CREATE: "/api/admin/tests/sections/:sectionId/questions",
   },
   QUESTIONS: {
     LIST: "/api/admin/questions/section/:sectionId",

@@ -37,6 +37,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TestSeries, useDeleteTestSeries } from "@/hooks/test-series";
+import { EditTestSeriesModal } from "./edit-test-series-modal";
 
 interface TestSeriesDataTableProps {
   data: TestSeries[];
@@ -50,6 +51,7 @@ export function TestSeriesDataTable({
   onRefetch,
 }: TestSeriesDataTableProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editSeries, setEditSeries] = useState<TestSeries | null>(null);
   const deleteMutation = useDeleteTestSeries();
 
   const handleDelete = async () => {
@@ -132,9 +134,13 @@ export function TestSeriesDataTable({
                     ) : (
                       <div>
                         <p className="font-semibold">
-                          ₹{series.finalPrice.toFixed(2)}
+                          ₹
+                          {(
+                            (series.discountedPrice ?? series.finalPrice) ||
+                            0
+                          ).toFixed(2)}
                         </p>
-                        {series.discountPercentage > 0 && (
+                        {series.discountPercentage > 0 && series.totalPrice && (
                           <p className="text-xs text-muted-foreground line-through">
                             ₹{series.totalPrice.toFixed(2)}
                           </p>
@@ -151,16 +157,23 @@ export function TestSeriesDataTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={series.isActive ? "default" : "secondary"}
-                      className={
-                        series.isActive
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                          : ""
-                      }
-                    >
-                      {series.isActive ? "Active" : "Inactive"}
-                    </Badge>
+                    <div className="flex flex-col gap-1">
+                      <Badge
+                        variant={series.isActive ? "default" : "secondary"}
+                        className={
+                          series.isActive
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                            : ""
+                        }
+                      >
+                        {series.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                      {series.publishedAt && (
+                        <Badge variant="outline" className="text-xs">
+                          Published
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">
@@ -200,11 +213,9 @@ export function TestSeriesDataTable({
                             Analytics
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/test-series/${series.id}/edit`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Link>
+                        <DropdownMenuItem onClick={() => setEditSeries(series)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -247,6 +258,20 @@ export function TestSeriesDataTable({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {editSeries && (
+        <EditTestSeriesModal
+          open={!!editSeries}
+          onOpenChange={(open) => {
+            if (!open) setEditSeries(null);
+          }}
+          testSeries={editSeries}
+          onSuccess={() => {
+            setEditSeries(null);
+            onRefetch?.();
+          }}
+        />
+      )}
     </>
   );
 }

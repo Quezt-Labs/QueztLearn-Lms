@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api/client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Types
 export type ExamType =
@@ -29,7 +29,8 @@ export interface TestSeries {
   imageUrl?: string;
   totalPrice: number;
   discountPercentage: number;
-  finalPrice: number;
+  finalPrice?: number; // Optional as API returns discountedPrice
+  discountedPrice?: number; // API response uses this
   isFree: boolean;
   durationDays: number;
   testCount: number;
@@ -38,6 +39,7 @@ export interface TestSeries {
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
+  tests?: Test[]; // Optional list of tests if included by API
 }
 
 export interface Test {
@@ -126,7 +128,7 @@ export const useTestSeriesList = (params?: {
       if (params?.search) queryParams.append("search", params.search);
 
       const response = await apiClient.get(
-        `/api/admin/test-series?${queryParams.toString()}`
+        `/admin/test-series?${queryParams.toString()}`
       );
       return response.data;
     },
@@ -137,7 +139,7 @@ export const useTestSeries = (id: string) => {
   return useQuery({
     queryKey: ["test-series", id],
     queryFn: async () => {
-      const response = await apiClient.get(`/api/admin/test-series/${id}`);
+      const response = await apiClient.get(`/admin/test-series/${id}`);
       return response.data;
     },
     enabled: !!id,
@@ -149,7 +151,7 @@ export const useCreateTestSeries = () => {
 
   return useMutation({
     mutationFn: async (data: Partial<TestSeries>) => {
-      const response = await apiClient.post("/api/admin/test-series", data);
+      const response = await apiClient.post("/admin/test-series", data);
       return response.data;
     },
     onSuccess: () => {
@@ -169,10 +171,7 @@ export const useUpdateTestSeries = () => {
       id: string;
       data: Partial<TestSeries>;
     }) => {
-      const response = await apiClient.put(
-        `/api/admin/test-series/${id}`,
-        data
-      );
+      const response = await apiClient.put(`/admin/test-series/${id}`, data);
       return response.data;
     },
     onSuccess: (_, variables) => {
@@ -189,7 +188,7 @@ export const useDeleteTestSeries = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete(`/api/admin/test-series/${id}`);
+      const response = await apiClient.delete(`/admin/test-series/${id}`);
       return response.data;
     },
     onSuccess: () => {
@@ -198,30 +197,18 @@ export const useDeleteTestSeries = () => {
   });
 };
 
-// Test Hooks
-export const useTestsList = (params?: {
-  testSeriesId?: string;
-  isPublished?: boolean;
-  search?: string;
-  page?: number;
-  limit?: number;
-}) => {
-  return useQuery({
-    queryKey: ["tests", params],
-    queryFn: async () => {
-      const queryParams = new URLSearchParams();
-      if (params?.testSeriesId)
-        queryParams.append("testSeriesId", params.testSeriesId);
-      if (params?.isPublished !== undefined)
-        queryParams.append("isPublished", params.isPublished.toString());
-      if (params?.search) queryParams.append("search", params.search);
-      if (params?.page) queryParams.append("page", params.page.toString());
-      if (params?.limit) queryParams.append("limit", params.limit.toString());
+// Publish Test Series
+export const usePublishTestSeries = () => {
+  const queryClient = useQueryClient();
 
-      const response = await apiClient.get(
-        `/api/admin/tests?${queryParams.toString()}`
-      );
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.post(`/admin/test-series/${id}/publish`);
       return response.data;
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["test-series"] });
+      queryClient.invalidateQueries({ queryKey: ["test-series", id] });
     },
   });
 };
@@ -230,7 +217,7 @@ export const useTest = (id: string) => {
   return useQuery({
     queryKey: ["test", id],
     queryFn: async () => {
-      const response = await apiClient.get(`/api/admin/tests/${id}`);
+      const response = await apiClient.get(`/admin/tests/${id}`);
       return response.data;
     },
     enabled: !!id,
@@ -242,7 +229,7 @@ export const useCreateTest = () => {
 
   return useMutation({
     mutationFn: async (data: Partial<Test>) => {
-      const response = await apiClient.post("/api/admin/tests", data);
+      const response = await apiClient.post("/admin/tests", data);
       return response.data;
     },
     onSuccess: () => {
@@ -257,7 +244,7 @@ export const useUpdateTest = () => {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Test> }) => {
-      const response = await apiClient.put(`/api/admin/tests/${id}`, data);
+      const response = await apiClient.put(`/admin/tests/${id}`, data);
       return response.data;
     },
     onSuccess: (_, variables) => {
@@ -272,7 +259,7 @@ export const useDeleteTest = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete(`/api/admin/tests/${id}`);
+      const response = await apiClient.delete(`/admin/tests/${id}`);
       return response.data;
     },
     onSuccess: () => {
@@ -287,12 +274,49 @@ export const useSectionsByTest = (testId: string) => {
   return useQuery({
     queryKey: ["sections", "test", testId],
     queryFn: async () => {
-      const response = await apiClient.get(
-        `/api/admin/sections/test/${testId}`
-      );
+      const response = await apiClient.get(`/admin/sections/test/${testId}`);
       return response.data;
     },
     enabled: !!testId,
+  });
+};
+
+// Spec-aligned: sections under a specific test
+export const useTestSections = (testId: string) => {
+  return useQuery({
+    queryKey: ["tests", testId, "sections"],
+    queryFn: async () => {
+      const response = await apiClient.get(`/admin/tests/${testId}/sections`);
+      return response.data;
+    },
+    enabled: !!testId,
+  });
+};
+
+export const useCreateTestSection = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      testId,
+      data,
+    }: {
+      testId: string;
+      data: { name: string; description?: string; displayOrder?: number };
+    }) => {
+      const response = await apiClient.post(
+        `/admin/tests/${testId}/sections`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["tests", variables.testId, "sections"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["sections"] });
+      queryClient.invalidateQueries({ queryKey: ["tests"] });
+    },
   });
 };
 
@@ -301,7 +325,7 @@ export const useCreateSection = () => {
 
   return useMutation({
     mutationFn: async (data: Partial<Section>) => {
-      const response = await apiClient.post("/api/admin/sections", data);
+      const response = await apiClient.post("/admin/sections", data);
       return response.data;
     },
     onSuccess: () => {
@@ -322,7 +346,7 @@ export const useUpdateSection = () => {
       id: string;
       data: Partial<Section>;
     }) => {
-      const response = await apiClient.put(`/api/admin/sections/${id}`, data);
+      const response = await apiClient.put(`/admin/sections/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -336,7 +360,7 @@ export const useDeleteSection = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete(`/api/admin/sections/${id}`);
+      const response = await apiClient.delete(`/admin/sections/${id}`);
       return response.data;
     },
     onSuccess: () => {
@@ -365,7 +389,7 @@ export const useQuestionsBySection = (
       if (params?.limit) queryParams.append("limit", params.limit.toString());
 
       const response = await apiClient.get(
-        `/api/admin/questions/section/${sectionId}?${queryParams.toString()}`
+        `/admin/questions/section/${sectionId}?${queryParams.toString()}`
       );
       return response.data;
     },
@@ -373,11 +397,50 @@ export const useQuestionsBySection = (
   });
 };
 
+// Spec-aligned: questions under a specific section (nested under tests)
+export const useSectionQuestions = (sectionId: string) => {
+  return useQuery({
+    queryKey: ["tests", "sections", sectionId, "questions"],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        `/admin/tests/sections/${sectionId}/questions`
+      );
+      return response.data;
+    },
+    enabled: !!sectionId,
+  });
+};
+
+export const useCreateSectionQuestion = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      sectionId,
+      data,
+    }: {
+      sectionId: string;
+      data: Partial<Question> & { options?: QuestionOption[] };
+    }) => {
+      const response = await apiClient.post(
+        `/admin/tests/sections/${sectionId}/questions`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+      queryClient.invalidateQueries({ queryKey: ["sections"] });
+      queryClient.invalidateQueries({ queryKey: ["tests"] });
+    },
+  });
+};
+
 export const useQuestion = (id: string) => {
   return useQuery({
     queryKey: ["question", id],
     queryFn: async () => {
-      const response = await apiClient.get(`/api/admin/questions/${id}`);
+      const response = await apiClient.get(`/admin/questions/${id}`);
       return response.data;
     },
     enabled: !!id,
@@ -391,7 +454,7 @@ export const useCreateQuestion = () => {
     mutationFn: async (
       data: Partial<Question> & { options: QuestionOption[] }
     ) => {
-      const response = await apiClient.post("/api/admin/questions", data);
+      const response = await apiClient.post("/admin/questions", data);
       return response.data;
     },
     onSuccess: () => {
@@ -413,7 +476,7 @@ export const useUpdateQuestion = () => {
       id: string;
       data: Partial<Question>;
     }) => {
-      const response = await apiClient.put(`/api/admin/questions/${id}`, data);
+      const response = await apiClient.put(`/admin/questions/${id}`, data);
       return response.data;
     },
     onSuccess: (_, variables) => {
@@ -428,7 +491,7 @@ export const useDeleteQuestion = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete(`/api/admin/questions/${id}`);
+      const response = await apiClient.delete(`/admin/questions/${id}`);
       return response.data;
     },
     onSuccess: () => {
@@ -439,25 +502,12 @@ export const useDeleteQuestion = () => {
   });
 };
 
-// Analytics Hooks
-export const useTestSeriesAnalytics = (id: string) => {
+// Spec-aligned: stats endpoint for a test series
+export const useTestSeriesStats = (id: string) => {
   return useQuery({
-    queryKey: ["test-series-analytics", id],
+    queryKey: ["test-series-stats", id],
     queryFn: async () => {
-      const response = await apiClient.get(
-        `/api/admin/test-series/${id}/analytics`
-      );
-      return response.data;
-    },
-    enabled: !!id,
-  });
-};
-
-export const useTestAnalytics = (id: string) => {
-  return useQuery({
-    queryKey: ["test-analytics", id],
-    queryFn: async () => {
-      const response = await apiClient.get(`/api/admin/tests/${id}/analytics`);
+      const response = await apiClient.get(`/admin/test-series/${id}/stats`);
       return response.data;
     },
     enabled: !!id,

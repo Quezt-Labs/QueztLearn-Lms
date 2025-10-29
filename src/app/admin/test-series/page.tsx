@@ -63,8 +63,8 @@ export default function TestSeriesPage() {
     search: searchQuery || undefined,
   });
 
-  const testSeries = data?.data?.series || [];
-  const pagination = data?.data?.pagination;
+  const testSeries = Array.isArray(data?.data) ? data.data : [];
+  const pagination = data?.pagination;
 
   const handleClearFilters = () => {
     setSearchQuery("");
@@ -190,14 +190,14 @@ export default function TestSeriesPage() {
           {pagination && pagination.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
-                Page {pagination.currentPage} of {pagination.totalPages} (
-                {pagination.totalCount} total)
+                Page {pagination.page || pagination.currentPage} of{" "}
+                {pagination.totalPages} ({pagination.totalCount} total)
               </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={!pagination.hasPrevious}
+                  disabled={!(pagination.hasPrevPage ?? pagination.hasPrevious)}
                   onClick={() => setPage(page - 1)}
                 >
                   Previous
@@ -205,7 +205,7 @@ export default function TestSeriesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={!pagination.hasNext}
+                  disabled={!(pagination.hasNextPage ?? pagination.hasNext)}
                   onClick={() => setPage(page + 1)}
                 >
                   Next

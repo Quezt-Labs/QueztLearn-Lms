@@ -878,3 +878,31 @@ export const useDeleteContent = () => {
     },
   });
 };
+
+// ==========================================
+// Admin Utilities
+// ==========================================
+
+// Clear all cached data for the organization (ADMIN only)
+export const useClearOrganizationCache = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post("/admin/cache/clear");
+      return res.data as {
+        success: boolean;
+        message?: string;
+        data?: { clearedKeys?: number };
+      };
+    },
+    onSuccess: () => {
+      // Invalidate all client-side caches so fresh data is fetched
+      queryClient.invalidateQueries();
+      // Optionally also clear mutations cache if needed in the future
+    },
+    onError: (error) => {
+      console.error("Failed to clear organization cache:", error);
+    },
+  });
+};
