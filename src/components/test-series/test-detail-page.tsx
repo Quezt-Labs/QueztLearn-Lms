@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   ArrowLeft,
-  Edit,
   Trash2,
   Plus,
   FileText,
@@ -25,22 +24,14 @@ import {
   CheckCircle,
   List,
   HelpCircle,
-  GripVertical,
   Settings,
 } from "lucide-react";
 import {
   useTest,
   useDeleteTest,
-  useUpdateTest,
   useTestSections,
-  useCreateTestSection,
-  useDeleteSection,
-  useSectionQuestions,
-  useCreateSectionQuestion,
-  useDeleteQuestion,
   Test,
   Section,
-  Question,
 } from "@/hooks/test-series";
 import { LoadingSkeleton } from "@/components/common/loading-skeleton";
 import { SectionManager } from "./section-manager";
@@ -268,36 +259,45 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
 
           {/* Sections Tab */}
           <TabsContent value="sections" className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Sections</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Organize questions into sections for better structure
-                  </p>
+            <Card className="border-0 shadow-none bg-transparent">
+              <CardHeader className="px-0 pb-6">
+                <div className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl font-bold mb-2">
+                      Sections
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Organize questions into sections for better structure
+                    </p>
+                  </div>
+                  <Button onClick={handleCreateSection} size="lg">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Section
+                  </Button>
                 </div>
-                <Button onClick={handleCreateSection}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Section
-                </Button>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-0">
                 {sections.length === 0 ? (
-                  <div className="text-center py-12">
-                    <List className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center py-16 border-2 border-dashed border-muted-foreground/30 rounded-xl bg-muted/30"
+                  >
+                    <List className="h-16 w-16 mx-auto text-muted-foreground/50 mb-6" />
+                    <h3 className="text-xl font-semibold mb-2">
                       No Sections Yet
                     </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Create your first section to start adding questions
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Create your first section to start adding questions. Sections
+                      help organize your test content logically.
                     </p>
-                    <Button onClick={handleCreateSection}>
+                    <Button onClick={handleCreateSection} size="lg">
                       <Plus className="mr-2 h-4 w-4" />
                       Create First Section
                     </Button>
-                  </div>
+                  </motion.div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <AnimatePresence>
                       {sections.map((section, index) => (
                         <SectionManager

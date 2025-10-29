@@ -206,7 +206,7 @@ export const usePublishTestSeries = () => {
       const response = await apiClient.post(`/admin/test-series/${id}/publish`);
       return response.data;
     },
-    onSuccess: (_, id) => {
+    onSuccess: (_response, id) => {
       queryClient.invalidateQueries({ queryKey: ["test-series"] });
       queryClient.invalidateQueries({ queryKey: ["test-series", id] });
     },
@@ -224,6 +224,19 @@ export const useTest = (id: string) => {
   });
 };
 
+export const useTestsByTestSeries = (testSeriesId: string) => {
+  return useQuery({
+    queryKey: ["tests", "test-series", testSeriesId],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        `/admin/tests/test-series/${testSeriesId}`
+      );
+      return response.data;
+    },
+    enabled: !!testSeriesId,
+  });
+};
+
 export const useCreateTest = () => {
   const queryClient = useQueryClient();
 
@@ -232,9 +245,15 @@ export const useCreateTest = () => {
       const response = await apiClient.post("/admin/tests", data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tests"] });
       queryClient.invalidateQueries({ queryKey: ["test-series"] });
+      // Invalidate tests by test series if testSeriesId is provided
+      if (variables.testSeriesId) {
+        queryClient.invalidateQueries({
+          queryKey: ["tests", "test-series", variables.testSeriesId],
+        });
+      }
     },
   });
 };
@@ -250,6 +269,12 @@ export const useUpdateTest = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tests"] });
       queryClient.invalidateQueries({ queryKey: ["test", variables.id] });
+      // Invalidate tests by test series if testSeriesId is provided
+      if (variables.data.testSeriesId) {
+        queryClient.invalidateQueries({
+          queryKey: ["tests", "test-series", variables.data.testSeriesId],
+        });
+      }
     },
   });
 };
@@ -265,6 +290,8 @@ export const useDeleteTest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tests"] });
       queryClient.invalidateQueries({ queryKey: ["test-series"] });
+      // Also invalidate all test-series queries since we don't know which series
+      queryClient.invalidateQueries({ queryKey: ["tests", "test-series"] });
     },
   });
 };

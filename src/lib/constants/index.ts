@@ -196,6 +196,7 @@ export const API_ENDPOINTS = {
     UPDATE: "/api/admin/tests/:id",
     DELETE: "/api/admin/tests/:id",
     ANALYTICS: "/api/admin/tests/:id/analytics",
+    BY_TEST_SERIES: "/api/admin/tests/test-series/:testSeriesId",
   },
   TESTS_SECTIONS: {
     LIST: "/api/admin/tests/:testId/sections",

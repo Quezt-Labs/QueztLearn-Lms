@@ -6,13 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { useUpdateTestSeries, ExamType, TestSeries } from "@/hooks/test-series";
+import { useUpdateTestSeries, TestSeries } from "@/hooks/test-series";
 
 interface EditTestSeriesModalProps {
   open: boolean;
@@ -30,18 +23,19 @@ interface EditTestSeriesModalProps {
   onSuccess?: () => void;
 }
 
-const EXAM_OPTIONS: ExamType[] = [
-  "JEE",
-  "NEET",
-  "UPSC",
-  "BANK",
-  "SSC",
-  "GATE",
-  "CAT",
-  "NDA",
-  "CLAT",
-  "OTHER",
-];
+// EXAM_OPTIONS not used - commented out to avoid linter warning
+// const EXAM_OPTIONS: ExamType[] = [
+//   "JEE",
+//   "NEET",
+//   "UPSC",
+//   "BANK",
+//   "SSC",
+//   "GATE",
+//   "CAT",
+//   "NDA",
+//   "CLAT",
+//   "OTHER",
+// ];
 
 export function EditTestSeriesModal({
   open,

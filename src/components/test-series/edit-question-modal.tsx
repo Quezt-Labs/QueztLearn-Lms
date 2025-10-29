@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import {
   useUpdateQuestion,
   Question,
@@ -95,6 +95,20 @@ export function EditQuestionModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate options for MCQ
+    if (formData.type === "MCQ" || formData.type === "TRUE_FALSE") {
+      const filledOptions = formData.options.filter((opt) => opt.text.trim());
+      if (filledOptions.length < 2) {
+        alert("Please add at least 2 options");
+        return;
+      }
+      const hasCorrect = filledOptions.some((opt) => opt.isCorrect);
+      if (!hasCorrect) {
+        alert("Please mark at least one option as correct");
+        return;
+      }
+    }
+
     try {
       await updateMutation.mutateAsync({
         id: question.id,
@@ -132,6 +146,27 @@ export function EditQuestionModal({
       newOptions[index] = { ...newOptions[index], isCorrect: value as boolean };
     }
     setFormData({ ...formData, options: newOptions });
+  };
+
+  const addOption = () => {
+    setFormData({
+      ...formData,
+      options: [
+        ...formData.options,
+        {
+          text: "",
+          isCorrect: false,
+          displayOrder: formData.options.length,
+        },
+      ],
+    });
+  };
+
+  const removeOption = (index: number) => {
+    setFormData({
+      ...formData,
+      options: formData.options.filter((_, i) => i !== index),
+    });
   };
 
   return (
@@ -255,29 +290,58 @@ export function EditQuestionModal({
           {/* Options */}
           {(formData.type === "MCQ" || formData.type === "TRUE_FALSE") && (
             <div className="space-y-3">
-              <Label>Options</Label>
-              {formData.options.map((option, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-2 p-3 border rounded-lg"
-                >
-                  <input
-                    type={formData.type === "TRUE_FALSE" ? "radio" : "checkbox"}
-                    checked={option.isCorrect}
-                    onChange={(e) =>
-                      handleOptionChange(index, "isCorrect", e.target.checked)
-                    }
-                    className="h-4 w-4"
-                  />
-                  <Input
-                    value={option.text}
-                    onChange={(e) =>
-                      handleOptionChange(index, "text", e.target.value)
-                    }
-                    className="flex-1"
-                  />
-                </div>
-              ))}
+              <div className="flex items-center justify-between">
+                <Label>Options</Label>
+                {formData.type === "MCQ" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addOption}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Option
+                  </Button>
+                )}
+              </div>
+              <div className="space-y-2">
+                {formData.options.map((option, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 p-3 border rounded-lg"
+                  >
+                    <input
+                      type={
+                        formData.type === "TRUE_FALSE" ? "radio" : "checkbox"
+                      }
+                      checked={option.isCorrect}
+                      onChange={(e) =>
+                        handleOptionChange(index, "isCorrect", e.target.checked)
+                      }
+                      className="h-4 w-4"
+                    />
+                    <Input
+                      placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                      value={option.text}
+                      onChange={(e) =>
+                        handleOptionChange(index, "text", e.target.value)
+                      }
+                      className="flex-1"
+                    />
+                    {formData.type === "MCQ" && formData.options.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeOption(index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

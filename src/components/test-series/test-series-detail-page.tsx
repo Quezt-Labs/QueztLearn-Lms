@@ -19,7 +19,6 @@ import {
   ArrowLeft,
   Edit,
   Trash2,
-  Plus,
   FileText,
   Clock,
   Users,
@@ -37,6 +36,7 @@ import {
   useDeleteTestSeries,
   usePublishTestSeries,
   useTestSeriesStats,
+  useTestsByTestSeries,
   TestSeries,
 } from "@/hooks/test-series";
 import { LoadingSkeleton } from "@/components/common/loading-skeleton";
@@ -65,6 +65,8 @@ export function TestSeriesDetailPage({
     refetch: refetchTestSeries,
   } = useTestSeries(testSeriesId);
   const { data: statsData } = useTestSeriesStats(testSeriesId);
+  const { data: testsData, refetch: refetchTests } =
+    useTestsByTestSeries(testSeriesId);
 
   // Mutations
   const deleteMutation = useDeleteTestSeries();
@@ -72,7 +74,7 @@ export function TestSeriesDetailPage({
 
   const testSeries = testSeriesData?.data as TestSeries | undefined;
   const stats = statsData?.data;
-  const tests = testSeries?.tests ?? [];
+  const tests = Array.isArray(testsData?.data) ? testsData.data : [];
 
   const handleGoBack = () => {
     router.push(`/${basePath}/test-series`);
@@ -418,6 +420,7 @@ export function TestSeriesDetailPage({
               testSeriesId={testSeriesId}
               tests={tests}
               onRefetch={() => {
+                refetchTests();
                 refetchTestSeries();
               }}
               basePath={basePath}

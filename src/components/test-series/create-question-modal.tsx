@@ -72,15 +72,15 @@ export function CreateQuestionModal({
     e.preventDefault();
 
     // Validate options for MCQ
-    if (formData.type === "MCQ") {
-      const hasCorrect = formData.options.some((opt) => opt.isCorrect);
-      if (!hasCorrect) {
-        alert("Please mark at least one option as correct");
+    if (formData.type === "MCQ" || formData.type === "TRUE_FALSE") {
+      const filledOptions = formData.options.filter((opt) => opt.text.trim());
+      if (filledOptions.length < 2) {
+        alert("Please add at least 2 options");
         return;
       }
-      const hasAllText = formData.options.every((opt) => opt.text.trim());
-      if (!hasAllText) {
-        alert("Please fill in all options");
+      const hasCorrect = filledOptions.some((opt) => opt.isCorrect);
+      if (!hasCorrect) {
+        alert("Please mark at least one option as correct");
         return;
       }
     }
@@ -335,12 +335,13 @@ export function CreateQuestionModal({
                       }
                       className="flex-1"
                     />
-                    {formData.type === "MCQ" && formData.options.length > 2 && (
+                    {formData.type === "MCQ" && formData.options.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => removeOption(index)}
+                        className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
