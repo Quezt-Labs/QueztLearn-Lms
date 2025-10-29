@@ -17,7 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
 // import Image from "next/image";
-import { useSetPassword, useCreateOrganizationConfig } from "@/hooks";
+import { useSetPassword, useCreateOrganizationConfig, useLogin } from "@/hooks";
 import { useOnboardingStore } from "@/lib/store/onboarding";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
@@ -45,6 +45,7 @@ function SetPasswordContent() {
   } = useOnboardingStore();
   const setPasswordMutation = useSetPassword();
   const createOrganizationConfigMutation = useCreateOrganizationConfig();
+  const loginMutation = useLogin();
 
   // Form validation
   const {
@@ -226,8 +227,8 @@ function SetPasswordContent() {
           { text: "Setting up your account" },
           { text: "Creating your secure profile" },
           { text: "Configuring your organization" },
-          { text: "Setting up your access" },
-          { text: "Finalizing security settings" },
+          { text: "Setting up organization branding" },
+          { text: "Logging you in automatically" },
           { text: "Welcome to QueztLearn!" },
         ];
 
@@ -283,7 +284,27 @@ function SetPasswordContent() {
         // Complete onboarding
         completeOnboarding();
 
-        // Show celebration screen for everyone and redirect after 4 seconds
+        // Auto-login the admin after password setup
+        if (adminData?.email && getFieldValue("password")) {
+          try {
+            console.log("Auto-logging in admin:", adminData.email);
+            await loginMutation.mutateAsync({
+              email: adminData.email,
+              password: getFieldValue("password"),
+            });
+            // Login hook will handle redirect to admin dashboard
+            return; // Exit early since login will redirect
+          } catch (loginError) {
+            console.error("Auto-login failed:", loginError);
+            // If auto-login fails, redirect to login page
+            setTimeout(() => {
+              window.location.href = "/login";
+            }, 2000);
+            return;
+          }
+        }
+
+        // Fallback: redirect to login page if no admin data
         setTimeout(() => {
           window.location.href = "/login";
         }, 4000);
@@ -297,8 +318,8 @@ function SetPasswordContent() {
     { text: "Setting up your account" },
     { text: "Creating your secure profile" },
     { text: "Configuring your organization" },
-    { text: "Setting up your access" },
-    { text: "Finalizing security settings" },
+    { text: "Setting up organization branding" },
+    { text: "Logging you in automatically" },
     { text: "Welcome to QueztLearn!" },
   ];
 
