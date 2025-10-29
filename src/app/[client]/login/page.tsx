@@ -21,9 +21,11 @@ import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
 import { useStudentLogin } from "@/hooks/api";
+import { useRouter } from "next/navigation";
 
 // Client Login Component
 function ClientLoginContent() {
+  const router = useRouter();
   const { client, isLoading, error } = useClient();
   const [showPassword, setShowPassword] = useState(false);
   const studentLoginMutation = useStudentLogin();
@@ -275,9 +277,7 @@ function ClientLoginContent() {
                     <Button
                       variant="link"
                       className="p-0 h-auto"
-                      onClick={() =>
-                        (window.location.href = `/${client?.subdomain}/register`)
-                      }
+                      onClick={() => router.push("/register")}
                     >
                       Register as Student
                     </Button>
