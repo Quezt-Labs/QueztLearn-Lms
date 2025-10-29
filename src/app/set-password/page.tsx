@@ -143,13 +143,16 @@ function SetPasswordContent() {
       throw new Error("Organization data is missing");
     }
 
-    if (!organizationData.domain) {
-      throw new Error("Organization domain is missing");
-    }
+    // Generate a default domain if not provided
+    const domain =
+      organizationData.domain ||
+      `${organizationData.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")}.queztlearn.in`;
 
     // Extract slug from domain (e.g., "mit.queztlearn.in" -> "mit")
     // Handle cases where domain might be malformed
-    const domainParts = organizationData?.domain?.split(".");
+    const domainParts = domain.split(".");
     const slug =
       domainParts?.length > 0
         ? domainParts[0]
@@ -161,44 +164,7 @@ function SetPasswordContent() {
       organizationId: organizationData.id,
       name: organizationData.name,
       slug: slug,
-      domain: organizationData.domain,
-      contactEmail: adminData?.email || "",
-      contactPhone: "",
-      razorpayKeyId: "",
-      razorpayKeySecret: "",
-      currency: "INR",
-      logoUrl: "",
-      faviconUrl: "",
-      bannerUrls: [],
-      motto: "",
-      description: `${organizationData.name} Learning Management System`,
-      theme: {
-        primaryColor: "#3b82f6",
-        secondaryColor: "#1e40af",
-        fontFamily: "Inter",
-      },
-      heroTitle: `Welcome to ${organizationData.name}`,
-      heroSubtitle: "Your learning journey starts here",
-      features: [
-        {
-          title: "Interactive Learning",
-          description:
-            "Engage with multimedia content and interactive exercises",
-          icon: "book-open",
-        },
-        {
-          title: "Progress Tracking",
-          description: "Monitor your learning progress and achievements",
-          icon: "chart-line",
-        },
-        {
-          title: "Expert Instructors",
-          description: "Learn from experienced and qualified instructors",
-          icon: "users",
-        },
-      ],
-      supportEmail: adminData?.email || "",
-      maintenanceMode: false,
+      domain: domain,
     };
   };
 

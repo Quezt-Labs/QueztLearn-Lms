@@ -228,30 +228,30 @@ export interface CreateOrganizationConfigData {
   name: string;
   slug: string;
   domain: string;
-  contactEmail: string;
-  contactPhone: string;
-  razorpayKeyId: string;
-  razorpayKeySecret: string;
-  currency: string;
-  logoUrl: string;
-  faviconUrl: string;
-  bannerUrls: string[];
-  motto: string;
-  description: string;
-  theme: {
+  contactEmail?: string;
+  contactPhone?: string;
+  razorpayKeyId?: string;
+  razorpayKeySecret?: string;
+  currency?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  bannerUrls?: string[];
+  motto?: string;
+  description?: string;
+  theme?: {
     primaryColor: string;
     secondaryColor: string;
     fontFamily: string;
   };
-  heroTitle: string;
-  heroSubtitle: string;
-  features: Array<{
+  heroTitle?: string;
+  heroSubtitle?: string;
+  features?: Array<{
     title: string;
     description: string;
     icon: string;
   }>;
-  supportEmail: string;
-  maintenanceMode: boolean;
+  supportEmail?: string;
+  maintenanceMode?: boolean;
 }
 
 export interface CreateOrganizationConfigResponse {
