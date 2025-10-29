@@ -173,7 +173,7 @@ export const api = {
   createOrganization: (data: CreateOrganizationData) =>
     apiClient.post<ApiResponse<Organization>>("/admin/organizations", data),
 
-  // Auth
+  // Auth - Admin endpoints
   register: (data: {
     organizationId: string;
     email: string;
@@ -199,6 +199,35 @@ export const api = {
   resendVerification: (data: { email: string }) =>
     apiClient.post<ApiResponse<{ message: string }>>(
       "/admin/auth/resend-verification",
+      data
+    ),
+
+  // Auth - Student endpoints
+  studentRegister: (data: {
+    organizationId: string;
+    email: string;
+    username: string;
+  }) =>
+    apiClient.post<ApiResponse<RegisterResponse>>("/api/auth/register", data),
+
+  studentVerifyEmail: (data: { token: string }) =>
+    apiClient.post<ApiResponse<VerifyEmailResponse>>(
+      "/api/auth/verify-email",
+      data
+    ),
+
+  studentSetPassword: (data: { userId: string; password: string }) =>
+    apiClient.post<ApiResponse<SetPasswordResponse>>(
+      "/api/auth/set-password",
+      data
+    ),
+
+  studentLogin: (data: { email: string; password: string }) =>
+    apiClient.post<ApiResponse<LoginResponse>>("/api/auth/login", data),
+
+  studentResendVerification: (data: { email: string }) =>
+    apiClient.post<ApiResponse<{ message: string }>>(
+      "/api/auth/resend-verification",
       data
     ),
 

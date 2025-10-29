@@ -13,18 +13,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Eye, EyeOff, GraduationCap } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  Users,
+  UserCheck,
+} from "lucide-react";
 import { ClientProvider, useClient } from "@/components/client/client-provider";
 import Link from "next/link";
 import Image from "next/image";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
+import { useStudentLogin } from "@/hooks/api";
 
 // Client Login Component
 function ClientLoginContent() {
   const { client, isLoading, error } = useClient();
   const [showPassword, setShowPassword] = useState(false);
+  const studentLoginMutation = useStudentLogin();
 
   // Form validation
   const {
@@ -37,6 +46,7 @@ function ClientLoginContent() {
   } = useEnhancedFormValidation({
     email: "",
     password: "",
+    userType: "student", // Default to student for client login
   });
 
   // Loading state management
@@ -60,14 +70,10 @@ function ClientLoginContent() {
 
     try {
       await executeWithLoading(async () => {
-        // Simulate login process
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Handle login logic here
-        console.log("Login attempt:", {
+        // Use student login for client login
+        await studentLoginMutation.mutateAsync({
           email: getFieldValue("email"),
           password: getFieldValue("password"),
-          client: client?.id,
         });
       });
     } catch (error: unknown) {
@@ -193,7 +199,14 @@ function ClientLoginContent() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <ErrorMessage error={submitError} />
+                <ErrorMessage
+                  error={
+                    submitError ||
+                    (studentLoginMutation.error
+                      ? getFriendlyErrorMessage(studentLoginMutation.error)
+                      : null)
+                  }
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
@@ -250,9 +263,15 @@ function ClientLoginContent() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={!isFormValid || isSubmitting}
+                  disabled={
+                    !isFormValid ||
+                    isSubmitting ||
+                    studentLoginMutation.isPending
+                  }
                 >
-                  {isSubmitting ? "Signing In..." : "Sign In"}
+                  {isSubmitting || studentLoginMutation.isPending
+                    ? "Signing In..."
+                    : "Sign In"}
                 </Button>
               </form>
 
@@ -260,8 +279,14 @@ function ClientLoginContent() {
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
                     Don&apos;t have an account?{" "}
-                    <Button variant="link" className="p-0 h-auto">
-                      Contact your administrator
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto"
+                      onClick={() =>
+                        (window.location.href = `/${client?.subdomain}/register`)
+                      }
+                    >
+                      Register as Student
                     </Button>
                   </p>
                 </div>

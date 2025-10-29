@@ -190,6 +190,83 @@ export const useResendVerification = () => {
   });
 };
 
+// Student Authentication Hooks
+export const useStudentRegister = () => {
+  return useMutation({
+    mutationFn: (data: {
+      organizationId: string;
+      email: string;
+      username: string;
+    }) => api.studentRegister(data).then((res) => res.data),
+    onError: (error) => {
+      console.error("Student registration failed:", error);
+    },
+  });
+};
+
+export const useStudentVerifyEmail = () => {
+  return useMutation({
+    mutationFn: (data: { token: string }) =>
+      api.studentVerifyEmail(data).then((res) => res.data),
+    onError: (error) => {
+      console.error("Student email verification failed:", error);
+    },
+  });
+};
+
+export const useStudentSetPassword = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { userId: string; password: string }) =>
+      api.studentSetPassword(data).then((res) => res.data),
+    onSuccess: (data: ApiResponse<{ message: string }>) => {
+      if (data.success) {
+        // Clear any cached auth data
+        queryClient.invalidateQueries({ queryKey: queryKeys.user });
+      }
+    },
+    onError: (error) => {
+      console.error("Student set password failed:", error);
+    },
+  });
+};
+
+export const useStudentLogin = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (data: { email: string; password: string }) =>
+      api.studentLogin(data).then((res) => res.data),
+    onSuccess: (data: ApiResponse<LoginResponse>) => {
+      if (data.success && data.data) {
+        // Store complete auth data (token + user) in QUEZT_AUTH cookie
+        tokenManager.setAuthData(data.data.token, data.data.user);
+
+        // Update user cache
+        queryClient.setQueryData(queryKeys.user, data.data.user);
+
+        // Redirect to student dashboard
+        router.push("/student/dashboard");
+      }
+    },
+    onError: (error) => {
+      console.error("Student login failed:", error);
+    },
+  });
+};
+
+export const useStudentResendVerification = () => {
+  return useMutation({
+    mutationFn: (data: { email: string }) =>
+      api.studentResendVerification(data).then((res) => res.data),
+    onError: (error) => {
+      console.error("Student resend verification failed:", error);
+    },
+  });
+};
+
 export const useInviteTeacher = () => {
   const queryClient = useQueryClient();
 
