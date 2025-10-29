@@ -19,6 +19,7 @@ const mapOrganizationConfigToClient = (
 ): Client => {
   return {
     id: config.id,
+    organizationId: config.organizationId,
     name: config.name,
     domain: config.domain,
     subdomain: subdomain,

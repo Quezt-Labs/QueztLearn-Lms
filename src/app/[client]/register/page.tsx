@@ -95,7 +95,7 @@ function ClientStudentRegisterContent() {
           setStudentData({
             email: getFieldValue("email"),
             username: getFieldValue("username"),
-            organizationId: client.id,
+            organizationId: client.organizationId,
           });
 
           // Show success message and redirect to verification page
