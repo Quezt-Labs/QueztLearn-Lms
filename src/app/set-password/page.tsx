@@ -58,12 +58,20 @@ function SetPasswordContent() {
   // Determine if this is a student password setup
   const isStudentPasswordSetup = !!studentData && !!studentUserId;
 
+  // Call all hooks unconditionally (Rules of Hooks)
+  const adminSetPasswordMutation = useSetPassword();
+  const studentSetPasswordMutation = useStudentSetPassword();
+  const adminLoginMutation = useLogin();
+  const studentLoginMutation = useStudentLogin();
+  const createOrganizationConfigMutation = useCreateOrganizationConfig();
+
   // Use appropriate hooks based on user type
   const setPasswordMutation = isStudentPasswordSetup
-    ? useStudentSetPassword()
-    : useSetPassword();
-  const loginMutation = isStudentPasswordSetup ? useStudentLogin() : useLogin();
-  const createOrganizationConfigMutation = useCreateOrganizationConfig();
+    ? studentSetPasswordMutation
+    : adminSetPasswordMutation;
+  const loginMutation = isStudentPasswordSetup
+    ? studentLoginMutation
+    : adminLoginMutation;
 
   // Form validation
   const {

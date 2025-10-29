@@ -13,14 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  GraduationCap,
-  Users,
-  UserCheck,
-} from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, GraduationCap } from "lucide-react";
 import { ClientProvider, useClient } from "@/components/client/client-provider";
 import Link from "next/link";
 import Image from "next/image";

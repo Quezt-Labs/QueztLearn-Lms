@@ -43,13 +43,19 @@ function VerifyEmailContent() {
   // Determine if this is a student verification
   const isStudentVerification = !!studentData && !adminData;
 
+  // Call all hooks unconditionally (Rules of Hooks)
+  const adminVerifyEmailMutation = useVerifyEmail();
+  const studentVerifyEmailMutation = useStudentVerifyEmail();
+  const adminResendVerificationMutation = useResendVerification();
+  const studentResendVerificationMutation = useStudentResendVerification();
+
   // Use appropriate hooks based on verification type
   const verifyEmailMutation = isStudentVerification
-    ? useStudentVerifyEmail()
-    : useVerifyEmail();
+    ? studentVerifyEmailMutation
+    : adminVerifyEmailMutation;
   const resendVerificationMutation = isStudentVerification
-    ? useStudentResendVerification()
-    : useResendVerification();
+    ? studentResendVerificationMutation
+    : adminResendVerificationMutation;
 
   // Form validation (simplified for token handling)
   const { updateField } = useEnhancedFormValidation({
