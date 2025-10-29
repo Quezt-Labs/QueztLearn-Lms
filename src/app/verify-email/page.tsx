@@ -8,7 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, Mail, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useVerifyEmail, useResendVerification } from "@/hooks";
+import {
+  useStudentVerifyEmail,
+  useStudentResendVerification,
+} from "@/hooks/api";
 import { useOnboardingStore } from "@/lib/store/onboarding";
+import { useStudentAuthStore } from "@/lib/store/student-auth";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
@@ -23,10 +28,28 @@ function VerifyEmailContent() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Admin onboarding store
   const { organizationData, adminData, setEmailVerified, setUserId } =
     useOnboardingStore();
-  const verifyEmailMutation = useVerifyEmail();
-  const resendVerificationMutation = useResendVerification();
+
+  // Student auth store
+  const {
+    studentData,
+    setEmailVerified: setStudentEmailVerified,
+    setUserId: setStudentUserId,
+  } = useStudentAuthStore();
+
+  // Determine if this is a student verification
+  const isStudentVerification = !!studentData && !adminData;
+
+  // Use appropriate hooks based on verification type
+  const verifyEmailMutation = isStudentVerification
+    ? useStudentVerifyEmail()
+    : useVerifyEmail();
+  const resendVerificationMutation = isStudentVerification
+    ? useStudentResendVerification()
+    : useResendVerification();
 
   // Form validation (simplified for token handling)
   const { updateField } = useEnhancedFormValidation({
@@ -58,12 +81,16 @@ function VerifyEmailContent() {
 
           if (result.success && result.data?.userId) {
             setIsVerified(true);
-            setEmailVerified(true);
 
-            // Store userId from API response
-            setUserId(result.data.userId);
+            if (isStudentVerification) {
+              setStudentEmailVerified(true);
+              setStudentUserId(result.data.userId);
+            } else {
+              setEmailVerified(true);
+              setUserId(result.data.userId);
+            }
 
-            // Auto-redirect to password setup after 2 seconds
+            // Auto-redirect to unified password setup after 2 seconds
             setTimeout(() => {
               router.push("/set-password");
             }, 2000);
@@ -83,6 +110,9 @@ function VerifyEmailContent() {
       router,
       setEmailVerified,
       setUserId,
+      setStudentEmailVerified,
+      setStudentUserId,
+      isStudentVerification,
       setError,
     ]
   );
@@ -117,21 +147,39 @@ function VerifyEmailContent() {
       setIsInitializing(false);
     }, 100);
 
-    // Only redirect if there's no token AND no admin data AND we're not initializing
-    if (!isInitializing && !token && (!adminData || !organizationData)) {
-      router.push("/create-organization");
+    // Only redirect if there's no token AND no data AND we're not initializing
+    if (
+      !isInitializing &&
+      !token &&
+      (!adminData || !organizationData) &&
+      !studentData
+    ) {
+      if (isStudentVerification) {
+        router.push("/register");
+      } else {
+        router.push("/create-organization");
+      }
     }
 
     return () => clearTimeout(initTimer);
-  }, [adminData, organizationData, router, searchParams, isInitializing]);
+  }, [
+    adminData,
+    organizationData,
+    studentData,
+    router,
+    searchParams,
+    isInitializing,
+    isStudentVerification,
+  ]);
 
   const handleResendEmail = async () => {
-    if (!canResend || !adminData?.email) return;
+    const email = isStudentVerification ? studentData?.email : adminData?.email;
+    if (!canResend || !email) return;
 
     try {
       await executeWithLoading(async () => {
         await resendVerificationMutation.mutateAsync({
-          email: adminData.email,
+          email: email,
         });
 
         setResendCount((prev) => prev + 1);
@@ -212,18 +260,30 @@ function VerifyEmailContent() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4" />
+            {!isStudentVerification && (
+              <>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm">Organization created</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm">Admin account created</span>
+                </div>
+              </>
+            )}
+            {isStudentVerification && (
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+                <span className="text-sm">Student account created</span>
               </div>
-              <span className="text-sm">Organization created</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4" />
-              </div>
-              <span className="text-sm">Admin account created</span>
-            </div>
+            )}
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary-foreground/30 rounded-full flex items-center justify-center">
                 <Mail className="h-4 w-4" />
@@ -255,7 +315,9 @@ function VerifyEmailContent() {
             <h2 className="text-2xl font-bold mb-2">Verifying Your Email</h2>
             <p className="text-muted-foreground">
               We&apos;re processing your verification link for{" "}
-              <span className="font-medium">{adminData?.email}</span>
+              <span className="font-medium">
+                {isStudentVerification ? studentData?.email : adminData?.email}
+              </span>
             </p>
           </div>
 
@@ -315,7 +377,11 @@ function VerifyEmailContent() {
 
                 <div className="text-center">
                   <Button variant="ghost" asChild>
-                    <Link href="/register-admin">
+                    <Link
+                      href={
+                        isStudentVerification ? "/register" : "/register-admin"
+                      }
+                    >
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Back to Registration
                     </Link>

@@ -17,7 +17,9 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
 import { useSetPassword, useCreateOrganizationConfig, useLogin } from "@/hooks";
+import { useStudentSetPassword, useStudentLogin } from "@/hooks/api";
 import { useOnboardingStore } from "@/lib/store/onboarding";
+import { useStudentAuthStore } from "@/lib/store/student-auth";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
@@ -33,6 +35,8 @@ function SetPasswordContent() {
   const [localUserId, setLocalUserId] = useState<string | null>(null);
 
   const router = useRouter();
+
+  // Admin onboarding store
   const {
     organizationData,
     adminData,
@@ -42,9 +46,24 @@ function SetPasswordContent() {
     setOrganizationConfig,
     completeOnboarding,
   } = useOnboardingStore();
-  const setPasswordMutation = useSetPassword();
+
+  // Student auth store
+  const {
+    studentData,
+    userId: studentUserId,
+    setPasswordSet: setStudentPasswordSet,
+    completeStudentAuth,
+  } = useStudentAuthStore();
+
+  // Determine if this is a student password setup
+  const isStudentPasswordSetup = !!studentData && !!studentUserId;
+
+  // Use appropriate hooks based on user type
+  const setPasswordMutation = isStudentPasswordSetup
+    ? useStudentSetPassword()
+    : useSetPassword();
+  const loginMutation = isStudentPasswordSetup ? useStudentLogin() : useLogin();
   const createOrganizationConfigMutation = useCreateOrganizationConfig();
-  const loginMutation = useLogin();
 
   // Form validation
   const {
@@ -66,15 +85,18 @@ function SetPasswordContent() {
 
   // Get userId from store or admin data
   useEffect(() => {
-    // Try to get userId from store first (from email verification)
-    if (storeUserId) {
+    if (isStudentPasswordSetup) {
+      // For student password setup, use student userId
+      setLocalUserId(studentUserId);
+    } else if (storeUserId) {
+      // Try to get userId from store first (from email verification)
       setLocalUserId(storeUserId);
     } else if (adminData?.id) {
       // For admin onboarding flow, use adminData
       setLocalUserId(adminData.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isStudentPasswordSetup, studentUserId]);
 
   // Initialize and handle redirects
   useEffect(() => {
@@ -89,12 +111,12 @@ function SetPasswordContent() {
     }
 
     // If we have userId from store (coming from email verification), no redirects needed
-    if (storeUserId) {
+    if (storeUserId || studentUserId) {
       return () => clearTimeout(initTimer);
     }
 
     // Only run redirect checks for admin onboarding flow
-    if (!isInitializing) {
+    if (!isInitializing && !isStudentPasswordSetup) {
       // If we have no data at all, redirect to create organization
       if (!adminData && !organizationData) {
         router.push("/create-organization");
@@ -114,6 +136,12 @@ function SetPasswordContent() {
       }
     }
 
+    // For student password setup, redirect to register if no student data
+    if (!isInitializing && isStudentPasswordSetup && !studentData) {
+      router.push("/register");
+      return;
+    }
+
     return () => clearTimeout(initTimer);
   }, [
     adminData,
@@ -122,7 +150,10 @@ function SetPasswordContent() {
     router,
     isInitializing,
     storeUserId,
-    isPasswordSet, // Add isPasswordSet to dependencies
+    studentUserId,
+    isStudentPasswordSetup,
+    studentData,
+    isPasswordSet,
   ]);
 
   const handlePasswordChange = (value: string) => {
@@ -195,22 +226,38 @@ function SetPasswordContent() {
           password: getFieldValue("password"),
         });
 
-        setPasswordSet(true);
+        if (isStudentPasswordSetup) {
+          setStudentPasswordSet(true);
+          completeStudentAuth();
+        } else {
+          setPasswordSet(true);
+          completeOnboarding();
+        }
 
-        // Complete onboarding
-        completeOnboarding();
-
-        // Auto-login the admin after password setup
-        if (adminData?.email && getFieldValue("password")) {
+        // Auto-login after password setup
+        const email = isStudentPasswordSetup
+          ? studentData?.email
+          : adminData?.email;
+        if (email && getFieldValue("password")) {
           try {
-            console.log("Auto-logging in admin:", adminData.email);
+            console.log(
+              `Auto-logging in ${
+                isStudentPasswordSetup ? "student" : "admin"
+              }:`,
+              email
+            );
             const loginResult = await loginMutation.mutateAsync({
-              email: adminData.email,
+              email: email,
               password: getFieldValue("password"),
             });
 
-            // After successful login, create organization configuration
-            if (loginResult.success && organizationData && adminData) {
+            // For admin: create organization configuration after login
+            if (
+              !isStudentPasswordSetup &&
+              loginResult.success &&
+              organizationData &&
+              adminData
+            ) {
               try {
                 console.log(
                   "Creating organization config after login with data:",
@@ -246,6 +293,12 @@ function SetPasswordContent() {
                 console.error("Admin data:", adminData);
                 // Don't fail the entire flow if config creation fails
               }
+            } else if (isStudentPasswordSetup) {
+              console.warn("Missing data for student login:", {
+                hasStudentData: !!studentData,
+                loginSuccess: loginResult?.success,
+                studentData,
+              });
             } else {
               console.warn("Missing data for organization config creation:", {
                 hasOrganizationData: !!organizationData,
@@ -256,7 +309,7 @@ function SetPasswordContent() {
               });
             }
 
-            // Login hook will handle redirect to admin dashboard
+            // Login hook will handle redirect to appropriate dashboard
             return; // Exit early since login will redirect
           } catch (loginError) {
             console.error("Auto-login failed:", loginError);
@@ -268,7 +321,7 @@ function SetPasswordContent() {
           }
         }
 
-        // Fallback: redirect to login page if no admin data
+        // Fallback: redirect to login page
         setTimeout(() => {
           window.location.href = "/login";
         }, 4000);
@@ -278,14 +331,21 @@ function SetPasswordContent() {
     }
   };
 
-  const onboardingSteps = [
-    { text: "Setting up your account" },
-    { text: "Creating your secure profile" },
-    { text: "Logging you in automatically" },
-    { text: "Configuring your organization" },
-    { text: "Setting up organization branding" },
-    { text: "Welcome to QueztLearn!" },
-  ];
+  const onboardingSteps = isStudentPasswordSetup
+    ? [
+        { text: "Setting up your account" },
+        { text: "Creating your secure profile" },
+        { text: "Logging you in automatically" },
+        { text: "Welcome to QueztLearn!" },
+      ]
+    : [
+        { text: "Setting up your account" },
+        { text: "Creating your secure profile" },
+        { text: "Logging you in automatically" },
+        { text: "Configuring your organization" },
+        { text: "Setting up organization branding" },
+        { text: "Welcome to QueztLearn!" },
+      ];
 
   const passwordStrength = calculatePasswordStrength(getFieldValue("password"));
   const strengthColor =
@@ -319,7 +379,7 @@ function SetPasswordContent() {
   }
 
   // Check if coming from email (has userId in store) vs admin onboarding
-  const isAdminOnboarding = !storeUserId && !!adminData;
+  const isAdminOnboarding = !storeUserId && !studentUserId && !!adminData;
 
   return (
     <>
@@ -351,18 +411,30 @@ function SetPasswordContent() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4" />
+                {!isStudentPasswordSetup && (
+                  <>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-4 w-4" />
+                      </div>
+                      <span className="text-sm">Organization created</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-4 w-4" />
+                      </div>
+                      <span className="text-sm">Admin account created</span>
+                    </div>
+                  </>
+                )}
+                {isStudentPasswordSetup && (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+                      <CheckCircle className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm">Student account created</span>
                   </div>
-                  <span className="text-sm">Organization created</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm">Admin account created</span>
-                </div>
+                )}
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
                     <CheckCircle className="h-4 w-4" />
@@ -557,8 +629,8 @@ function SetPasswordContent() {
                   </Button>
                 </form>
 
-                {/* Back button - only show for admin onboarding */}
-                {isAdminOnboarding && (
+                {/* Back button - show for both admin and student */}
+                {(isAdminOnboarding || isStudentPasswordSetup) && (
                   <div className="mt-6 text-center">
                     <Button variant="outline" asChild>
                       <Link href="/verify-email">
