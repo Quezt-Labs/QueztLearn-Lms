@@ -180,9 +180,7 @@ function ClientHomepageContent() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href={`/${client.subdomain}/register`}>
-                  Register as Student
-                </Link>
+                <Link href={`/register`}>Register as Student</Link>
               </Button>
             </div>
           </motion.div>
