@@ -120,11 +120,11 @@ export default function LoginPage() {
       {/* Left Side - Branding */}
       <BrandingSidebar
         title="Welcome Back"
-        subtitle="Sign in to your admin dashboard"
+        subtitle="Sign in to your dashboard"
         features={[
-          "Access your organization",
-          "Manage users and settings",
-          "Monitor platform analytics",
+          "Access your account",
+          "Manage your content",
+          "Track your progress",
         ]}
       />
 
@@ -142,10 +142,8 @@ export default function LoginPage() {
           {/* Login Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Admin Login</CardTitle>
-              <CardDescription>
-                Sign in to manage your organization
-              </CardDescription>
+              <CardTitle>Sign In</CardTitle>
+              <CardDescription>Sign in to your admin dashboard</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">

@@ -43,6 +43,7 @@ import { EditSubjectModal } from "@/components/common/edit-subject-modal";
 import { useCurrentUser } from "@/hooks";
 import { ROLES } from "@/lib/constants";
 import { SubjectDataTable } from "@/components/courses/subject-data-table";
+import { EditBatchModal } from "@/components/common/edit-batch-modal";
 
 // Interfaces
 interface Batch {
@@ -130,6 +131,7 @@ export function CourseDetailPage({
   const [isEditTeacherOpen, setIsEditTeacherOpen] = useState(false);
   const [isCreateSubjectOpen, setIsCreateSubjectOpen] = useState(false);
   const [isEditSubjectOpen, setIsEditSubjectOpen] = useState(false);
+  const [isEditCourseOpen, setIsEditCourseOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -150,7 +152,7 @@ export function CourseDetailPage({
   };
 
   const handleEditCourse = () => {
-    router.push(`/${basePath}/courses/${courseId}/edit`);
+    setIsEditCourseOpen(true);
   };
 
   const handleDeleteCourse = () => {
@@ -614,6 +616,14 @@ export function CourseDetailPage({
         </Tabs>
 
         {/* Modals */}
+        <EditBatchModal
+          isOpen={isEditCourseOpen}
+          onClose={() => setIsEditCourseOpen(false)}
+          batch={courseData}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["batch", courseId] });
+          }}
+        />
         <TeacherAssignmentModal
           isOpen={isTeacherAssignmentOpen}
           onClose={() => setIsTeacherAssignmentOpen(false)}

@@ -1,19 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback, Suspense, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, Mail, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useVerifyEmail, useResendVerification } from "@/hooks";
-import { useOnboardingStore } from "@/lib/store/onboarding";
+import {
+  useStudentVerifyEmail,
+  useStudentResendVerification,
+} from "@/hooks/api";
+import { useStudentAuthStore } from "@/lib/store/student-auth";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
 import { getFriendlyErrorMessage } from "@/lib/utils/error-handling";
 import { ErrorMessage } from "@/components/common/error-message";
+import { ClientProvider, useClient } from "@/components/client/client-provider";
+import Image from "next/image";
 
-function VerifyEmailContent() {
+// Client Student Verify Email Component
+function ClientStudentVerifyEmailContent() {
   const [isVerified, setIsVerified] = useState(false);
   const [resendCount, setResendCount] = useState(0);
   const [canResend, setCanResend] = useState(true);
@@ -23,10 +29,14 @@ function VerifyEmailContent() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { organizationData, adminData, setEmailVerified, setUserId } =
-    useOnboardingStore();
-  const verifyEmailMutation = useVerifyEmail();
-  const resendVerificationMutation = useResendVerification();
+  const { client } = useClient();
+
+  // Student auth store
+  const { studentData, setEmailVerified, setUserId } = useStudentAuthStore();
+
+  // Student verification hooks
+  const verifyEmailMutation = useStudentVerifyEmail();
+  const resendVerificationMutation = useStudentResendVerification();
 
   // Form validation (simplified for token handling)
   const { updateField } = useEnhancedFormValidation({
@@ -61,9 +71,9 @@ function VerifyEmailContent() {
             setEmailVerified(true);
             setUserId(result.data.userId);
 
-            // Auto-redirect to admin password setup after 2 seconds
+            // Auto-redirect to student password setup after 2 seconds
             setTimeout(() => {
-              router.push("/set-password");
+              router.push(`/${client?.subdomain}/student-set-password`);
             }, 2000);
           } else {
             setError(
@@ -79,9 +89,10 @@ function VerifyEmailContent() {
       executeWithLoading,
       verifyEmailMutation,
       router,
+      setError,
       setEmailVerified,
       setUserId,
-      setError,
+      client?.subdomain,
     ]
   );
 
@@ -115,21 +126,21 @@ function VerifyEmailContent() {
       setIsInitializing(false);
     }, 100);
 
-    // Only redirect if there's no token AND no admin data AND we're not initializing
-    if (!isInitializing && !token && (!adminData || !organizationData)) {
-      router.push("/create-organization");
+    // Only redirect if there's no token AND no student data AND we're not initializing
+    if (!isInitializing && !token && !studentData) {
+      router.push(`/register`);
     }
 
     return () => clearTimeout(initTimer);
-  }, [adminData, organizationData, router, searchParams, isInitializing]);
+  }, [studentData, router, searchParams, isInitializing, client?.subdomain]);
 
   const handleResendEmail = async () => {
-    if (!canResend || !adminData?.email) return;
+    if (!canResend || !studentData?.email) return;
 
     try {
       await executeWithLoading(async () => {
         await resendVerificationMutation.mutateAsync({
-          email: adminData.email,
+          email: studentData.email,
         });
 
         setResendCount((prev) => prev + 1);
@@ -203,9 +214,26 @@ function VerifyEmailContent() {
           className="max-w-md"
         >
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Verify Your Email</h1>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <Image
+                  src={client?.logo || "/images/Logo.png"}
+                  alt={client?.name || "Organization"}
+                  width={32}
+                  height={32}
+                  className="rounded"
+                />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">
+                  {client?.name || "Organization"}
+                </h1>
+                <p className="text-primary-foreground/80">Email Verification</p>
+              </div>
+            </div>
             <p className="text-primary-foreground/80">
-              Processing your email verification link...
+              Verify your email address to complete your registration with{" "}
+              {client?.name || "our platform"}.
             </p>
           </div>
 
@@ -214,13 +242,7 @@ function VerifyEmailContent() {
               <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="h-4 w-4" />
               </div>
-              <span className="text-sm">Organization created</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4" />
-              </div>
-              <span className="text-sm">Admin account created</span>
+              <span className="text-sm">Student account created</span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary-foreground/30 rounded-full flex items-center justify-center">
@@ -253,7 +275,9 @@ function VerifyEmailContent() {
             <h2 className="text-2xl font-bold mb-2">Verifying Your Email</h2>
             <p className="text-muted-foreground">
               We&apos;re processing your verification link for{" "}
-              <span className="font-medium">{adminData?.email}</span>
+              <span className="font-medium">
+                {studentData?.email || "your email"}
+              </span>
             </p>
           </div>
 
@@ -313,7 +337,7 @@ function VerifyEmailContent() {
 
                 <div className="text-center">
                   <Button variant="ghost" asChild>
-                    <Link href="/register-admin">
+                    <Link href={`/${client?.subdomain}/register`}>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Back to Registration
                     </Link>
@@ -328,7 +352,10 @@ function VerifyEmailContent() {
   );
 }
 
-export default function VerifyEmailPage() {
+export default function ClientStudentVerifyEmail() {
+  const params = useParams();
+  const clientSlug = params.client as string;
+
   return (
     <Suspense
       fallback={
@@ -337,7 +364,9 @@ export default function VerifyEmailPage() {
         </div>
       }
     >
-      <VerifyEmailContent />
+      <ClientProvider subdomain={clientSlug}>
+        <ClientStudentVerifyEmailContent />
+      </ClientProvider>
     </Suspense>
   );
 }

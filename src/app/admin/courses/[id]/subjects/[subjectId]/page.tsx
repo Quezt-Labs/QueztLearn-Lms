@@ -292,21 +292,6 @@ export default function SubjectDetailPage() {
         </div>
       </div>
 
-      {/* Subject Thumbnail */}
-      {subjectData.thumbnailUrl && (
-        <div className="mb-8">
-          <div className="h-64 w-full rounded-lg overflow-hidden">
-            <Image
-              src={subjectData.thumbnailUrl}
-              alt={`Subject thumbnail for ${subjectData.name}`}
-              width={1200}
-              height={400}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      )}
-
       {/* Chapters List */}
       <Card>
         <CardHeader>

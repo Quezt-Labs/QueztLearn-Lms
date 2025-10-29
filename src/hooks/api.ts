@@ -3,13 +3,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, tokenManager } from "@/lib/api/client";
 import apiClient from "@/lib/api/client";
-import { ApiResponse, Organization, LoginResponse } from "@/lib/types/api";
+import {
+  ApiResponse,
+  Organization,
+  LoginResponse,
+  CreateOrganizationConfigData,
+  CreateOrganizationConfigResponse,
+} from "@/lib/types/api";
 import { useRouter } from "next/navigation";
 
 // Query Keys
 export const queryKeys = {
   user: ["user"] as const,
   organization: ["organization"] as const,
+  organizationConfig: (slug: string) => ["organizationConfig", slug] as const,
   emailAvailability: (email: string) => ["emailAvailability", email] as const,
   users: ["users"] as const,
   batches: ["batches"] as const,
@@ -98,6 +105,39 @@ export const useCreateOrganization = () => {
   });
 };
 
+// Organization Configuration Hook (Public endpoint)
+export const useOrganizationConfig = (slug: string) => {
+  return useQuery({
+    queryKey: queryKeys.organizationConfig(slug),
+    queryFn: () => api.getOrganizationConfig(slug).then((res) => res.data),
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+  });
+};
+
+// Organization Configuration Hook (Admin endpoint)
+export const useCreateOrganizationConfig = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateOrganizationConfigData) =>
+      api.createOrganizationConfig(data).then((res) => res.data),
+    onSuccess: (data: CreateOrganizationConfigResponse) => {
+      if (data.success && data.data) {
+        // Cache the organization configuration
+        queryClient.setQueryData(
+          queryKeys.organizationConfig(data.data.slug),
+          data
+        );
+      }
+    },
+    onError: (error) => {
+      console.error("Failed to create organization configuration:", error);
+    },
+  });
+};
+
 // Auth Registration Hooks
 export const useRegister = () => {
   return useMutation({
@@ -146,6 +186,83 @@ export const useResendVerification = () => {
       api.resendVerification(data).then((res) => res.data),
     onError: (error) => {
       console.error("Resend verification failed:", error);
+    },
+  });
+};
+
+// Student Authentication Hooks
+export const useStudentRegister = () => {
+  return useMutation({
+    mutationFn: (data: {
+      organizationId: string;
+      email: string;
+      username: string;
+    }) => api.studentRegister(data).then((res) => res.data),
+    onError: (error) => {
+      console.error("Student registration failed:", error);
+    },
+  });
+};
+
+export const useStudentVerifyEmail = () => {
+  return useMutation({
+    mutationFn: (data: { token: string }) =>
+      api.studentVerifyEmail(data).then((res) => res.data),
+    onError: (error) => {
+      console.error("Student email verification failed:", error);
+    },
+  });
+};
+
+export const useStudentSetPassword = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { userId: string; password: string }) =>
+      api.studentSetPassword(data).then((res) => res.data),
+    onSuccess: (data: ApiResponse<{ message: string }>) => {
+      if (data.success) {
+        // Clear any cached auth data
+        queryClient.invalidateQueries({ queryKey: queryKeys.user });
+      }
+    },
+    onError: (error) => {
+      console.error("Student set password failed:", error);
+    },
+  });
+};
+
+export const useStudentLogin = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (data: { email: string; password: string }) =>
+      api.studentLogin(data).then((res) => res.data),
+    onSuccess: (data: ApiResponse<LoginResponse>) => {
+      if (data.success && data.data) {
+        // Store complete auth data (token + user) in QUEZT_AUTH cookie
+        tokenManager.setAuthData(data.data.token, data.data.user);
+
+        // Update user cache
+        queryClient.setQueryData(queryKeys.user, data.data.user);
+
+        // Redirect to student dashboard
+        router.push("/student/dashboard");
+      }
+    },
+    onError: (error) => {
+      console.error("Student login failed:", error);
+    },
+  });
+};
+
+export const useStudentResendVerification = () => {
+  return useMutation({
+    mutationFn: (data: { email: string }) =>
+      api.studentResendVerification(data).then((res) => res.data),
+    onError: (error) => {
+      console.error("Student resend verification failed:", error);
     },
   });
 };
@@ -259,11 +376,26 @@ export const useCreateBatch = () => {
         description: string;
       }>;
     }) => apiClient.post("/admin/batches", data).then((res) => res.data),
-    onSuccess: () => {
+    onSuccess: (created) => {
       // Invalidate batches query to refetch the list
       queryClient.invalidateQueries({ queryKey: queryKeys.batches });
-      // Redirect to batches page
-      router.push("/admin/courses");
+      // Redirect to created batch detail when possible
+      const extractId = (payload: unknown): string | undefined => {
+        if (!payload || typeof payload !== "object") return undefined;
+        const maybeWithData = payload as { data?: unknown; id?: unknown };
+        if (maybeWithData.data && typeof maybeWithData.data === "object") {
+          const inner = maybeWithData.data as { id?: unknown };
+          if (typeof inner.id === "string") return inner.id;
+        }
+        if (typeof maybeWithData.id === "string") return maybeWithData.id;
+        return undefined;
+      };
+      const createdId = extractId(created);
+      if (createdId) {
+        router.push(`/admin/courses/${createdId}`);
+      } else {
+        router.push("/admin/courses");
+      }
     },
   });
 };
@@ -302,8 +434,8 @@ export const useUpdateBatch = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.batch(variables.id),
       });
-      // Redirect to batches page
-      router.push("/admin/batches");
+      // Redirect to updated batch detail page
+      router.push(`/admin/courses/${variables.id}`);
     },
   });
 };
