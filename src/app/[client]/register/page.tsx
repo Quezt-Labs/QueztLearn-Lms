@@ -85,7 +85,7 @@ function ClientStudentRegisterContent() {
     try {
       await executeWithLoading(async () => {
         const result = await registerMutation.mutateAsync({
-          organizationId: client.id, // Use client ID as organization ID
+          organizationId: client.organizationId, // Use organizationId from client config
           email: getFieldValue("email"),
           username: getFieldValue("username"),
         });
