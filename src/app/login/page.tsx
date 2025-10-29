@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Loader2, Users, UserCheck } from "lucide-react";
-import { useLogin, useLogout, useStudentLogin } from "@/hooks/api";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import { useLogin, useLogout } from "@/hooks/api";
 import { BrandingSidebar } from "@/components/onboarding/branding-sidebar";
 import { tokenManager } from "@/lib/api/client";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
@@ -23,7 +23,6 @@ import { ErrorMessage } from "@/components/common/error-message";
 export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useLogin();
-  const studentLoginMutation = useStudentLogin();
   const logoutMutation = useLogout();
 
   // Form validation
@@ -37,7 +36,6 @@ export default function LoginPage() {
   } = useEnhancedFormValidation({
     email: "",
     password: "",
-    userType: "admin", // Default to admin
   });
 
   // Loading state management
@@ -95,19 +93,10 @@ export default function LoginPage() {
 
     try {
       await executeWithLoading(async () => {
-        const userType = getFieldValue("userType");
-
-        if (userType === "student") {
-          await studentLoginMutation.mutateAsync({
-            email: getFieldValue("email"),
-            password: getFieldValue("password"),
-          });
-        } else {
-          await loginMutation.mutateAsync({
-            email: getFieldValue("email"),
-            password: getFieldValue("password"),
-          });
-        }
+        await loginMutation.mutateAsync({
+          email: getFieldValue("email"),
+          password: getFieldValue("password"),
+        });
       });
     } catch (error: unknown) {
       setError(getFriendlyErrorMessage(error));
@@ -154,9 +143,7 @@ export default function LoginPage() {
           <Card>
             <CardHeader>
               <CardTitle>Sign In</CardTitle>
-              <CardDescription>
-                Choose your account type and sign in
-              </CardDescription>
+              <CardDescription>Sign in to your admin dashboard</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -165,45 +152,9 @@ export default function LoginPage() {
                     error ||
                     (loginMutation.error
                       ? getFriendlyErrorMessage(loginMutation.error)
-                      : null) ||
-                    (studentLoginMutation.error
-                      ? getFriendlyErrorMessage(studentLoginMutation.error)
                       : null)
                   }
                 />
-
-                {/* User Type Selector */}
-                <div className="space-y-2">
-                  <Label>Account Type</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      variant={
-                        getFieldValue("userType") === "admin"
-                          ? "default"
-                          : "outline"
-                      }
-                      onClick={() => updateField("userType", "admin")}
-                      className="flex items-center space-x-2"
-                    >
-                      <UserCheck className="h-4 w-4" />
-                      <span>Admin</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={
-                        getFieldValue("userType") === "student"
-                          ? "default"
-                          : "outline"
-                      }
-                      onClick={() => updateField("userType", "student")}
-                      className="flex items-center space-x-2"
-                    >
-                      <Users className="h-4 w-4" />
-                      <span>Student</span>
-                    </Button>
-                  </div>
-                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
@@ -253,15 +204,10 @@ export default function LoginPage() {
                   type="submit"
                   className="w-full"
                   disabled={
-                    isLoading ||
-                    loginMutation.isPending ||
-                    studentLoginMutation.isPending ||
-                    !isFormValid
+                    isLoading || loginMutation.isPending || !isFormValid
                   }
                 >
-                  {isLoading ||
-                  loginMutation.isPending ||
-                  studentLoginMutation.isPending
+                  {isLoading || loginMutation.isPending
                     ? "Signing In..."
                     : "Sign In"}
                 </Button>
@@ -271,23 +217,13 @@ export default function LoginPage() {
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
                     Don&apos;t have an account?{" "}
-                    {getFieldValue("userType") === "student" ? (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto"
-                        onClick={() => router.push("/register")}
-                      >
-                        Register as Student
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto"
-                        onClick={() => router.push("/create-organization")}
-                      >
-                        Create Organization
-                      </Button>
-                    )}
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto"
+                      onClick={() => router.push("/create-organization")}
+                    >
+                      Create Organization
+                    </Button>
                   </p>
                 </div>
 

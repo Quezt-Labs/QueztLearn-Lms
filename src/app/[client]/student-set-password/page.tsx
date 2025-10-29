@@ -33,7 +33,6 @@ function ClientStudentSetPasswordContent() {
   const [isPasswordSet, setIsPasswordSet] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  const router = useRouter();
   const { client } = useClient();
   const { studentData, userId, setPasswordSet, completeStudentAuth } =
     useStudentAuthStore();
@@ -115,7 +114,7 @@ function ClientStudentSetPasswordContent() {
         if (studentData?.email && getFieldValue("password")) {
           try {
             console.log("Auto-logging in student:", studentData.email);
-            const loginResult = await loginMutation.mutateAsync({
+            await loginMutation.mutateAsync({
               email: studentData.email,
               password: getFieldValue("password"),
             });
