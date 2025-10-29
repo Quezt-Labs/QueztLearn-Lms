@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Eye, EyeOff, CheckCircle, Shield } from "lucide-react";
 import Link from "next/link";
-// import Image from "next/image";
 import { useSetPassword, useCreateOrganizationConfig, useLogin } from "@/hooks";
 import { useOnboardingStore } from "@/lib/store/onboarding";
 import { useEnhancedFormValidation, useLoadingState } from "@/hooks/common";
@@ -156,6 +155,8 @@ function SetPasswordContent() {
         ? domainParts[0]
         : organizationData?.name?.toLowerCase().replace(/\s+/g, "-");
 
+    console.log(organizationData, "org data");
+
     return {
       organizationId: organizationData.id,
       name: organizationData.name,
@@ -222,62 +223,11 @@ function SetPasswordContent() {
         // Start showing the multi-step loader
         setIsPasswordSet(true);
 
-        // Simulate the onboarding process with steps
-        const onboardingSteps = [
-          { text: "Setting up your account" },
-          { text: "Creating your secure profile" },
-          { text: "Configuring your organization" },
-          { text: "Setting up organization branding" },
-          { text: "Logging you in automatically" },
-          { text: "Welcome to QueztLearn!" },
-        ];
-
         // We'll handle the actual password setting here
         await setPasswordMutation.mutateAsync({
           userId: localUserId,
           password: getFieldValue("password"),
         });
-
-        // Create organization configuration after password is set
-        if (organizationData && adminData) {
-          try {
-            console.log("Creating organization config with data:", {
-              organizationData,
-              adminData,
-              domain: organizationData?.domain,
-            });
-
-            const configData = createOrganizationConfigData();
-            console.log("Generated config data:", configData);
-
-            const configResult =
-              await createOrganizationConfigMutation.mutateAsync(configData);
-
-            if (configResult.success && configResult.data) {
-              // Store the organization configuration
-              setOrganizationConfig(configResult.data);
-              console.log(
-                "Organization configuration created successfully:",
-                configResult.data
-              );
-            }
-          } catch (configError) {
-            console.error(
-              "Failed to create organization configuration:",
-              configError
-            );
-            console.error("Organization data:", organizationData);
-            console.error("Admin data:", adminData);
-            // Don't fail the entire flow if config creation fails
-          }
-        } else {
-          console.warn("Missing data for organization config creation:", {
-            hasOrganizationData: !!organizationData,
-            hasAdminData: !!adminData,
-            organizationData,
-            adminData,
-          });
-        }
 
         setPasswordSet(true);
 
@@ -288,10 +238,58 @@ function SetPasswordContent() {
         if (adminData?.email && getFieldValue("password")) {
           try {
             console.log("Auto-logging in admin:", adminData.email);
-            await loginMutation.mutateAsync({
+            const loginResult = await loginMutation.mutateAsync({
               email: adminData.email,
               password: getFieldValue("password"),
             });
+
+            // After successful login, create organization configuration
+            if (loginResult.success && organizationData && adminData) {
+              try {
+                console.log(
+                  "Creating organization config after login with data:",
+                  {
+                    organizationData,
+                    adminData,
+                    domain: organizationData?.domain,
+                  }
+                );
+
+                const configData = createOrganizationConfigData();
+                console.log("Generated config data:", configData);
+
+                const configResult =
+                  await createOrganizationConfigMutation.mutateAsync(
+                    configData
+                  );
+
+                if (configResult.success && configResult.data) {
+                  // Store the organization configuration
+                  setOrganizationConfig(configResult.data);
+                  console.log(
+                    "Organization configuration created successfully:",
+                    configResult.data
+                  );
+                }
+              } catch (configError) {
+                console.error(
+                  "Failed to create organization configuration:",
+                  configError
+                );
+                console.error("Organization data:", organizationData);
+                console.error("Admin data:", adminData);
+                // Don't fail the entire flow if config creation fails
+              }
+            } else {
+              console.warn("Missing data for organization config creation:", {
+                hasOrganizationData: !!organizationData,
+                hasAdminData: !!adminData,
+                loginSuccess: loginResult?.success,
+                organizationData,
+                adminData,
+              });
+            }
+
             // Login hook will handle redirect to admin dashboard
             return; // Exit early since login will redirect
           } catch (loginError) {
@@ -317,9 +315,9 @@ function SetPasswordContent() {
   const onboardingSteps = [
     { text: "Setting up your account" },
     { text: "Creating your secure profile" },
+    { text: "Logging you in automatically" },
     { text: "Configuring your organization" },
     { text: "Setting up organization branding" },
-    { text: "Logging you in automatically" },
     { text: "Welcome to QueztLearn!" },
   ];
 
