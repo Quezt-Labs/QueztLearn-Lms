@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PageHeader } from "@/components/common/page-header";
 import {
   Dialog,
   DialogContent,
@@ -232,21 +233,24 @@ export function CourseListPage({
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                {headerTitle || defaultTitle}
-              </h1>
-              <p className="text-muted-foreground mt-2">{defaultSubtitle}</p>
-            </div>
+        <PageHeader
+          title={headerTitle || defaultTitle}
+          description={defaultSubtitle}
+          breadcrumbs={[
+            {
+              label: basePath === "admin" ? "Admin" : "Teacher",
+              href: `/${basePath}/dashboard`,
+            },
+            { label: "Courses" },
+          ]}
+          actions={
             <Button onClick={handleCreateCourse} className="bg-primary">
               <Plus className="mr-2 h-4 w-4" />
               Create Course
             </Button>
-          </div>
-        </div>
+          }
+          className="mb-6"
+        />
 
         {/* Courses Display */}
         {displayMode === "list" ? (

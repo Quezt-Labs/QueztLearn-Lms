@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PageHeader } from "@/components/common/page-header";
 import {
   Select,
   SelectContent,
@@ -171,23 +172,21 @@ export default function AdminTeachersPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                All Teachers
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Manage teachers and their batch assignments
-              </p>
-            </div>
+        <PageHeader
+          title="All Teachers"
+          description="Manage teachers and their batch assignments"
+          breadcrumbs={[
+            { label: "Admin", href: "/admin/dashboard" },
+            { label: "Teachers" },
+          ]}
+          actions={
             <Button onClick={handleCreateTeacher} className="bg-primary">
               <Plus className="mr-2 h-4 w-4" />
               Add Teacher
             </Button>
-          </div>
-        </div>
+          }
+          className="mb-6"
+        />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
