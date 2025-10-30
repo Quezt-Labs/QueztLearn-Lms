@@ -427,80 +427,82 @@ export function TestSeriesDetailPage({
             />
           </TabsContent>
 
-          {stats && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Enrollment Stats */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Total Enrollments
-                      </CardTitle>
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {stats.totalEnrollments || 0}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        All time enrollments
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+          <TabsContent value="stats" className="space-y-6">
+            {stats && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Enrollment Stats */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Total Enrollments
+                        </CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          {stats.totalEnrollments || 0}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          All time enrollments
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Active Enrollments
-                      </CardTitle>
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-green-600">
-                        {stats.activeEnrollments || 0}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Currently active
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Active Enrollments
+                        </CardTitle>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-green-600">
+                          {stats.activeEnrollments || 0}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Currently active
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Revenue
-                      </CardTitle>
-                      <TrendingUp className="h-4 w-4 text-blue-600" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-blue-600">
-                        {formatPrice(stats.revenue || 0)}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Total revenue generated
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Revenue
+                        </CardTitle>
+                        <TrendingUp className="h-4 w-4 text-blue-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {formatPrice(stats.revenue || 0)}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Total revenue generated
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </TabsContent>
         </Tabs>
 
         {/* Modals */}

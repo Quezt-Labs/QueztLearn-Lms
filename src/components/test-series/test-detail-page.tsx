@@ -218,52 +218,6 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
           </div>
         </div>
 
-        {/* Test Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Passing Marks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{test.passingMarks}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Sections
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{test.sectionCount || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Questions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {test.questionCount || 0}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Attempts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{test.attemptCount || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Tabs */}
         <Tabs
           value={activeTab}
@@ -457,7 +411,6 @@ function SectionTableRow({
   section,
   testId,
   testSeriesId,
-  onCreateQuestion,
   onRefetch,
 }: {
   section: Section;

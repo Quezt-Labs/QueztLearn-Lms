@@ -205,14 +205,6 @@ export function TestSeriesDataTable({
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href={`/admin/test-series/${series.id}/analytics`}
-                          >
-                            <TrendingUp className="mr-2 h-4 w-4" />
-                            Analytics
-                          </Link>
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditSeries(series)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
