@@ -3,13 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -19,10 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Plus,
   Edit,
   Trash2,
-  HelpCircle,
   GripVertical,
   FileQuestion,
   Award,
@@ -65,7 +58,7 @@ export function SectionManager({
   onAddQuestion,
   onRefetch,
 }: SectionManagerProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  // removed collapsible open state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
@@ -94,157 +87,100 @@ export function SectionManager({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.05 }}
       >
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <Card className="overflow-hidden border-2 hover:border-primary/20 transition-colors">
-            <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 flex-1">
-                    <div className="shrink-0">
-                      <GripVertical className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-                    </div>
-                    <div className="flex-1 text-left min-w-0">
-                      <h3 className="text-xl font-bold mb-1 text-foreground">
-                        {section.name}
-                      </h3>
-                      {section.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {section.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <Badge
-                        variant="outline"
-                        className="bg-background border-border px-3 py-1"
-                      >
-                        <FileQuestion className="h-3 w-3 mr-1.5" />
-                        {section.questionCount || 0} Questions
-                      </Badge>
-                      <Badge
-                        variant="secondary"
-                        className="bg-primary/10 text-primary border-primary/20 px-3 py-1"
-                      >
-                        <Award className="h-3 w-3 mr-1.5" />
-                        {section.totalMarks} Marks
-                      </Badge>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsEditModalOpen(true);
-                        }}
-                        className="h-8"
-                      >
-                        <Edit className="mr-2 h-4 w-4" /> Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsDeleteDialogOpen(true);
-                        }}
-                        className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsBulkAddModalOpen(true);
-                            }}
-                          >
-                            <Layers className="mr-2 h-4 w-4" /> Add Questions
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIsCsvImportModalOpen(true);
-                            }}
-                          >
-                            <Upload className="mr-2 h-4 w-4" /> Import CSV
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link
-                              href={`/admin/test-series/${testSeriesId}/tests/${section.testId}/sections/${section.id}/questions`}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <span className="inline-flex items-center">
-                                <Eye className="mr-2 h-4 w-4" /> View Questions
-                              </span>
-                            </Link>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
+        <Card className="overflow-hidden border-2 hover:border-primary/20 transition-colors">
+          <CardHeader className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4 flex-1">
+                <div className="shrink-0">
+                  <GripVertical className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
                 </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-
-            <CollapsibleContent>
-              <CardContent className="px-6 py-5 bg-muted/20">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">
-                  Section {section.displayOrder}
-                </div>
-
-                {/* Questions Summary */}
-                {questions.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12 border-2 border-dashed border-muted-foreground/30 rounded-lg bg-background/50"
-                  >
-                    <HelpCircle className="h-14 w-14 mx-auto text-muted-foreground/50 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2 text-foreground">
-                      No Questions Yet
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                      Add questions to this section to get started. You can add
-                      them one by one or in bulk.
+                <div className="flex-1 text-left min-w-0">
+                  <h3 className="text-xl font-bold mb-1 text-foreground">
+                    {section.name}
+                  </h3>
+                  {section.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-1">
+                      {section.description}
                     </p>
-                    <div className="flex items-center justify-center gap-3">
-                      <Button
+                  )}
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge
+                    variant="outline"
+                    className="bg-background border-border px-3 py-1"
+                  >
+                    <FileQuestion className="h-3 w-3 mr-1.5" />
+                    {section.questionCount || 0} Questions
+                  </Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-primary/10 text-primary border-primary/20 px-3 py-1"
+                  >
+                    <Award className="h-3 w-3 mr-1.5" />
+                    {section.totalMarks} Marks
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditModalOpen(true);
+                    }}
+                    className="h-8"
+                  >
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDeleteDialogOpen(true);
+                    }}
+                    className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsBulkAddModalOpen(true);
                         }}
-                        size="lg"
                       >
-                        <Layers className="mr-2 h-4 w-4" />
-                        Bulk Add Questions
-                      </Button>
-                      <Button
+                        <Layers className="mr-2 h-4 w-4" /> Add Questions
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          onAddQuestion();
+                          setIsCsvImportModalOpen(true);
                         }}
-                        size="lg"
-                        variant="outline"
                       >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Single Question
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+                        <Upload className="mr-2 h-4 w-4" /> Import CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href={`/admin/test-series/${testSeriesId}/tests/${section.testId}/sections/${section.id}/questions`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="inline-flex items-center">
+                            <Eye className="mr-2 h-4 w-4" /> View Questions
+                          </span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
       </motion.div>
 
       <EditSectionModal

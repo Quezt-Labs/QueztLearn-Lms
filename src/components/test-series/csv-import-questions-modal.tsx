@@ -26,6 +26,7 @@ import {
   useTestSections,
   QuestionType,
   DifficultyLevel,
+  Section,
 } from "@/hooks/test-series";
 
 interface CsvImportQuestionsModalProps {
@@ -74,9 +75,9 @@ export function CsvImportQuestionsModal({
     const rows: TestBulkCsvRow[] = [];
     for (let i = 1; i < lines.length; i++) {
       const cols = splitCsvLine(lines[i]);
-      const obj: any = {};
+      const obj: Partial<TestBulkCsvRow> = {};
       header.forEach((h, idx) => {
-        obj[h] = cols[idx] ?? "";
+        (obj as Record<string, string>)[h] = cols[idx] ?? "";
       });
       rows.push(obj as TestBulkCsvRow);
     }
@@ -173,8 +174,8 @@ export function CsvImportQuestionsModal({
     description?: string,
     displayOrder?: number
   ): Promise<string> => {
-    const existing = Array.isArray(existingSectionsData?.data)
-      ? (existingSectionsData.data as any[])
+    const existing: Section[] = Array.isArray(existingSectionsData?.data)
+      ? (existingSectionsData.data as Section[])
       : [];
     const found = existing.find(
       (s) => (s.name || "").trim().toLowerCase() === name.trim().toLowerCase()
@@ -219,7 +220,7 @@ export function CsvImportQuestionsModal({
         if (!sectionId) {
           const beforeIds = new Set(
             Array.isArray(existingSectionsData?.data)
-              ? (existingSectionsData.data as any[]).map((s) => s.id)
+              ? (existingSectionsData.data as Section[]).map((s) => s.id)
               : []
           );
           sectionId = await getOrCreateSectionId(
@@ -290,7 +291,7 @@ export function CsvImportQuestionsModal({
             },
           });
           createdQuestions += 1;
-        } catch (err) {
+        } catch (_error) {
           failed += 1;
         }
       }
