@@ -27,7 +27,6 @@ import {
   GripVertical,
   FileQuestion,
   Award,
-  Eye,
   Layers,
 } from "lucide-react";
 import {
@@ -37,7 +36,6 @@ import {
   Question,
 } from "@/hooks/test-series";
 import { EditSectionModal } from "./edit-section-modal";
-import { ViewQuestionsModal } from "./view-questions-modal";
 import { BulkAddQuestionsModal } from "./bulk-add-questions-modal";
 import { CsvImportQuestionsModal } from "./csv-import-questions-modal";
 import Link from "next/link";
@@ -62,8 +60,6 @@ export function SectionManager({
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isViewQuestionsModalOpen, setIsViewQuestionsModalOpen] =
-    useState(false);
   const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
   const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
 
@@ -145,24 +141,12 @@ export function SectionManager({
                   <div className="flex items-center gap-2 flex-wrap">
                     {questions.length > 0 && (
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsViewQuestionsModalOpen(true);
-                          }}
-                          className="h-9"
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          Quick View ({questions.length})
-                        </Button>
                         <Link
                           href={`/admin/test-series/${testSeriesId}/tests/${section.testId}/sections/${section.id}/questions`}
                           onClick={(e) => e.stopPropagation()}
                           className="inline-flex items-center h-9 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                         >
-                          Open Full View
+                          View Questions
                         </Link>
                       </div>
                     )}
@@ -187,7 +171,7 @@ export function SectionManager({
                       className="h-9"
                     >
                       <Layers className="mr-2 h-4 w-4" />
-                      Bulk Add
+                      Add Questions
                     </Button>
                     <Button
                       variant="outline"
@@ -200,17 +184,7 @@ export function SectionManager({
                     >
                       Import CSV
                     </Button>
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddQuestion();
-                      }}
-                      className="h-9"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add One
-                    </Button>
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -308,17 +282,6 @@ export function SectionManager({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <ViewQuestionsModal
-        open={isViewQuestionsModalOpen}
-        onOpenChange={setIsViewQuestionsModalOpen}
-        sectionName={section.name}
-        questions={questions}
-        onRefetch={() => {
-          refetchQuestions();
-          onRefetch();
-        }}
-      />
 
       <BulkAddQuestionsModal
         open={isBulkAddModalOpen}
