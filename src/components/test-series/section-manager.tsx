@@ -19,7 +19,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  ChevronDown,
   Plus,
   Edit,
   Trash2,
@@ -28,6 +27,9 @@ import {
   FileQuestion,
   Award,
   Layers,
+  Eye,
+  Upload,
+  MoreVertical,
 } from "lucide-react";
 import {
   useSectionQuestions,
@@ -39,6 +41,12 @@ import { EditSectionModal } from "./edit-section-modal";
 import { BulkAddQuestionsModal } from "./bulk-add-questions-modal";
 import { CsvImportQuestionsModal } from "./csv-import-questions-modal";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface SectionManagerProps {
   section: Section;
@@ -120,11 +128,67 @@ export function SectionManager({
                         <Award className="h-3 w-3 mr-1.5" />
                         {section.totalMarks} Marks
                       </Badge>
-                      <ChevronDown
-                        className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${
-                          isOpen ? "transform rotate-180" : ""
-                        }`}
-                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsEditModalOpen(true);
+                        }}
+                        className="h-8"
+                      >
+                        <Edit className="mr-2 h-4 w-4" /> Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsDeleteDialogOpen(true);
+                        }}
+                        className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsBulkAddModalOpen(true);
+                            }}
+                          >
+                            <Layers className="mr-2 h-4 w-4" /> Add Questions
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsCsvImportModalOpen(true);
+                            }}
+                          >
+                            <Upload className="mr-2 h-4 w-4" /> Import CSV
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link
+                              href={`/admin/test-series/${testSeriesId}/tests/${section.testId}/sections/${section.id}/questions`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <span className="inline-flex items-center">
+                                <Eye className="mr-2 h-4 w-4" /> View Questions
+                              </span>
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
@@ -133,70 +197,8 @@ export function SectionManager({
 
             <CollapsibleContent>
               <CardContent className="px-6 py-5 bg-muted/20">
-                {/* Section Actions Bar */}
-                <div className="flex items-center justify-between mb-5 pb-4 border-b border-border/50">
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Section {section.displayOrder}
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {questions.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/test-series/${testSeriesId}/tests/${section.testId}/sections/${section.id}/questions`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center h-9 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-                        >
-                          View Questions
-                        </Link>
-                      </div>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsEditModalOpen(true);
-                      }}
-                      className="h-9"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Section
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsBulkAddModalOpen(true);
-                      }}
-                      className="h-9"
-                    >
-                      <Layers className="mr-2 h-4 w-4" />
-                      Add Questions
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsCsvImportModalOpen(true);
-                      }}
-                      className="h-9"
-                    >
-                      Import CSV
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsDeleteDialogOpen(true);
-                      }}
-                      className="h-9 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-4">
+                  Section {section.displayOrder}
                 </div>
 
                 {/* Questions Summary */}
