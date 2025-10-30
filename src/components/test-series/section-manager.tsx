@@ -39,10 +39,13 @@ import {
 import { EditSectionModal } from "./edit-section-modal";
 import { ViewQuestionsModal } from "./view-questions-modal";
 import { BulkAddQuestionsModal } from "./bulk-add-questions-modal";
+import { CsvImportQuestionsModal } from "./csv-import-questions-modal";
+import Link from "next/link";
 
 interface SectionManagerProps {
   section: Section;
   testId: string;
+  testSeriesId: string;
   index: number;
   onAddQuestion: () => void;
   onRefetch: () => void;
@@ -51,6 +54,7 @@ interface SectionManagerProps {
 export function SectionManager({
   section,
   testId: _testId,
+  testSeriesId,
   index,
   onAddQuestion,
   onRefetch,
@@ -61,6 +65,7 @@ export function SectionManager({
   const [isViewQuestionsModalOpen, setIsViewQuestionsModalOpen] =
     useState(false);
   const [isBulkAddModalOpen, setIsBulkAddModalOpen] = useState(false);
+  const [isCsvImportModalOpen, setIsCsvImportModalOpen] = useState(false);
 
   const { data: questionsData, refetch: refetchQuestions } =
     useSectionQuestions(section.id);
@@ -139,18 +144,27 @@ export function SectionManager({
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     {questions.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsViewQuestionsModalOpen(true);
-                        }}
-                        className="h-9"
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Questions ({questions.length})
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsViewQuestionsModalOpen(true);
+                          }}
+                          className="h-9"
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          Quick View ({questions.length})
+                        </Button>
+                        <Link
+                          href={`/admin/test-series/${testSeriesId}/tests/${section.testId}/sections/${section.id}/questions`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center h-9 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                        >
+                          Open Full View
+                        </Link>
+                      </div>
                     )}
                     <Button
                       variant="outline"
@@ -174,6 +188,17 @@ export function SectionManager({
                     >
                       <Layers className="mr-2 h-4 w-4" />
                       Bulk Add
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsCsvImportModalOpen(true);
+                      }}
+                      className="h-9"
+                    >
+                      Import CSV
                     </Button>
                     <Button
                       size="sm"
@@ -201,7 +226,7 @@ export function SectionManager({
                 </div>
 
                 {/* Questions Summary */}
-                {questions.length === 0 ? (
+                {questions.length === 0 && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -239,19 +264,6 @@ export function SectionManager({
                       </Button>
                     </div>
                   </motion.div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
-                      <FileQuestion className="h-5 w-5 text-primary" />
-                      <span className="font-semibold text-foreground">
-                        {questions.length} Question
-                        {questions.length !== 1 ? "s" : ""} in this section
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-3">
-                      Click &quot;View Questions&quot; to see and manage all questions
-                    </p>
-                  </div>
                 )}
               </CardContent>
             </CollapsibleContent>
@@ -316,6 +328,17 @@ export function SectionManager({
           refetchQuestions();
           onRefetch();
           setIsBulkAddModalOpen(false);
+        }}
+      />
+
+      <CsvImportQuestionsModal
+        open={isCsvImportModalOpen}
+        onOpenChange={setIsCsvImportModalOpen}
+        testId={section.testId}
+        onSuccess={() => {
+          refetchQuestions();
+          onRefetch();
+          setIsCsvImportModalOpen(false);
         }}
       />
     </>

@@ -216,7 +216,7 @@ function SidebarContent({ className }: { className?: string }) {
         </div>
 
         {/* Navigation */}
-        <nav className="space-y-0.5 px-0">
+        <nav className="space-y-0.5 px-1">
           {sidebarLinks?.map((item) => {
             const link = {
               label: item.title,

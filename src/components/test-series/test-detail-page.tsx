@@ -304,6 +304,7 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
                           key={section.id}
                           section={section}
                           testId={testId}
+                          testSeriesId={testSeriesId}
                           index={index}
                           onAddQuestion={() => handleCreateQuestion(section)}
                           onRefetch={() => {

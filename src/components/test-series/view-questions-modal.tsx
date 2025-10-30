@@ -20,11 +20,7 @@ import {
   XCircle,
   Lightbulb,
 } from "lucide-react";
-import {
-  Question,
-  QuestionType,
-  useDeleteQuestion,
-} from "@/hooks/test-series";
+import { Question, QuestionType, useDeleteQuestion } from "@/hooks/test-series";
 import { EditQuestionModal } from "./edit-question-modal";
 import {
   DropdownMenu,
