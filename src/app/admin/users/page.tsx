@@ -170,7 +170,7 @@ export default function UsersPage() {
 
       {/* Users Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="sticky top-16 z-30 bg-card/80 backdrop-blur supports-backdrop-filter:bg-card/60 border-b">
           <CardTitle>All Users</CardTitle>
           <CardDescription>
             Manage users in your organization. Click delete to remove a user.

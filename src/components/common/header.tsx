@@ -26,7 +26,7 @@ export function Header() {
   const isDark = theme === "dark";
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-background px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between px-6 border-b bg-background/60 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
       {/* Search */}
       <div className="flex flex-1 items-center space-x-4">
         <div className="relative w-full max-w-sm">

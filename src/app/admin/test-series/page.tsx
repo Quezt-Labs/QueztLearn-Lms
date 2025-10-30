@@ -95,7 +95,7 @@ export default function TestSeriesPage() {
 
       {/* Search and Filters */}
       <Card>
-        <CardHeader>
+        <CardHeader className="sticky top-16 z-30 bg-card/80 backdrop-blur supports-backdrop-filter:bg-card/60 border-b">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>All Test Series</CardTitle>
