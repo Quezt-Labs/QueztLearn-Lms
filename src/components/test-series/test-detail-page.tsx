@@ -8,6 +8,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  MoreVertical,
+  Upload as UploadIcon,
+  Eye,
+  Layers as LayersIcon,
+  Pencil,
+  Trash,
+} from "lucide-react";
+import { EditSectionModal } from "./edit-section-modal";
+import { BulkAddQuestionsModal } from "./bulk-add-questions-modal";
+import { CsvImportQuestionsModal } from "./csv-import-questions-modal";
+import { useDeleteSection } from "@/hooks/test-series";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -34,7 +60,6 @@ import {
   Section,
 } from "@/hooks/test-series";
 import { LoadingSkeleton } from "@/components/common/loading-skeleton";
-import { SectionManager } from "./section-manager";
 import { CreateSectionModal } from "./create-section-modal";
 import { CreateQuestionModal } from "./create-question-modal";
 
@@ -288,8 +313,8 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
                       No Sections Yet
                     </h3>
                     <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Create your first section to start adding questions. Sections
-                      help organize your test content logically.
+                      Create your first section to start adding questions.
+                      Sections help organize your test content logically.
                     </p>
                     <Button onClick={handleCreateSection} size="lg">
                       <Plus className="mr-2 h-4 w-4" />
@@ -297,23 +322,34 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
                     </Button>
                   </motion.div>
                 ) : (
-                  <div className="space-y-5">
-                    <AnimatePresence>
-                      {sections.map((section, index) => (
-                        <SectionManager
-                          key={section.id}
-                          section={section}
-                          testId={testId}
-                          testSeriesId={testSeriesId}
-                          index={index}
-                          onAddQuestion={() => handleCreateQuestion(section)}
-                          onRefetch={() => {
-                            refetchSections();
-                            refetchTest();
-                          }}
-                        />
-                      ))}
-                    </AnimatePresence>
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Section</TableHead>
+                          <TableHead>Questions</TableHead>
+                          <TableHead>Marks</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sections.map((section) => (
+                          <SectionTableRow
+                            key={section.id}
+                            section={section}
+                            testId={testId}
+                            testSeriesId={testSeriesId}
+                            onCreateQuestion={() =>
+                              handleCreateQuestion(section)
+                            }
+                            onRefetch={() => {
+                              refetchSections();
+                              refetchTest();
+                            }}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
@@ -414,5 +450,142 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
         </Dialog>
       </div>
     </div>
+  );
+}
+
+function SectionTableRow({
+  section,
+  testId,
+  testSeriesId,
+  onCreateQuestion,
+  onRefetch,
+}: {
+  section: Section;
+  testId: string;
+  testSeriesId: string;
+  onCreateQuestion: () => void;
+  onRefetch: () => void;
+}) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const deleteSectionMutation = useDeleteSection();
+
+  const handleDeleteSection = async () => {
+    try {
+      await deleteSectionMutation.mutateAsync(section.id);
+      setIsDeleteOpen(false);
+      onRefetch();
+    } catch {}
+  };
+
+  return (
+    <>
+      <TableRow>
+        <TableCell>
+          <div className="flex flex-col">
+            <span className="font-medium">{section.name}</span>
+            {section.description && (
+              <span className="text-muted-foreground text-xs line-clamp-1">
+                {section.description}
+              </span>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>{section.questionCount}</TableCell>
+        <TableCell>{section.totalMarks}</TableCell>
+        <TableCell className="text-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <a
+                  href={`/admin/test-series/${testSeriesId}/tests/${testId}/sections/${section.id}/questions`}
+                >
+                  <span className="inline-flex items-center">
+                    <Eye className="mr-2 h-4 w-4" /> View Questions
+                  </span>
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsBulkAddOpen(true)}>
+                <LayersIcon className="mr-2 h-4 w-4" /> Add Questions
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsImportOpen(true)}>
+                <UploadIcon className="mr-2 h-4 w-4" /> Import CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit Section
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setIsDeleteOpen(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash className="mr-2 h-4 w-4" /> Delete Section
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+
+      <EditSectionModal
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        section={section}
+        onSuccess={() => {
+          onRefetch();
+          setIsEditOpen(false);
+        }}
+      />
+
+      <BulkAddQuestionsModal
+        open={isBulkAddOpen}
+        onOpenChange={setIsBulkAddOpen}
+        sectionId={section.id}
+        onSuccess={() => {
+          onRefetch();
+          setIsBulkAddOpen(false);
+        }}
+      />
+
+      <CsvImportQuestionsModal
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        testId={testId}
+        onSuccess={() => {
+          onRefetch();
+          setIsImportOpen(false);
+        }}
+      />
+
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Section</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this section? This will also
+              delete all questions in this section. This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteSection}
+              variant="destructive"
+              disabled={deleteSectionMutation.isPending}
+            >
+              {deleteSectionMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
