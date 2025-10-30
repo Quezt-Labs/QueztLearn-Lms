@@ -119,28 +119,6 @@ export function SectionManager({
                     <Award className="h-3 w-3 mr-1.5" />
                     {section.totalMarks} Marks
                   </Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditModalOpen(true);
-                    }}
-                    className="h-8"
-                  >
-                    <Edit className="mr-2 h-4 w-4" /> Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsDeleteDialogOpen(true);
-                    }}
-                    className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="icon" className="h-8 w-8">
@@ -148,6 +126,24 @@ export function SectionManager({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsEditModalOpen(true);
+                        }}
+                      >
+                        <Edit className="mr-2 h-4 w-4" /> Edit Section
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsDeleteDialogOpen(true);
+                        }}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete Section
+                      </DropdownMenuItem>
+                      <hr className="my-1" />
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
