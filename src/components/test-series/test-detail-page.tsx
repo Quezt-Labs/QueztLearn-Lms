@@ -143,266 +143,262 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <Button variant="ghost" onClick={handleGoBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Test Series
-            </Button>
-          </div>
-
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold tracking-tight mb-4">
-                {test.title}
-              </h1>
-              <div className="flex items-center flex-wrap gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4" />
-                  <span>{test.durationMinutes} minutes</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>{test.totalMarks} marks</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <List className="h-4 w-4" />
-                  <span>{test.sectionCount} sections</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <HelpCircle className="h-4 w-4" />
-                  <span>{test.questionCount} questions</span>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 mt-4">
-                <Badge
-                  variant={test.isPublished ? "default" : "secondary"}
-                  className={
-                    test.isPublished
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                      : ""
-                  }
-                >
-                  {test.isPublished ? (
-                    <>
-                      <CheckCircle className="mr-1 h-3 w-3" />
-                      Published
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="mr-1 h-3 w-3" />
-                      Draft
-                    </>
-                  )}
-                </Badge>
-                {test.isFree && (
-                  <Badge variant="outline" className="bg-blue-50">
-                    Free
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsDeleteDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-            </div>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-4 mb-6">
+          <Button variant="ghost" onClick={handleGoBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Test Series
+          </Button>
         </div>
 
-        {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList>
-            <TabsTrigger value="sections">
-              Sections
-              {sections.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {sections.length}
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold tracking-tight mb-4">
+              {test.title}
+            </h1>
+            <div className="flex items-center flex-wrap gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4" />
+                <span>{test.durationMinutes} minutes</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4" />
+                <span>{test.totalMarks} marks</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <List className="h-4 w-4" />
+                <span>{test.sectionCount} sections</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <HelpCircle className="h-4 w-4" />
+                <span>{test.questionCount} questions</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 mt-4">
+              <Badge
+                variant={test.isPublished ? "default" : "secondary"}
+                className={
+                  test.isPublished
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                    : ""
+                }
+              >
+                {test.isPublished ? (
+                  <>
+                    <CheckCircle className="mr-1 h-3 w-3" />
+                    Published
+                  </>
+                ) : (
+                  <>
+                    <Settings className="mr-1 h-3 w-3" />
+                    Draft
+                  </>
+                )}
+              </Badge>
+              {test.isFree && (
+                <Badge variant="outline" className="bg-blue-50">
+                  Free
                 </Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+            </div>
+          </div>
 
-          {/* Sections Tab */}
-          <TabsContent value="sections" className="space-y-6">
-            <Card className="border-0 shadow-none bg-transparent">
-              <CardHeader className="px-0 pb-6">
-                <div className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-2xl font-bold mb-2">
-                      Sections
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Organize questions into sections for better structure
-                    </p>
-                  </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList>
+          <TabsTrigger value="sections">
+            Sections
+            {sections.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {sections.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        {/* Sections Tab */}
+        <TabsContent value="sections" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl font-bold mb-2">
+                    Sections
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Organize questions into sections for better structure
+                  </p>
+                </div>
+                <Button onClick={handleCreateSection} size="lg">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Section
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {sections.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-16 border-2 border-dashed border-muted-foreground/30 rounded-xl bg-muted/30"
+                >
+                  <List className="h-16 w-16 mx-auto text-muted-foreground/50 mb-6" />
+                  <h3 className="text-xl font-semibold mb-2">
+                    No Sections Yet
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Create your first section to start adding questions.
+                    Sections help organize your test content logically.
+                  </p>
                   <Button onClick={handleCreateSection} size="lg">
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Section
+                    Create First Section
                   </Button>
+                </motion.div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Section</TableHead>
+                        <TableHead>Questions</TableHead>
+                        <TableHead>Marks</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="cursor-pointer hover:bg-muted/50">
+                      {sections.map((section) => (
+                        <SectionTableRow
+                          key={section.id}
+                          section={section}
+                          testId={testId}
+                          testSeriesId={testSeriesId}
+                          onCreateQuestion={() => handleCreateQuestion(section)}
+                          onRefetch={() => {
+                            refetchSections();
+                            refetchTest();
+                          }}
+                        />
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
-              </CardHeader>
-              <CardContent className="px-0">
-                {sections.length === 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center py-16 border-2 border-dashed border-muted-foreground/30 rounded-xl bg-muted/30"
-                  >
-                    <List className="h-16 w-16 mx-auto text-muted-foreground/50 mb-6" />
-                    <h3 className="text-xl font-semibold mb-2">
-                      No Sections Yet
-                    </h3>
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Create your first section to start adding questions.
-                      Sections help organize your test content logically.
-                    </p>
-                    <Button onClick={handleCreateSection} size="lg">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Create First Section
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Section</TableHead>
-                          <TableHead>Questions</TableHead>
-                          <TableHead>Marks</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sections.map((section) => (
-                          <SectionTableRow
-                            key={section.id}
-                            section={section}
-                            testId={testId}
-                            testSeriesId={testSeriesId}
-                            onCreateQuestion={() =>
-                              handleCreateQuestion(section)
-                            }
-                            onRefetch={() => {
-                              refetchSections();
-                              refetchTest();
-                            }}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Test Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium">
-                      Show Answers After Submit
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {test.showAnswersAfterSubmit ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Allow Review</p>
-                    <p className="text-sm text-muted-foreground">
-                      {test.allowReview ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Shuffle Questions</p>
-                    <p className="text-sm text-muted-foreground">
-                      {test.shuffleQuestions ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Created</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(test.createdAt)}
-                    </p>
-                  </div>
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Test Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium">
+                    Show Answers After Submit
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {test.showAnswersAfterSubmit ? "Yes" : "No"}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                <div>
+                  <p className="text-sm font-medium">Allow Review</p>
+                  <p className="text-sm text-muted-foreground">
+                    {test.allowReview ? "Yes" : "No"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Shuffle Questions</p>
+                  <p className="text-sm text-muted-foreground">
+                    {test.shuffleQuestions ? "Yes" : "No"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Created</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDate(test.createdAt)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
-        {/* Modals */}
-        <CreateSectionModal
-          open={isCreateSectionModalOpen}
-          onOpenChange={setIsCreateSectionModalOpen}
-          testId={testId}
+      {/* Modals */}
+      <CreateSectionModal
+        open={isCreateSectionModalOpen}
+        onOpenChange={setIsCreateSectionModalOpen}
+        testId={testId}
+        onSuccess={() => {
+          refetchSections();
+          refetchTest();
+          setIsCreateSectionModalOpen(false);
+        }}
+      />
+
+      {selectedSection && (
+        <CreateQuestionModal
+          open={isCreateQuestionModalOpen}
+          onOpenChange={setIsCreateQuestionModalOpen}
+          sectionId={selectedSection.id}
           onSuccess={() => {
             refetchSections();
             refetchTest();
-            setIsCreateSectionModalOpen(false);
+            setIsCreateQuestionModalOpen(false);
+            setSelectedSection(null);
           }}
         />
+      )}
 
-        {selectedSection && (
-          <CreateQuestionModal
-            open={isCreateQuestionModalOpen}
-            onOpenChange={setIsCreateQuestionModalOpen}
-            sectionId={selectedSection.id}
-            onSuccess={() => {
-              refetchSections();
-              refetchTest();
-              setIsCreateQuestionModalOpen(false);
-              setSelectedSection(null);
-            }}
-          />
-        )}
-
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Test</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this test? This action cannot be
-                undone and will delete all sections and questions.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsDeleteDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDelete}
-                variant="destructive"
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? "Deleting..." : "Delete"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Test</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this test? This action cannot be
+              undone and will delete all sections and questions.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDelete}
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
