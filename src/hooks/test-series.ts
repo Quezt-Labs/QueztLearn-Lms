@@ -373,7 +373,7 @@ export const useUpdateSection = () => {
       id: string;
       data: Partial<Section>;
     }) => {
-      const response = await apiClient.put(`/admin/sections/${id}`, data);
+      const response = await apiClient.put(`/admin/tests/sections/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -387,7 +387,7 @@ export const useDeleteSection = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.delete(`/admin/sections/${id}`);
+      const response = await apiClient.delete(`/admin/tests/sections/${id}`);
       return response.data;
     },
     onSuccess: () => {
