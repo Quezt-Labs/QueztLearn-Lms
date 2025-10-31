@@ -56,6 +56,7 @@ import {
 import {
   useTest,
   useDeleteTest,
+  useUpdateTest,
   useTestSections,
   Test,
   Section,
@@ -88,6 +89,7 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
 
   // Mutations
   const deleteMutation = useDeleteTest();
+  const updateMutation = useUpdateTest();
 
   const test = testData?.data as Test | undefined;
   const sections = (sectionsData?.data as Section[]) || [];
@@ -207,6 +209,25 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
           </div>
 
           <div className="flex space-x-2">
+            <Button
+              variant={test.isPublished ? "secondary" : "default"}
+              onClick={async () => {
+                try {
+                  await updateMutation.mutateAsync({
+                    id: testId,
+                    data: { isPublished: !test.isPublished },
+                  });
+                  refetchTest();
+                } catch (e) {}
+              }}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending
+                ? "Saving..."
+                : test.isPublished
+                ? "Unpublish"
+                : "Publish"}
+            </Button>
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(true)}
