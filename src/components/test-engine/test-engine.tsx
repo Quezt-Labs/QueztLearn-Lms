@@ -44,9 +44,19 @@ function generateMockTest(): {
       id: `q-${si + 1}-${qi + 1}`,
       text: `Q${qi + 1}. This is a sample question in section ${si + 1}.`,
       type: "MCQ",
+      // Add a dummy external image (Unsplash) for the first question
+      imageUrl:
+        qi === 0
+          ? "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=1200&q=80&auto=format&fit=crop"
+          : undefined,
       options: options.map((o, oi) => ({
         id: `opt-${si}-${qi}-${oi}`,
         text: `${o}`,
+        // Add a dummy external image for the first option of the first question
+        imageUrl:
+          qi === 0 && oi === 0
+            ? "https://images.unsplash.com/photo-1520975922203-b8ad9a8a8d2a?w=800&q=80&auto=format&fit=crop"
+            : undefined,
       })),
       marks: 4,
       negativeMarks: 1,
