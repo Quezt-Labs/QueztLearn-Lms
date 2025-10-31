@@ -73,7 +73,7 @@ function ClientStudentVerifyEmailContent() {
 
             // Auto-redirect to student password setup after 2 seconds
             setTimeout(() => {
-              router.push(`/${client?.subdomain}/student-set-password`);
+              router.push(`/set-password`);
             }, 2000);
           } else {
             setError(

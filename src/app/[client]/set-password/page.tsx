@@ -421,7 +421,7 @@ function ClientStudentSetPasswordContent() {
                 {/* Back button */}
                 <div className="mt-6 text-center">
                   <Button variant="outline" asChild>
-                    <Link href={`/${client?.subdomain}/student-verify-email`}>
+                    <Link href={`/verify-email`}>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Back to Email Verification
                     </Link>
