@@ -12,11 +12,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Info } from "lucide-react";
 import Link from "next/link";
+import { useStartAttempt } from "@/hooks/test-attempts-client";
+import { useState } from "react";
+import {
+  ErrorMessage,
+  SuccessMessage,
+} from "@/components/common/error-message";
 
 export default function TestInstructionsPage() {
   const params = useParams<{ testId: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const startAttempt = useStartAttempt();
 
   const mock = searchParams.get("mock") === "1";
   const testId = params.testId;
@@ -34,6 +43,18 @@ export default function TestInstructionsPage() {
       />
 
       <Card>
+        {successMessage && (
+          <SuccessMessage
+            message={successMessage}
+            onDismiss={() => setSuccessMessage(null)}
+          />
+        )}
+        {errorMessage && (
+          <ErrorMessage
+            error={errorMessage}
+            onDismiss={() => setErrorMessage(null)}
+          />
+        )}
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Info className="h-5 w-5" /> General Guidelines
@@ -53,11 +74,25 @@ export default function TestInstructionsPage() {
             <Link href="/student/tests">Cancel</Link>
           </Button>
           <Button
-            onClick={() =>
-              router.push(
-                `/student/tests/${testId}/attempt${mock ? "?mock=1" : ""}`
-              )
-            }
+            disabled={startAttempt.isPending}
+            onClick={async () => {
+              setErrorMessage(null);
+              try {
+                const res = await startAttempt.mutateAsync(testId);
+                const attemptId = res.data.id;
+                router.push(
+                  `/student/tests/${testId}/attempt?attemptId=${attemptId}${
+                    mock ? "&mock=1" : ""
+                  }`
+                );
+              } catch (e) {
+                const msg =
+                  (e as { response?: { data?: { message?: string } } })
+                    ?.response?.data?.message ||
+                  "Failed to start attempt. Please ensure you are enrolled.";
+                setErrorMessage(msg);
+              }
+            }}
           >
             <CheckCircle2 className="mr-2 h-4 w-4" /> I’m ready, start test
           </Button>
