@@ -271,7 +271,7 @@ function ClientStudentRegisterContent() {
                     <Button
                       variant="link"
                       className="p-0 h-auto"
-                      onClick={() => router.push(`/${client?.subdomain}/login`)}
+                      onClick={() => router.push(`/login`)}
                     >
                       Sign In
                     </Button>
@@ -280,7 +280,7 @@ function ClientStudentRegisterContent() {
 
                 <div className="text-center">
                   <Button variant="outline" asChild>
-                    <Link href={`/${client?.subdomain}/login`}>
+                    <Link href={`/login`}>
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       Back to Login
                     </Link>
