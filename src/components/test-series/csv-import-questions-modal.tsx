@@ -36,12 +36,15 @@ import {
   Section,
 } from "@/hooks/test-series";
 
+type CsvImportMode = "AUTO" | "QUESTIONS_ONLY" | "SECTIONS_AND_QUESTIONS";
+
 interface CsvImportQuestionsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   testId: string;
   onSuccess?: () => void;
   defaultSectionId?: string; // prefill when opened from a section
+  mode?: CsvImportMode; // controls whether to force questions-only or sections+questions
 }
 
 export function CsvImportQuestionsModal({
@@ -50,6 +53,7 @@ export function CsvImportQuestionsModal({
   testId,
   onSuccess,
   defaultSectionId,
+  mode = "AUTO",
 }: CsvImportQuestionsModalProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -129,7 +133,9 @@ export function CsvImportQuestionsModal({
     const missingHeaders = TEST_BULK_QUESTIONS_CSV_HEADERS.filter(
       (h) => !headerKeys.includes(h)
     );
-    const hasSectionColumns = headerKeys.includes("sectionName");
+    let hasSectionColumns = headerKeys.includes("sectionName");
+    if (mode === "QUESTIONS_ONLY") hasSectionColumns = false;
+    if (mode === "SECTIONS_AND_QUESTIONS") hasSectionColumns = true;
     // Allow section-related headers to be optional when not provided
     const sectionHeaders = new Set([
       "sectionName",
@@ -141,6 +147,16 @@ export function CsvImportQuestionsModal({
     );
     if (blockingMissing.length > 0) {
       errors[-1] = [`Missing headers: ${blockingMissing.join(", ")}`];
+      return errors;
+    }
+
+    if (
+      mode === "SECTIONS_AND_QUESTIONS" &&
+      !headerKeys.includes("sectionName")
+    ) {
+      errors[-1] = [
+        "CSV must include section columns (e.g., sectionName) when using Sections + Questions mode",
+      ];
       return errors;
     }
 
@@ -245,7 +261,9 @@ export function CsvImportQuestionsModal({
 
       // Determine if CSV has section columns
       const headerKeys = Object.keys(rows[0] || {});
-      const hasSectionColumns = headerKeys.includes("sectionName");
+      let hasSectionColumns = headerKeys.includes("sectionName");
+      if (mode === "QUESTIONS_ONLY") hasSectionColumns = false;
+      if (mode === "SECTIONS_AND_QUESTIONS") hasSectionColumns = true;
       const fallbackSectionName = "__NO_SECTION__";
 
       if (!hasSectionColumns) {
@@ -401,9 +419,19 @@ export function CsvImportQuestionsModal({
     >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Import Questions via CSV</DialogTitle>
+          <DialogTitle>
+            {mode === "SECTIONS_AND_QUESTIONS"
+              ? "Bulk Upload: Sections + Questions"
+              : mode === "QUESTIONS_ONLY"
+              ? "Bulk Upload: Questions Only"
+              : "Import Questions via CSV"}
+          </DialogTitle>
           <DialogDescription>
-            Upload a CSV to create multiple sections and questions in one go.
+            {mode === "SECTIONS_AND_QUESTIONS"
+              ? "Upload a CSV that contains section columns to create sections and their questions."
+              : mode === "QUESTIONS_ONLY"
+              ? "Upload a CSV without section columns to add questions into a selected section."
+              : "Upload a CSV to create multiple sections and questions in one go."}
           </DialogDescription>
         </DialogHeader>
 
@@ -454,7 +482,8 @@ export function CsvImportQuestionsModal({
           {step === 2 && (
             <div className="space-y-3">
               {/* If CSV has no section columns, require selecting target section */}
-              {rows.length > 0 && !("sectionName" in (rows[0] || {})) && (
+              {(mode === "QUESTIONS_ONLY" ||
+                (rows.length > 0 && !("sectionName" in (rows[0] || {})))) && (
                 <div className="space-y-2 p-3 border rounded-md bg-muted/30">
                   <Label>Target Section</Label>
                   <Select
@@ -588,8 +617,8 @@ export function CsvImportQuestionsModal({
                 disabled={
                   !!rowErrors[-1] ||
                   isProcessing ||
-                  (rows.length > 0 &&
-                    !("sectionName" in (rows[0] || {})) &&
+                  ((mode === "QUESTIONS_ONLY" ||
+                    (rows.length > 0 && !("sectionName" in (rows[0] || {})))) &&
                     !targetSectionId)
                 }
               >

@@ -81,6 +81,10 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
   const [selectedSection, setSelectedSection] = useState<Section | null>(null);
   const [isCreateQuestionModalOpen, setIsCreateQuestionModalOpen] =
     useState(false);
+  const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
+  const [csvMode, setCsvMode] = useState<
+    "AUTO" | "QUESTIONS_ONLY" | "SECTIONS_AND_QUESTIONS"
+  >("AUTO");
 
   // Data fetching
   const { data: testData, isLoading, refetch: refetchTest } = useTest(testId);
@@ -270,10 +274,23 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
                     Organize questions into sections for better structure
                   </p>
                 </div>
-                <Button onClick={handleCreateSection} size="lg">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Section
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button onClick={handleCreateSection} size="lg">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Section
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      setCsvMode("SECTIONS_AND_QUESTIONS");
+                      setIsCsvModalOpen(true);
+                    }}
+                  >
+                    <UploadIcon className="mr-2 h-4 w-4" />
+                    Add Bulk Upload
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -395,6 +412,17 @@ export function TestDetailPage({ basePath = "admin" }: TestDetailPageProps) {
         />
       )}
 
+      <CsvImportQuestionsModal
+        open={isCsvModalOpen}
+        onOpenChange={setIsCsvModalOpen}
+        testId={testId}
+        mode={csvMode}
+        onSuccess={() => {
+          refetchSections();
+          refetchTest();
+        }}
+      />
+
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -439,6 +467,8 @@ function SectionTableRow({
 }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isQuestionsOnlyImportOpen, setIsQuestionsOnlyImportOpen] =
+    useState(false);
   const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const deleteSectionMutation = useDeleteSection();
@@ -486,8 +516,11 @@ function SectionTableRow({
               <DropdownMenuItem onClick={() => setIsBulkAddOpen(true)}>
                 <LayersIcon className="mr-2 h-4 w-4" /> Add Questions
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsImportOpen(true)}>
-                <UploadIcon className="mr-2 h-4 w-4" /> Import CSV
+              <DropdownMenuItem
+                onClick={() => setIsQuestionsOnlyImportOpen(true)}
+              >
+                <UploadIcon className="mr-2 h-4 w-4" /> Bulk Upload Questions
+                (CSV)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
                 <Pencil className="mr-2 h-4 w-4" /> Edit Section
@@ -528,9 +561,22 @@ function SectionTableRow({
         onOpenChange={setIsImportOpen}
         testId={testId}
         defaultSectionId={section.id}
+        mode="SECTIONS_AND_QUESTIONS"
         onSuccess={() => {
           onRefetch();
           setIsImportOpen(false);
+        }}
+      />
+
+      <CsvImportQuestionsModal
+        open={isQuestionsOnlyImportOpen}
+        onOpenChange={setIsQuestionsOnlyImportOpen}
+        testId={testId}
+        defaultSectionId={section.id}
+        mode="QUESTIONS_ONLY"
+        onSuccess={() => {
+          onRefetch();
+          setIsQuestionsOnlyImportOpen(false);
         }}
       />
 
