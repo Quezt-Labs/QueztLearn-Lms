@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, User, Menu } from "lucide-react";
+import { Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,11 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { useOrgLogo, useOrgName } from "@/lib/store/organization-config";
 import { tokenManager } from "@/lib/api/client";
 
-interface StudentHeaderProps {
-  onMenuClick?: () => void;
-}
-
-export function StudentHeader({ onMenuClick }: StudentHeaderProps) {
+export function StudentHeader() {
   const orgLogo = useOrgLogo();
   const orgName = useOrgName();
   const user = tokenManager.getUser();
@@ -29,16 +25,6 @@ export function StudentHeader({ onMenuClick }: StudentHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container flex h-16 items-center px-4 gap-4">
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={onMenuClick}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-
         {/* Logo and Organization Name */}
         <Link href="/student/dashboard" className="flex items-center gap-3">
           {orgLogo && (

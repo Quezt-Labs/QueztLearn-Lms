@@ -18,6 +18,9 @@ export function Layout({ children }: LayoutProps) {
     pathname?.includes("/student/tests/") && pathname?.endsWith("/attempt")
   );
 
+  // Hide header on student routes (they use StudentHeader in page content)
+  const isStudentRoute = pathname?.includes("/student/");
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -35,11 +38,12 @@ export function Layout({ children }: LayoutProps) {
       {/* Hide sidebar on student test attempt route for distraction-free exam mode */}
       {!isAttemptRoute ? <Sidebar /> : null}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {!isAttemptRoute ? <Header /> : null}
+        {/* Hide Header for student routes (they use StudentHeader in page content) */}
+        {!isAttemptRoute && !isStudentRoute ? <Header /> : null}
         <main
           className={
             !isAttemptRoute
-              ? "flex-1 overflow-auto p-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,theme(colors.primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,theme(colors.muted/40),transparent_50%)]"
+              ? "flex-1 overflow-auto p-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,--theme(--color-primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,--theme(--color-muted/40),transparent_50%)]"
               : "flex-1 overflow-auto p-0"
           }
         >
