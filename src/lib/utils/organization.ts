@@ -33,6 +33,15 @@ export function extractOrganizationSlug(): string | null {
     }
   }
 
+  // Handle localhost subdomain like mit.localhost
+  if (hostname.endsWith(".localhost")) {
+    const parts = hostname.split(".");
+    if (parts.length >= 2) {
+      // e.g., mityy.localhost -> mityy
+      return parts[0];
+    }
+  }
+
   return null;
 }
 

@@ -89,6 +89,12 @@ export const STUDENT_NAVIGATION_ITEMS: NavigationItem[] = [
     roles: ["student"],
   },
   {
+    title: "Tests",
+    href: "/student/tests",
+    icon: "FileText",
+    roles: ["student"],
+  },
+  {
     title: "Assignments",
     href: "/student/assignments",
     icon: "FileText",

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hostname = request.headers.get("host") || "";
+  const hostHeader = request.headers.get("host") || "";
+  const hostname = hostHeader.split(":")?.[0];
 
   // Extract subdomain from hostname (e.g., "mit" from "mit.queztlearn.com")
   const subdomain =
@@ -53,6 +54,32 @@ export function middleware(request: NextRequest) {
 
     // For other routes on subdomain, rewrite to client routes
     url.pathname = `/${subdomain}${pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
+  // Handle localhost subdomain like mit.localhost
+  if (hostname.endsWith(".localhost")) {
+    const url = new URL(request.url);
+    const tenant = hostname.replace(".localhost", "");
+
+    url.searchParams.set("subdomain", tenant);
+
+    if (pathname === "/") {
+      url.pathname = `/${tenant}`;
+      return NextResponse.rewrite(url);
+    }
+
+    if (pathname === "/login") {
+      url.pathname = `/${tenant}/login`;
+      return NextResponse.rewrite(url);
+    }
+
+    if (pathname.startsWith("/student")) {
+      url.pathname = `/${tenant}${pathname}`;
+      return NextResponse.rewrite(url);
+    }
+
+    url.pathname = `/${tenant}${pathname}`;
     return NextResponse.rewrite(url);
   }
 
