@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Card } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { QuestionRenderer } from "./question-renderer";
 import { useExamSecurity } from "@/hooks/use-exam-security";
 import { useRouter } from "next/navigation";
@@ -56,9 +58,10 @@ export function TestEngine({
   );
 
   const security = useExamSecurity({
-    maxViolations: 3,
+    maxViolations: 3, // Enable violations for both mock and real tests
     requireFullscreen:
       typeof document !== "undefined" && document.fullscreenEnabled,
+    requireWebcamMic: true, // Require camera for both mock and real tests
     onViolation: (_reason, count) => {
       if (count >= 3 && attemptId) {
         handleSubmit();
@@ -115,8 +118,13 @@ export function TestEngine({
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === flatQuestions.length - 1;
 
+  // Initialize mock start time for mock tests
+  const [mockStartTime] = useState(() => (enableMock ? Date.now() : null));
+
   // Get attempt state from backend or local
-  const attemptStartedAt = attemptData?.data?.startedAt
+  const attemptStartedAt = enableMock
+    ? mockStartTime
+    : attemptData?.data?.startedAt
     ? new Date(attemptData.data.startedAt).getTime()
     : undefined;
   const attemptSubmittedAt = attemptData?.data?.submittedAt
@@ -124,6 +132,26 @@ export function TestEngine({
     : undefined;
   const isActive = attemptStartedAt && !attemptSubmittedAt;
   const durationMinutes = data?.durationMinutes || 0;
+
+  // Debug timer inputs
+  useEffect(() => {
+    console.log("[TEST ENGINE DEBUG] Timer inputs:", {
+      enableMock,
+      mockStartTime,
+      attemptStartedAt,
+      durationMinutes,
+      hasData: !!data,
+      dataDurationMinutes: data?.durationMinutes,
+      isActive,
+    });
+  }, [
+    enableMock,
+    mockStartTime,
+    attemptStartedAt,
+    durationMinutes,
+    data,
+    isActive,
+  ]);
 
   // Initialize answers from backend if available
   useEffect(() => {
@@ -156,13 +184,19 @@ export function TestEngine({
   );
 
   // Drive countdown from a small timer hook
+  const tickCallback = useCallback(() => {
+    // Touch function - can be empty for backend-driven
+  }, []);
+
   const {
     remainingMs,
     minutes: remainingMinutes,
     seconds: remainingSeconds,
-  } = useAttemptTimer(attemptStartedAt, durationMinutes, () => {
-    // Touch function - can be empty for backend-driven
-  });
+  } = useAttemptTimer(
+    attemptStartedAt ?? undefined,
+    durationMinutes,
+    tickCallback
+  );
 
   // Auto-submit on timer expiry once
   useEffect(() => {
@@ -173,19 +207,17 @@ export function TestEngine({
     }
   }, [remainingMs, isActive, attemptId, enableMock, security]);
 
-  // Stop media when attempt ends or component unmounts
-  // IMPORTANT: depend on stable callbacks, not the whole security object
+  // Note: Camera start/stop is handled by useProctoringOnAttempt hook based on route
+  // Only stop if attempt is explicitly submitted/ended
   const { stopMedia, exitFullscreen } = security;
   useEffect(() => {
-    if (!isActive) {
+    // Only stop if attempt is explicitly ended (submitted)
+    // Route-based cleanup is handled by useProctoringOnAttempt
+    if (submitMutation.isSuccess) {
       stopMedia();
       exitFullscreen();
     }
-    return () => {
-      stopMedia();
-      exitFullscreen();
-    };
-  }, [isActive, stopMedia, exitFullscreen]);
+  }, [submitMutation.isSuccess, stopMedia, exitFullscreen]);
 
   // Save answer to backend (with debouncing could be added)
   const handleAnswer = useCallback(
@@ -463,92 +495,180 @@ export function TestEngine({
     );
   }
 
+  const progressPercentage =
+    flatQuestions.length > 0
+      ? ((currentIndex + 1) / flatQuestions.length) * 100
+      : 0;
+
+  const answeredCount = flatQuestions.filter(
+    (q) =>
+      q &&
+      localAnswers[q.id] !== undefined &&
+      localAnswers[q.id] !== null &&
+      localAnswers[q.id] !== ""
+  ).length;
+
   return (
-    <Card className="p-0 overflow-hidden">
-      <TestHeaderBar
-        remainingMinutes={remainingMinutes}
-        remainingSeconds={remainingSeconds}
-        currentIndex={currentIndex}
-        totalQuestions={flatQuestions.length}
-        violations={security.violations}
-        maxViolations={security.maxViolations}
-        markedForReview={
-          currentQuestion ? Boolean(markedForReview[currentQuestion.id]) : false
-        }
-        onToggleReview={toggleReview}
-        onSubmit={handleSubmit}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <Card className="p-0 overflow-hidden shadow-2xl border-2">
+        <TestHeaderBar
+          remainingMinutes={remainingMinutes}
+          remainingSeconds={remainingSeconds}
+          currentIndex={currentIndex}
+          totalQuestions={flatQuestions.length}
+          violations={security.violations}
+          maxViolations={security.maxViolations}
+          markedForReview={
+            currentQuestion
+              ? Boolean(markedForReview[currentQuestion.id])
+              : false
+          }
+          onToggleReview={toggleReview}
+          onSubmit={handleSubmit}
+        />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 sm:gap-4 p-3 sm:p-4 pb-[max(theme(spacing.4),env(safe-area-inset-bottom))]">
-        <div className="min-h-[50vh] sm:min-h-[60vh]">
-          {currentQuestion && (
-            <QuestionRenderer
-              key={currentQuestion.id}
-              question={currentQuestion}
-              value={localAnswers[currentQuestion.id]}
-              onChange={handleAnswer}
+        {/* Progress Bar */}
+        <div className="px-4 pt-3 pb-2 bg-muted/30">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+            <span>
+              Progress: {answeredCount}/{flatQuestions.length} answered
+            </span>
+            <span>{Math.round(progressPercentage)}%</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+            <motion.div
+              className="h-full bg-primary rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercentage}%` }}
+              transition={{ duration: 0.3 }}
             />
-          )}
-
-          <div className="mt-4 flex items-center justify-between gap-2">
-            <Button
-              variant="outline"
-              disabled={isFirst}
-              onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            >
-              Previous
-            </Button>
-            <div className="flex-1" />
-            <Button
-              disabled={isLast}
-              onClick={() =>
-                setCurrentIndex((i) =>
-                  Math.min(flatQuestions.length - 1, i + 1)
-                )
-              }
-            >
-              Next
-            </Button>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <QuestionPalette
-            total={flatQuestions.length}
-            currentIndex={currentIndex}
-            answeredMap={flatQuestions.reduce<Record<number, boolean>>(
-              (acc, q, idx) => {
-                if (!q) return acc;
-                acc[idx] =
-                  localAnswers[q.id] !== undefined &&
-                  localAnswers[q.id] !== null &&
-                  localAnswers[q.id] !== "";
-                return acc;
-              },
-              {}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 sm:gap-4 p-3 sm:p-4 pb-[max(theme(spacing.4),env(safe-area-inset-bottom))]">
+          <div className="min-h-[50vh] sm:min-h-[60vh]">
+            {currentQuestion && (
+              <motion.div
+                key={currentQuestion.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <QuestionRenderer
+                  question={currentQuestion}
+                  value={localAnswers[currentQuestion.id]}
+                  onChange={handleAnswer}
+                />
+              </motion.div>
             )}
-            reviewMap={flatQuestions.reduce<Record<number, boolean>>(
-              (acc, q, idx) => {
-                if (!q) return acc;
-                acc[idx] = Boolean(markedForReview[q.id]);
-                return acc;
-              },
-              {}
-            )}
-            onSelect={(idx) => setCurrentIndex(idx)}
-          />
 
-          <ProctoringPanel
-            mediaStream={security.mediaStream}
-            isRequestingMedia={security.isRequestingMedia}
-            startMedia={security.startMedia}
-            mediaError={security.mediaError}
-            videoRef={security.videoRef}
-            isFullscreen={security.isFullscreen}
-            enterFullscreen={security.enterFullscreen}
-          />
+            <div className="mt-6 flex items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                disabled={isFirst}
+                onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+                className="min-w-[100px]"
+              >
+                ← Previous
+              </Button>
+
+              <div className="flex-1 flex items-center justify-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                  {answeredCount} answered
+                </Badge>
+                {Object.values(markedForReview).filter(Boolean).length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {Object.values(markedForReview).filter(Boolean).length}{" "}
+                    marked
+                  </Badge>
+                )}
+              </div>
+
+              <Button
+                disabled={isLast}
+                onClick={() =>
+                  setCurrentIndex((i) =>
+                    Math.min(flatQuestions.length - 1, i + 1)
+                  )
+                }
+                className="min-w-[100px]"
+              >
+                Next →
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <QuestionPalette
+              total={flatQuestions.length}
+              currentIndex={currentIndex}
+              answeredMap={flatQuestions.reduce<Record<number, boolean>>(
+                (acc, q, idx) => {
+                  if (!q) return acc;
+                  acc[idx] =
+                    localAnswers[q.id] !== undefined &&
+                    localAnswers[q.id] !== null &&
+                    localAnswers[q.id] !== "";
+                  return acc;
+                },
+                {}
+              )}
+              reviewMap={flatQuestions.reduce<Record<number, boolean>>(
+                (acc, q, idx) => {
+                  if (!q) return acc;
+                  acc[idx] = Boolean(markedForReview[q.id]);
+                  return acc;
+                },
+                {}
+              )}
+              onSelect={(idx) => setCurrentIndex(idx)}
+            />
+
+            {/* Always show proctoring panel - camera required for both mock and real tests */}
+            <ProctoringPanel
+              mediaStream={security.mediaStream}
+              isRequestingMedia={security.isRequestingMedia}
+              startMedia={security.startMedia}
+              mediaError={security.mediaError}
+              videoRef={security.videoRef}
+              isFullscreen={security.isFullscreen}
+              enterFullscreen={security.enterFullscreen}
+              autoStart={true} // Auto-start camera for both mock and real tests
+            />
+
+            {/* Summary Card */}
+            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+              <CardContent className="p-4">
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Answered:</span>
+                    <span className="font-semibold text-primary">
+                      {answeredCount}/{flatQuestions.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Remaining:</span>
+                    <span className="font-semibold">
+                      {flatQuestions.length - answeredCount}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Time Left:</span>
+                    <span
+                      className={`font-semibold ${
+                        remainingMinutes < 5 ? "text-destructive" : ""
+                      }`}
+                    >
+                      {remainingMinutes}m {remainingSeconds}s
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

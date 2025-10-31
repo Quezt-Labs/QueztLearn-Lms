@@ -322,11 +322,64 @@ export default function StudentDashboard() {
         </motion.div>
       </div>
 
+      {/* Quick Mock Test */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Mock Test</CardTitle>
+            <CardDescription>
+              Practice with a mock test anytime, no enrollment needed
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-semibold">Full Length Mock Test</h4>
+                  <p className="text-sm text-muted-foreground">
+                    30 questions • 60 minutes
+                  </p>
+                </div>
+                <Button asChild variant="outline">
+                  <Link href="/student/tests/mock-test-1/instructions?mock=1">
+                    <Play className="mr-2 h-4 w-4" />
+                    Start
+                  </Link>
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-semibold">Subject Test - Physics</h4>
+                  <p className="text-sm text-muted-foreground">
+                    10 questions • 30 minutes
+                  </p>
+                </div>
+                <Button asChild variant="outline">
+                  <Link href="/student/tests/mock-test-2/instructions?mock=1">
+                    <Play className="mr-2 h-4 w-4" />
+                    Start
+                  </Link>
+                </Button>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/student/tests">View All Mock Tests →</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Achievements */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
+        transition={{ delay: 0.9 }}
       >
         <Card>
           <CardHeader>

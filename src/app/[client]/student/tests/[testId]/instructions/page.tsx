@@ -74,16 +74,35 @@ export default function TestInstructionsPage() {
             <Link href="/student/tests">Cancel</Link>
           </Button>
           <Button
-            disabled={startAttempt.isPending}
+            disabled={!mock && startAttempt.isPending}
             onClick={async () => {
               setErrorMessage(null);
+
+              // Request fullscreen as part of user gesture (button click)
+              try {
+                if (
+                  typeof document !== "undefined" &&
+                  !document.fullscreenElement
+                ) {
+                  await document.documentElement.requestFullscreen();
+                }
+              } catch (e) {
+                // Fullscreen request failed, but continue anyway
+                console.warn("Fullscreen request failed:", e);
+              }
+
+              // For mock tests, skip API call and go directly to attempt
+              if (mock) {
+                router.push(`/student/tests/${testId}/attempt?mock=1`);
+                return;
+              }
+
+              // For real tests, use API
               try {
                 const res = await startAttempt.mutateAsync(testId);
                 const attemptId = res.data.id;
                 router.push(
-                  `/student/tests/${testId}/attempt?attemptId=${attemptId}${
-                    mock ? "&mock=1" : ""
-                  }`
+                  `/student/tests/${testId}/attempt?attemptId=${attemptId}`
                 );
               } catch (e) {
                 const msg =
@@ -94,7 +113,7 @@ export default function TestInstructionsPage() {
               }
             }}
           >
-            <CheckCircle2 className="mr-2 h-4 w-4" /> I’m ready, start test
+            <CheckCircle2 className="mr-2 h-4 w-4" /> I&apos;m ready, start test
           </Button>
         </CardFooter>
       </Card>

@@ -33,6 +33,7 @@ export function useExamSecurity(options: SecurityOptions = {}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastRestartAtRef = useRef<number>(0);
   const wakeLockRef = useRef<ScreenWakeLock>(null);
+  const isRequestingRef = useRef(false); // Prevent concurrent requests
 
   const addViolation = useCallback(
     (reason: string) => {
@@ -68,21 +69,61 @@ export function useExamSecurity(options: SecurityOptions = {}) {
   }, []);
 
   const startMedia = useCallback(async () => {
-    if (!requireWebcamMic) return true;
+    console.log("[CAMERA DEBUG] startMedia called", {
+      requireWebcamMic,
+      isRequesting: isRequestingRef.current,
+      hasStream: !!mediaStream,
+      streamActive: mediaStream
+        ?.getTracks()
+        .some((t) => t.readyState === "live"),
+    });
+
+    if (!requireWebcamMic) {
+      console.log("[CAMERA DEBUG] Camera not required, returning true");
+      return true;
+    }
+
+    // Prevent concurrent requests
+    if (isRequestingRef.current) {
+      console.log("[CAMERA DEBUG] Already requesting, skipping");
+      return false;
+    }
+
     try {
       // If we already have a live stream, reuse it
       if (
         mediaStream &&
         mediaStream.getTracks().some((t) => t.readyState === "live")
       ) {
+        console.log("[CAMERA DEBUG] Reusing existing stream");
         return true;
       }
+
+      console.log("[CAMERA DEBUG] Starting camera request...");
+      isRequestingRef.current = true;
       setIsRequestingMedia(true);
       setMediaError(null);
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("getUserMedia is not supported in this browser");
+      }
+
+      console.log("[CAMERA DEBUG] Calling getUserMedia...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
         audio: { echoCancellation: true, noiseSuppression: true },
       });
+
+      console.log("[CAMERA DEBUG] Stream received:", {
+        streamId: stream.id,
+        tracks: stream.getTracks().map((t) => ({
+          kind: t.kind,
+          label: t.label,
+          enabled: t.enabled,
+          readyState: t.readyState,
+        })),
+      });
+
       setMediaStream(stream);
       // Surface track lifecycle for debugging
       stream.getTracks().forEach((track) => {
@@ -94,6 +135,9 @@ export function useExamSecurity(options: SecurityOptions = {}) {
       });
       // Attach will be handled in a dedicated effect to avoid play race conditions
       setIsRequestingMedia(false);
+      isRequestingRef.current = false;
+      console.log("[CAMERA DEBUG] Camera request successful, stream set");
+
       // Try to acquire wake lock to prevent screen sleep on mobile
       try {
         if (navigator.wakeLock && !wakeLockRef.current) {
@@ -109,8 +153,14 @@ export function useExamSecurity(options: SecurityOptions = {}) {
     } catch (e) {
       const reason =
         e instanceof Error ? e.message : "Camera/Mic permissions denied";
+      console.error("[CAMERA DEBUG] Camera request failed:", {
+        error: e,
+        reason,
+        errorName: e instanceof Error ? e.name : "Unknown",
+      });
       setMediaError(reason);
       setIsRequestingMedia(false);
+      isRequestingRef.current = false;
       onLockdownFail?.(reason);
       return false;
     }
@@ -143,6 +193,7 @@ export function useExamSecurity(options: SecurityOptions = {}) {
   // Attach stream if it changes after ref mounts
   useEffect(() => {
     if (videoRef.current && mediaStream) {
+      console.log("[CAMERA DEBUG] Attaching stream to video element");
       const video = videoRef.current;
       let cancelled = false;
       try {
@@ -151,7 +202,15 @@ export function useExamSecurity(options: SecurityOptions = {}) {
         (
           video as HTMLVideoElement & { srcObject?: MediaStream | null }
         ).srcObject = mediaStream;
-      } catch (_) {}
+        console.log(
+          "[CAMERA DEBUG] Stream attached to video, srcObject:",
+          video.srcObject instanceof MediaStream
+            ? video.srcObject.id
+            : video.srcObject
+        );
+      } catch (err) {
+        console.error("[CAMERA DEBUG] Error attaching stream:", err);
+      }
 
       const playSafe = () => {
         if (cancelled) return;
@@ -194,10 +253,15 @@ export function useExamSecurity(options: SecurityOptions = {}) {
       !!s && s.getTracks().some((t) => t.readyState === "live");
     if (!requireWebcamMic) return;
     if (hasActiveTrack(mediaStream)) return;
-    const now = Date.now();
-    if (now - lastRestartAtRef.current < 5000) return; // throttle restarts
-    lastRestartAtRef.current = now;
-    void startMedia();
+
+    // Only restart if stream was actually lost (not just initial state)
+    if (mediaStream && mediaStream.getTracks().length > 0) {
+      const now = Date.now();
+      if (now - lastRestartAtRef.current < 5000) return; // throttle restarts
+      console.log("[CAMERA DEBUG] Tracks ended, attempting restart");
+      lastRestartAtRef.current = now;
+      void startMedia();
+    }
   }, [mediaStream, startMedia, requireWebcamMic]);
 
   // Listeners: visibility, blur, fullscreen change, context/keys
