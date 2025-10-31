@@ -22,7 +22,7 @@ import {
 } from "@/lib/constants/csv-templates";
 import {
   useCreateTestSection,
-  useCreateSectionQuestion,
+  useBulkCreateSectionQuestions,
   useTestSections,
   QuestionType,
   DifficultyLevel,
@@ -56,7 +56,7 @@ export function CsvImportQuestionsModal({
 
   const { data: existingSectionsData } = useTestSections(testId);
   const createSectionMutation = useCreateTestSection();
-  const createQuestionMutation = useCreateSectionQuestion();
+  const bulkCreateQuestionsMutation = useBulkCreateSectionQuestions();
 
   const handleSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -204,7 +204,15 @@ export function CsvImportQuestionsModal({
 
       // Cache of section name -> id to avoid creating duplicates in same import
       const sectionIdByName = new Map<string, string>();
+      // Track initial section IDs before import
+      const beforeSectionIds = new Set(
+        Array.isArray(existingSectionsData?.data)
+          ? (existingSectionsData.data as Section[]).map((s) => s.id)
+          : []
+      );
 
+      // Step 1: Get/create all sections first
+      const validRows: Array<{ row: TestBulkCsvRow; index: number }> = [];
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         if (rowErrors[i]?.length) {
@@ -216,13 +224,9 @@ export function CsvImportQuestionsModal({
           failed++;
           continue;
         }
+
         let sectionId = sectionIdByName.get(sectionKey);
         if (!sectionId) {
-          const beforeIds = new Set(
-            Array.isArray(existingSectionsData?.data)
-              ? (existingSectionsData.data as Section[]).map((s) => s.id)
-              : []
-          );
           sectionId = await getOrCreateSectionId(
             sectionKey,
             row.sectionName,
@@ -232,26 +236,44 @@ export function CsvImportQuestionsModal({
               : undefined
           );
           sectionIdByName.set(sectionKey, sectionId);
-          const afterCreated = Array.from(sectionIdByName.values()).filter(
-            (id) => !beforeIds.has(id)
-          ).length;
-          if (afterCreated > 0) createdSections += 1;
+          // Check if this is a newly created section
+          if (!beforeSectionIds.has(sectionId)) {
+            createdSections += 1;
+          }
         }
 
-        // Build options and correct answers
+        validRows.push({ row, index: i });
+      }
+
+      // Step 2: Group questions by section ID
+      const questionsBySection = new Map<
+        string,
+        Array<{
+          text: string;
+          imageUrl?: string;
+          type: QuestionType;
+          difficulty: DifficultyLevel;
+          marks: number;
+          negativeMarks: number;
+          explanation?: string;
+          options?: Array<{ text: string; isCorrect: boolean }>;
+        }>
+      >();
+
+      for (const { row, index } of validRows) {
+        const sectionKey = (row.sectionName || "").trim();
+        const sectionId = sectionIdByName.get(sectionKey);
+        if (!sectionId) continue;
+
         const type = (row.questionType || "").toUpperCase() as QuestionType;
         const difficulty = (
           row.difficulty || ""
         ).toUpperCase() as DifficultyLevel;
         const marks = Number(row.marks);
         const negativeMarks = row.negativeMarks ? Number(row.negativeMarks) : 0;
-        const displayOrder = row.questionDisplayOrder
-          ? Number(row.questionDisplayOrder)
-          : undefined;
 
-        let options:
-          | { text: string; isCorrect: boolean; displayOrder: number }[]
-          | undefined = undefined;
+        let options: Array<{ text: string; isCorrect: boolean }> | undefined =
+          undefined;
         if (type === "MCQ") {
           const correctSet = new Set(
             (row.correctOptions || "")
@@ -263,36 +285,44 @@ export function CsvImportQuestionsModal({
             .map((text, idx) => ({
               text: text || "",
               isCorrect: correctSet.has(String.fromCharCode(65 + idx)),
-              displayOrder: idx,
             }))
             .filter((o) => o.text.trim());
         } else if (type === "TRUE_FALSE") {
           const correct = normalizeBoolean(row.correctOptions);
           options = [
-            { text: "True", isCorrect: correct === true, displayOrder: 0 },
-            { text: "False", isCorrect: correct === false, displayOrder: 1 },
+            { text: "True", isCorrect: correct === true },
+            { text: "False", isCorrect: correct === false },
           ];
         }
 
+        const questionData = {
+          text: row.questionText,
+          imageUrl: row.questionImageUrl || undefined,
+          type,
+          difficulty,
+          marks,
+          negativeMarks,
+          explanation: row.explanation || undefined,
+          options,
+        };
+
+        if (!questionsBySection.has(sectionId)) {
+          questionsBySection.set(sectionId, []);
+        }
+        questionsBySection.get(sectionId)!.push(questionData);
+      }
+
+      // Step 3: Bulk create questions for each section
+      for (const [sectionId, questions] of questionsBySection.entries()) {
         try {
-          await createQuestionMutation.mutateAsync({
+          await bulkCreateQuestionsMutation.mutateAsync({
             sectionId,
-            data: {
-              text: row.questionText,
-              imageUrl: row.questionImageUrl || undefined,
-              type,
-              difficulty,
-              marks,
-              negativeMarks,
-              explanation: row.explanation || undefined,
-              explanationImageUrl: row.explanationImageUrl || undefined,
-              displayOrder,
-              options,
-            },
+            questions,
           });
-          createdQuestions += 1;
+          createdQuestions += questions.length;
         } catch (_error) {
-          failed += 1;
+          // If bulk creation fails, count all questions in that section as failed
+          failed += questions.length;
         }
       }
 
