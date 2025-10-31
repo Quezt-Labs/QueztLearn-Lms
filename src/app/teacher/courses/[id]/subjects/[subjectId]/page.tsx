@@ -100,10 +100,6 @@ export default function SubjectDetailPage() {
     router.push(`/teacher/courses/${courseId}`);
   };
 
-  const handleDeleteSubject = () => {
-    setIsDeleteDialogOpen(true);
-  };
-
   const confirmDelete = async () => {
     try {
       await deleteSubjectMutation.mutateAsync(subjectId);
@@ -165,18 +161,6 @@ export default function SubjectDetailPage() {
       setSelectedChapter(chapter);
       setIsCreateTopicOpen(true);
     }
-  };
-
-  const handleTopicCreated = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["topics", "chapter"],
-    });
-  };
-
-  const handleTopicUpdated = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["topics", "chapter"],
-    });
   };
 
   const handleEditTopic = (topic: Topic, e: React.MouseEvent) => {

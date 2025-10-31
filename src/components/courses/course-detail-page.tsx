@@ -25,7 +25,6 @@ import {
   Calendar,
   Globe,
   Plus,
-  Share2,
 } from "lucide-react";
 import {
   useGetBatch,
@@ -114,7 +113,6 @@ export function CourseDetailPage({
   const router = useRouter();
   const queryClient = useQueryClient();
   const courseId = params.id as string;
-  const { data: currentUser } = useCurrentUser();
 
   // Detect role from current path
   const currentRole = basePath === "admin" ? ROLES.ADMIN : ROLES.TEACHER;

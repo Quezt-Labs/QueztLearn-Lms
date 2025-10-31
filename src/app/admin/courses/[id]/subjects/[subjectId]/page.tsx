@@ -39,7 +39,6 @@ import { CreateTopicModal } from "@/components/common/create-topic-modal";
 import { EditTopicModal } from "@/components/common/edit-topic-modal";
 import { CreateContentModal } from "@/components/common/create-content-modal";
 import { EditContentModal } from "@/components/common/edit-content-modal";
-import Image from "next/image";
 
 interface Chapter {
   id: string;

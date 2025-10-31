@@ -10,6 +10,12 @@ type SecurityOptions = {
   onLockdownFail?: (reason: string) => void;
 };
 
+// Minimal wake lock type to avoid `any` while keeping cross-browser support
+type ScreenWakeLock = {
+  release: () => Promise<void>;
+  addEventListener: (type: "release", listener: () => void) => void;
+} | null;
+
 export function useExamSecurity(options: SecurityOptions = {}) {
   const {
     maxViolations = 3,
@@ -26,7 +32,7 @@ export function useExamSecurity(options: SecurityOptions = {}) {
   const [mediaError, setMediaError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastRestartAtRef = useRef<number>(0);
-  const wakeLockRef = useRef<any>(null);
+  const wakeLockRef = useRef<ScreenWakeLock>(null);
 
   const addViolation = useCallback(
     (reason: string) => {
@@ -90,9 +96,7 @@ export function useExamSecurity(options: SecurityOptions = {}) {
       setIsRequestingMedia(false);
       // Try to acquire wake lock to prevent screen sleep on mobile
       try {
-        // @ts-ignore
         if (navigator.wakeLock && !wakeLockRef.current) {
-          // @ts-ignore
           wakeLockRef.current = await navigator.wakeLock.request("screen");
           wakeLockRef.current.addEventListener("release", () => {
             wakeLockRef.current = null;
