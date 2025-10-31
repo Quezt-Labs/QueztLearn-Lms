@@ -59,7 +59,12 @@ export function TestEngine({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId]);
 
-  useProctoringOnAttempt(security.enterFullscreen, security.startMedia);
+  useProctoringOnAttempt(
+    security.enterFullscreen,
+    security.startMedia,
+    security.stopMedia,
+    security.exitFullscreen
+  );
 
   const currentQuestion = flatQuestions[currentIndex];
   const isFirst = currentIndex === 0;
