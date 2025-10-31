@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
-  BookOpen,
   Clock,
   TrendingUp,
   Calendar,
@@ -20,31 +18,41 @@ import {
   CheckCircle,
   Star,
   Award,
+  FileText,
 } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
-import { useCourses } from "@/hooks";
+import {
+  useClientMyEnrollments,
+  ClientTestSeriesListItem,
+} from "@/hooks/test-series-client";
 import Link from "next/link";
 
 export default function StudentDashboard() {
   const {
-    data: courses,
-    isLoading: coursesLoading,
-    error: coursesError,
-  } = useCourses(1, 10);
+    data: testSeriesData,
+    isLoading: testSeriesLoading,
+    error: testSeriesError,
+  } = useClientMyEnrollments({ page: 1, limit: 10 });
 
-  // Mock student progress data
+  const enrolledTestSeries = testSeriesData?.data || [];
+  const totalTestSeries = testSeriesData?.pagination?.totalCount || 0;
+
+  // Calculate test series stats
+  const completedTests = enrolledTestSeries.filter(() => {
+    // You can add completion logic based on enrollmentDetails if available
+    return false; // For now, assume none completed
+  }).length;
+
+  // Mock student progress data (can be replaced with real API later)
   const studentProgress = {
-    totalCourses: 3,
-    completedCourses: 1,
-    inProgressCourses: 2,
-    totalLessons: 15,
-    completedLessons: 8,
+    totalTestSeries: totalTestSeries,
+    completedTestSeries: completedTests,
+    inProgressTestSeries: totalTestSeries - completedTests,
+    totalTests: enrolledTestSeries.length * 5, // Estimated
+    completedTests: completedTests * 2, // Estimated
     studyStreak: 7,
     totalStudyTime: 24, // hours
   };
-
-  const enrolledCourses =
-    (courses?.data as { courses?: unknown[] })?.courses?.slice(0, 3) || [];
 
   return (
     <div className="space-y-6">
@@ -54,9 +62,9 @@ export default function StudentDashboard() {
         breadcrumbs={[{ label: "Student", href: "/student/dashboard" }]}
         actions={
           <Button asChild>
-            <Link href="/student/courses">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Browse Courses
+            <Link href="/student/test-series">
+              <FileText className="mr-2 h-4 w-4" />
+              Browse Test Series
             </Link>
           </Button>
         }
@@ -72,16 +80,16 @@ export default function StudentDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Enrolled Courses
+                Enrolled Test Series
               </CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {studentProgress.totalCourses}
+                {studentProgress.totalTestSeries}
               </div>
               <p className="text-xs text-muted-foreground">
-                {studentProgress.completedCourses} completed
+                {studentProgress.completedTestSeries} completed
               </p>
             </CardContent>
           </Card>
@@ -142,17 +150,17 @@ export default function StudentDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">
                 {Math.round(
-                  studentProgress.totalLessons > 0
-                    ? (studentProgress.completedLessons /
-                        studentProgress.totalLessons) *
+                  studentProgress.totalTests > 0
+                    ? (studentProgress.completedTests /
+                        studentProgress.totalTests) *
                         100
                     : 0
                 )}
                 %
               </div>
               <p className="text-xs text-muted-foreground">
-                {studentProgress.completedLessons}/
-                {studentProgress.totalLessons} lessons
+                {studentProgress.completedTests}/{studentProgress.totalTests}{" "}
+                tests
               </p>
             </CardContent>
           </Card>
@@ -160,7 +168,7 @@ export default function StudentDashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* My Courses */}
+        {/* My Test Series */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -168,17 +176,26 @@ export default function StudentDashboard() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>My Courses</CardTitle>
-              <CardDescription>Continue your learning journey</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>My Test Series</CardTitle>
+                  <CardDescription>
+                    Continue your test preparation
+                  </CardDescription>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/student/test-series">View All</Link>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              {coursesError ? (
+              {testSeriesError ? (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">
-                    Failed to load courses. Please try again later.
+                    Failed to load test series. Please try again later.
                   </p>
                 </div>
-              ) : coursesLoading ? (
+              ) : testSeriesLoading ? (
                 <div className="space-y-4">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="flex items-center space-x-4">
@@ -190,62 +207,56 @@ export default function StudentDashboard() {
                     </div>
                   ))}
                 </div>
+              ) : enrolledTestSeries.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">
+                    You haven&apos;t enrolled in any test series yet.
+                  </p>
+                  <Button asChild variant="outline">
+                    <Link href="/student/test-series">Browse Test Series</Link>
+                  </Button>
+                </div>
               ) : (
                 <div className="space-y-4">
-                  {enrolledCourses.map((course, index) => {
-                    const courseData = course as {
-                      progress?: number;
-                      title?: string;
-                      id?: string;
-                      instructorName?: string;
-                      lessons?: { length: number };
-                    };
-                    const progress =
-                      courseData.progress ??
-                      Math.floor(Math.random() * 40) + 30; // Use real progress or fallback
-                    const isCompleted = progress === 100;
-
-                    return (
-                      <motion.div
-                        key={courseData.id || index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <BookOpen className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium">
-                              {courseData.title || "Course"}
-                            </h4>
-                            <Badge
-                              variant={isCompleted ? "default" : "secondary"}
-                            >
-                              {isCompleted ? "Completed" : "In Progress"}
-                            </Badge>
+                  {enrolledTestSeries
+                    .slice(0, 3)
+                    .map((series: ClientTestSeriesListItem, index: number) => {
+                      return (
+                        <motion.div
+                          key={series.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <FileText className="h-6 w-6 text-primary" />
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {courseData.instructorName || "Instructor"} •{" "}
-                            {courseData.lessons?.length || 0} lessons
-                          </p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={progress} className="flex-1" />
-                            <span className="text-xs text-muted-foreground">
-                              {progress}%
-                            </span>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">{series.title}</h4>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline">{series.exam}</Badge>
+                                {series.isFree && (
+                                  <Badge variant="secondary">Free</Badge>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {series.durationDays > 0 &&
+                                `${series.durationDays} days validity`}
+                              {series.durationDays === 0 && "Unlimited access"}
+                            </p>
                           </div>
-                        </div>
-                        <Button size="sm" asChild>
-                          <Link href={`/student/course/${courseData.id}`}>
-                            <Play className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </motion.div>
-                    );
-                  })}
+                          <Button size="sm" asChild>
+                            <Link href={`/student/test-series/${series.id}`}>
+                              <Play className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </motion.div>
+                      );
+                    })}
                 </div>
               )}
             </CardContent>
