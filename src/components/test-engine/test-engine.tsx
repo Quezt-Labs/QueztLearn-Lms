@@ -69,6 +69,8 @@ export function TestEngine({
   const router = useRouter();
   const security = useExamSecurity({
     maxViolations: 3,
+    requireFullscreen:
+      typeof document !== "undefined" && document.fullscreenEnabled,
     onViolation: (_reason, count) => {
       if (count >= 3) {
         actions.submitAttempt();
@@ -198,7 +200,10 @@ export function TestEngine({
 
   return (
     <Card className="p-0 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-[radial-gradient(80rem_50rem_at_120%_-10%,theme(colors.primary/8),transparent_60%)]">
+      <div
+        className="sticky top-0 z-10 flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-b bg-[radial-gradient(80rem_50rem_at_120%_-10%,theme(colors.primary/8),transparent_60%)] supports-[padding:max(0px)]
+        pb-[max(theme(spacing.2),env(safe-area-inset-top))] pt-[max(theme(spacing.2),env(safe-area-inset-top))]"
+      >
         <div className="flex items-center gap-2 text-sm">
           <Badge
             variant={remainingMinutes < 5 ? "destructive" : "secondary"}
@@ -234,8 +239,8 @@ export function TestEngine({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-4">
-        <div className="min-h-[60vh]">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3 sm:gap-4 p-3 sm:p-4 pb-[max(theme(spacing.4),env(safe-area-inset-bottom))]">
+        <div className="min-h-[50vh] sm:min-h-[60vh]">
           <QuestionRenderer
             key={currentQuestion.id}
             question={currentQuestion}
@@ -268,7 +273,7 @@ export function TestEngine({
         <div className="space-y-3">
           <div className="border rounded-lg p-3">
             <div className="mb-2 text-sm font-medium">Question Palette</div>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
               {flatQuestions.map((q, idx) => {
                 const answered =
                   state.answers[q.id] !== undefined &&
@@ -329,7 +334,7 @@ export function TestEngine({
               muted
               autoPlay
               playsInline
-              className="w-full h-40 object-cover rounded-md bg-black"
+              className="w-full h-28 sm:h-40 object-cover rounded-md bg-black"
             />
             {!security.isFullscreen && (
               <Button
