@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Trash2 } from "lucide-react";
 import {
-  useCreateSectionQuestion,
+  useBulkCreateSectionQuestions,
   QuestionType,
   DifficultyLevel,
   QuestionOption,
@@ -80,7 +80,7 @@ export function BulkAddQuestionsModal({
     },
   ]);
 
-  const createMutation = useCreateSectionQuestion();
+  const bulkMutation = useBulkCreateSectionQuestions();
 
   const addQuestion = () => {
     setQuestions([
@@ -186,27 +186,26 @@ export function BulkAddQuestionsModal({
       }
     }
 
-    // Create all questions
+    // Create all questions in bulk
     try {
-      for (const question of questions) {
-        await createMutation.mutateAsync({
-          sectionId,
-          data: {
-            text: question.text,
-            imageUrl: question.imageUrl || undefined,
-            type: question.type,
-            difficulty: question.difficulty,
-            marks: question.marks,
-            negativeMarks: question.negativeMarks,
-            explanation: question.explanation || undefined,
-            explanationImageUrl: question.explanationImageUrl || undefined,
-            options:
-              question.type === "MCQ" || question.type === "TRUE_FALSE"
-                ? question.options.filter((opt) => opt.text.trim())
-                : undefined,
-          },
-        });
-      }
+      await bulkMutation.mutateAsync({
+        sectionId,
+        questions: questions.map((q) => ({
+          text: q.text,
+          imageUrl: q.imageUrl || undefined,
+          type: q.type,
+          difficulty: q.difficulty,
+          marks: q.marks,
+          negativeMarks: q.negativeMarks,
+          explanation: q.explanation || undefined,
+          options:
+            q.type === "MCQ" || q.type === "TRUE_FALSE"
+              ? q.options
+                  .filter((opt) => opt.text.trim())
+                  .map((opt) => ({ text: opt.text, isCorrect: opt.isCorrect }))
+              : undefined,
+        })),
+      });
 
       // Reset form
       setQuestions([
@@ -495,9 +494,9 @@ export function BulkAddQuestionsModal({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending
-                  ? "Creating..."
+              <Button type="submit" disabled={bulkMutation.isPending}>
+                {bulkMutation.isPending
+                  ? "Uploading..."
                   : `Create ${questions.length} Question${
                       questions.length !== 1 ? "s" : ""
                     }`}

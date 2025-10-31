@@ -463,6 +463,44 @@ export const useCreateSectionQuestion = () => {
   });
 };
 
+// Bulk create questions in a section
+export const useBulkCreateSectionQuestions = () => {
+  const queryClient = useQueryClient();
+
+  // Dedicated input type for bulk payload
+  type BulkSectionQuestionInput = {
+    text: string;
+    imageUrl?: string;
+    type: QuestionType;
+    difficulty: DifficultyLevel;
+    marks: number;
+    negativeMarks: number;
+    explanation?: string;
+    options?: Array<{ text: string; isCorrect: boolean }>;
+  };
+
+  return useMutation({
+    mutationFn: async ({
+      sectionId,
+      questions,
+    }: {
+      sectionId: string;
+      questions: BulkSectionQuestionInput[];
+    }) => {
+      const response = await apiClient.post(
+        `/admin/tests/sections/${sectionId}/questions/bulk`,
+        { questions }
+      );
+      return response.data as { success: boolean; data?: { count: number } };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+      queryClient.invalidateQueries({ queryKey: ["sections"] });
+      queryClient.invalidateQueries({ queryKey: ["tests"] });
+    },
+  });
+};
+
 export const useQuestion = (id: string) => {
   return useQuery({
     queryKey: ["question", id],
