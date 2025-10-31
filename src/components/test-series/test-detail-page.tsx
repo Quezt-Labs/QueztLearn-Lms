@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -453,13 +454,13 @@ function SectionTableRow({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <a
+                <Link
                   href={`/admin/test-series/${testSeriesId}/tests/${testId}/sections/${section.id}/questions`}
                 >
                   <span className="inline-flex items-center">
                     <Eye className="mr-2 h-4 w-4" /> View Questions
                   </span>
-                </a>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsBulkAddOpen(true)}>
                 <LayersIcon className="mr-2 h-4 w-4" /> Add Questions
