@@ -527,6 +527,7 @@ function SectionTableRow({
         open={isImportOpen}
         onOpenChange={setIsImportOpen}
         testId={testId}
+        defaultSectionId={section.id}
         onSuccess={() => {
           onRefetch();
           setIsImportOpen(false);

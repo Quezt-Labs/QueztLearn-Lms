@@ -15,6 +15,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   TEST_BULK_QUESTIONS_CSV_HEADERS,
   ALLOWED_QUESTION_TYPES,
   ALLOWED_DIFFICULTY_LEVELS,
@@ -34,6 +41,7 @@ interface CsvImportQuestionsModalProps {
   onOpenChange: (open: boolean) => void;
   testId: string;
   onSuccess?: () => void;
+  defaultSectionId?: string; // prefill when opened from a section
 }
 
 export function CsvImportQuestionsModal({
@@ -41,6 +49,7 @@ export function CsvImportQuestionsModal({
   onOpenChange,
   testId,
   onSuccess,
+  defaultSectionId,
 }: CsvImportQuestionsModalProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -53,6 +62,9 @@ export function CsvImportQuestionsModal({
     createdQuestions: number;
     failed: number;
   } | null>(null);
+  const [targetSectionId, setTargetSectionId] = useState<string>(
+    defaultSectionId || ""
+  );
 
   const { data: existingSectionsData } = useTestSections(testId);
   const createSectionMutation = useCreateTestSection();
@@ -112,17 +124,30 @@ export function CsvImportQuestionsModal({
 
   const validateRows = (items: TestBulkCsvRow[]): Record<number, string[]> => {
     const errors: Record<number, string[]> = {};
-    // Header check
+    // Header check (allow CSV without section columns)
+    const headerKeys = Object.keys(items[0] || {});
     const missingHeaders = TEST_BULK_QUESTIONS_CSV_HEADERS.filter(
-      (h) => !Object.prototype.hasOwnProperty.call(items[0] || {}, h)
+      (h) => !headerKeys.includes(h)
     );
-    if (missingHeaders.length > 0) {
-      errors[-1] = [`Missing headers: ${missingHeaders.join(", ")}`];
+    const hasSectionColumns = headerKeys.includes("sectionName");
+    // Allow section-related headers to be optional when not provided
+    const sectionHeaders = new Set([
+      "sectionName",
+      "sectionDescription",
+      "sectionDisplayOrder",
+    ]);
+    const blockingMissing = missingHeaders.filter(
+      (h) => !sectionHeaders.has(h)
+    );
+    if (blockingMissing.length > 0) {
+      errors[-1] = [`Missing headers: ${blockingMissing.join(", ")}`];
       return errors;
     }
+
     items.forEach((row, idx) => {
       const rowErr: string[] = [];
-      if (!row.sectionName?.trim()) rowErr.push("sectionName is required");
+      if (hasSectionColumns && !row.sectionName?.trim())
+        rowErr.push("sectionName is required");
       if (!row.questionText?.trim()) rowErr.push("questionText is required");
       const type = (row.questionType || "").toUpperCase() as QuestionType;
       if (!ALLOWED_QUESTION_TYPES.includes(type))
@@ -174,11 +199,18 @@ export function CsvImportQuestionsModal({
     description?: string,
     displayOrder?: number
   ): Promise<string> => {
-    const existing: Section[] = Array.isArray(existingSectionsData?.data)
+    const existingRaw = Array.isArray(existingSectionsData?.data)
       ? (existingSectionsData.data as Section[])
       : [];
+    const existing: Section[] = Array.isArray(existingRaw) ? existingRaw : [];
+    const safeTargetName = String(name ?? "")
+      .trim()
+      .toLowerCase();
     const found = existing.find(
-      (s) => (s.name || "").trim().toLowerCase() === name.trim().toLowerCase()
+      (s) =>
+        String(s?.name ?? "")
+          .trim()
+          .toLowerCase() === safeTargetName
     );
     if (found) return found.id;
     const created = await createSectionMutation.mutateAsync({
@@ -211,6 +243,20 @@ export function CsvImportQuestionsModal({
           : []
       );
 
+      // Determine if CSV has section columns
+      const headerKeys = Object.keys(rows[0] || {});
+      const hasSectionColumns = headerKeys.includes("sectionName");
+      const fallbackSectionName = "__NO_SECTION__";
+
+      if (!hasSectionColumns) {
+        // Must select an existing section; do not create sections
+        if (!targetSectionId) {
+          setIsProcessing(false);
+          alert("Please select a target section for these questions.");
+          return;
+        }
+      }
+
       // Step 1: Get/create all sections first
       const validRows: Array<{ row: TestBulkCsvRow; index: number }> = [];
       for (let i = 0; i < rows.length; i++) {
@@ -219,26 +265,35 @@ export function CsvImportQuestionsModal({
           failed++;
           continue;
         }
-        const sectionKey = (row.sectionName || "").trim();
+        const sectionKey = hasSectionColumns
+          ? (row.sectionName || "").trim()
+          : fallbackSectionName;
         if (!sectionKey) {
           failed++;
           continue;
         }
 
-        let sectionId = sectionIdByName.get(sectionKey);
-        if (!sectionId) {
-          sectionId = await getOrCreateSectionId(
-            sectionKey,
-            row.sectionName,
-            row.sectionDescription,
-            row.sectionDisplayOrder
-              ? Number(row.sectionDisplayOrder)
-              : undefined
-          );
-          sectionIdByName.set(sectionKey, sectionId);
-          // Check if this is a newly created section
-          if (!beforeSectionIds.has(sectionId)) {
-            createdSections += 1;
+        if (hasSectionColumns) {
+          let sectionId = sectionIdByName.get(sectionKey);
+          if (!sectionId) {
+            sectionId = await getOrCreateSectionId(
+              sectionKey,
+              row.sectionName,
+              row.sectionDescription,
+              row.sectionDisplayOrder
+                ? Number(row.sectionDisplayOrder)
+                : undefined
+            );
+            sectionIdByName.set(sectionKey, sectionId);
+            // Check if this is a newly created section
+            if (!beforeSectionIds.has(sectionId)) {
+              createdSections += 1;
+            }
+          }
+        } else {
+          // For no-section CSV, map all to the chosen section
+          if (!sectionIdByName.has(sectionKey)) {
+            sectionIdByName.set(sectionKey, targetSectionId);
           }
         }
 
@@ -261,7 +316,9 @@ export function CsvImportQuestionsModal({
       >();
 
       for (const { row, index } of validRows) {
-        const sectionKey = (row.sectionName || "").trim();
+        const sectionKey = hasSectionColumns
+          ? (row.sectionName || "").trim()
+          : fallbackSectionName;
         const sectionId = sectionIdByName.get(sectionKey);
         if (!sectionId) continue;
 
@@ -396,6 +453,30 @@ export function CsvImportQuestionsModal({
 
           {step === 2 && (
             <div className="space-y-3">
+              {/* If CSV has no section columns, require selecting target section */}
+              {rows.length > 0 && !("sectionName" in (rows[0] || {})) && (
+                <div className="space-y-2 p-3 border rounded-md bg-muted/30">
+                  <Label>Target Section</Label>
+                  <Select
+                    value={targetSectionId}
+                    onValueChange={(v) => setTargetSectionId(v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a section" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Array.isArray(existingSectionsData?.data)
+                        ? (existingSectionsData?.data as Section[])
+                        : []
+                      ).map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               {rowErrors[-1] ? (
                 <div className="flex items-start gap-2 p-3 rounded-md border border-destructive/30 bg-destructive/10">
                   <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
@@ -504,7 +585,13 @@ export function CsvImportQuestionsModal({
               </Button>
               <Button
                 onClick={runImport}
-                disabled={!!rowErrors[-1] || isProcessing}
+                disabled={
+                  !!rowErrors[-1] ||
+                  isProcessing ||
+                  (rows.length > 0 &&
+                    !("sectionName" in (rows[0] || {})) &&
+                    !targetSectionId)
+                }
               >
                 {isProcessing ? "Importing..." : "Start Import"}
               </Button>
