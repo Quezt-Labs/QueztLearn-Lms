@@ -21,10 +21,10 @@ const mapOrganizationConfigToClient = (
     id: config.id,
     organizationId: config.organizationId,
     name: config.name,
-    domain: config.domain,
+    domain: config.domain!,
     subdomain: subdomain,
     basePath: "queztlearn",
-    logo: config.logoUrl,
+    logo: config.logoUrl!,
     primaryColor:
       ((config.theme as Record<string, unknown>)?.primaryColor as string) ||
       "#3b82f6",

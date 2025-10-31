@@ -42,8 +42,8 @@ export function TestSeriesCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-2 hover:border-primary/50 h-full flex flex-col">
-        <div className="relative h-40 overflow-hidden bg-linear-to-br from-orange-100 to-orange-50 dark:from-orange-950 dark:to-orange-900">
+      <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-2 hover:border-accent/50 h-full flex flex-col">
+        <div className="relative h-40 overflow-hidden bg-linear-to-br from-accent/10 to-accent/5">
           {imageUrl ? (
             <img
               src={imageUrl}
@@ -52,15 +52,15 @@ export function TestSeriesCard({
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <FileText className="h-16 w-16 text-orange-400" />
+              <FileText className="h-16 w-16 text-accent" />
             </div>
           )}
-          <Badge className="absolute top-3 right-3 bg-black/60 text-white border-0">
+          <Badge className="absolute top-3 right-3 bg-accent text-accent-foreground hover:bg-accent/90">
             {exam}
           </Badge>
         </div>
         <CardContent className="p-4 flex-1 flex flex-col space-y-3">
-          <h3 className="font-bold line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-bold line-clamp-2 group-hover:text-accent transition-colors">
             {title}
           </h3>
 

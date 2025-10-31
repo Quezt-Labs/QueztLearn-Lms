@@ -8,6 +8,7 @@ import { VideoCard } from "@/components/student/video-card";
 import { TestAttemptCard } from "@/components/student/test-attempt-card";
 import { BatchCard } from "@/components/student/batch-card";
 import { TestSeriesCard } from "@/components/student/test-series-card";
+import { StudentHeader } from "@/components/student/student-header";
 
 // Mock data - Replace with actual API calls
 const recentVideos = [
@@ -146,6 +147,8 @@ const purchasedTestSeries = [
 export default function MyLearningPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
+      <StudentHeader />
+
       <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
         {/* Header */}
         <motion.div

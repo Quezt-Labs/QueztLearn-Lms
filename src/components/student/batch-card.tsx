@@ -84,9 +84,9 @@ export function BatchCard({
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
-              <span className="font-semibold text-primary">{progress}%</span>
+              <span className="font-semibold text-accent">{progress}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-2 [&>div]:bg-accent" />
             <p className="text-xs text-muted-foreground">
               {completedSubjects} of {totalSubjects} subjects completed
             </p>

@@ -47,10 +47,11 @@ export function VideoCard({
               alt={title}
               className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-              <div className="h-16 w-16 rounded-full bg-primary/90 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <div className="absolute inset-0 bg-linear-to-b from-transparent via-black/30 to-black/70" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="h-16 w-16 rounded-full bg-accent/90 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Play
-                  className="h-8 w-8 text-primary-foreground ml-1"
+                  className="h-8 w-8 text-accent-foreground ml-1"
                   fill="currentColor"
                 />
               </div>
