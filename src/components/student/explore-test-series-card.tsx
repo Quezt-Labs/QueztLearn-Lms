@@ -12,7 +12,7 @@ interface ExploreTestSeriesCardProps {
   id: string;
   exam: string;
   title: string;
-  description?: any;
+  description?: string | null;
   slug: string;
   imageUrl?: string;
   totalPrice: number;
