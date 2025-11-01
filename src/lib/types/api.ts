@@ -188,34 +188,75 @@ export interface Enrollment {
 }
 
 // Organization Configuration API Types
+export interface OrganizationConfigTheme {
+  primaryColor?: string;
+  secondaryColor?: string;
+  fontFamily?: string;
+}
+
+export interface OrganizationConfigFeature {
+  title: string;
+  description: string;
+  icon?: string;
+}
+
+export interface OrganizationConfigTestimonial {
+  name: string;
+  message: string;
+  avatar?: string;
+}
+
+export interface OrganizationConfigFAQ {
+  question: string;
+  answer: string;
+}
+
+export interface OrganizationConfigSMTP {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  from: string;
+}
+
 export interface OrganizationConfig {
   id: string;
   organizationId: string;
   name: string;
   slug: string;
-  domain: string;
-  contactEmail: string;
-  contactPhone: string;
-  currency: string;
-  logoUrl: string;
-  faviconUrl: string;
-  bannerUrls: string[];
-  motto: string;
-  description: string;
-  theme: Record<string, unknown>;
-  heroTitle: string;
-  heroSubtitle: string;
-  ctaText: string;
-  ctaUrl: string;
-  socialLinks: Record<string, unknown>;
-  metaTitle: string;
-  metaDescription: string;
-  ogImage: string;
-  supportEmail: string;
-  featuresEnabled: Record<string, unknown>;
-  maintenanceMode: boolean;
-  customCSS: string;
-  customJS: string;
+  domain?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  razorpayKeyId?: string;
+  razorpayKeySecret?: string;
+  currency?: string;
+  taxPercentage?: string;
+  invoicePrefix?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  bannerUrls?: string[];
+  motto?: string;
+  description?: string;
+  theme?: OrganizationConfigTheme;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  features?: OrganizationConfigFeature[];
+  testimonials?: OrganizationConfigTestimonial[];
+  faq?: OrganizationConfigFAQ[];
+  socialLinks?: Record<string, string>;
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
+  smtpConfig?: OrganizationConfigSMTP;
+  supportEmail?: string;
+  featuresEnabled?: Record<string, boolean>;
+  maintenanceMode?: boolean;
+  customCSS?: string;
+  customJS?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface OrganizationConfigResponse {
@@ -227,31 +268,37 @@ export interface CreateOrganizationConfigData {
   organizationId: string;
   name: string;
   slug: string;
-  domain: string;
+  domain?: string;
   contactEmail?: string;
   contactPhone?: string;
   razorpayKeyId?: string;
   razorpayKeySecret?: string;
   currency?: string;
+  taxPercentage?: string;
+  invoicePrefix?: string;
   logoUrl?: string;
   faviconUrl?: string;
   bannerUrls?: string[];
   motto?: string;
   description?: string;
-  theme?: {
-    primaryColor: string;
-    secondaryColor: string;
-    fontFamily: string;
-  };
+  theme?: OrganizationConfigTheme;
   heroTitle?: string;
   heroSubtitle?: string;
-  features?: Array<{
-    title: string;
-    description: string;
-    icon: string;
-  }>;
+  ctaText?: string;
+  ctaUrl?: string;
+  features?: OrganizationConfigFeature[];
+  testimonials?: OrganizationConfigTestimonial[];
+  faq?: OrganizationConfigFAQ[];
+  socialLinks?: Record<string, string>;
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImage?: string;
+  smtpConfig?: OrganizationConfigSMTP;
   supportEmail?: string;
+  featuresEnabled?: Record<string, boolean>;
   maintenanceMode?: boolean;
+  customCSS?: string;
+  customJS?: string;
 }
 
 export interface CreateOrganizationConfigResponse {

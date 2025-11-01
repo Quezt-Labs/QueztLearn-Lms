@@ -71,47 +71,47 @@ export const TEACHER_NAVIGATION_ITEMS: NavigationItem[] = [
 // Student navigation items (subdomain)
 export const STUDENT_NAVIGATION_ITEMS: NavigationItem[] = [
   {
-    title: "Dashboard",
-    href: "/student/dashboard",
+    title: "My Learning",
+    href: "/student/my-learning",
     icon: "LayoutDashboard",
     roles: ["student"],
   },
   {
-    title: "My Batches",
-    href: "/student/batches",
+    title: "Explore",
+    href: "/student/explore",
     icon: "BookOpen",
     roles: ["student"],
   },
   {
-    title: "My Progress",
-    href: "/student/progress",
+    title: "My Profile",
+    href: "/student/profile",
     icon: "TrendingUp",
     roles: ["student"],
   },
-  {
-    title: "Tests",
-    href: "/student/tests",
-    icon: "FileText",
-    roles: ["student"],
-  },
-  {
-    title: "Assignments",
-    href: "/student/assignments",
-    icon: "FileText",
-    roles: ["student"],
-  },
-  {
-    title: "Upcoming Classes",
-    href: "/student/classes",
-    icon: "Calendar",
-    roles: ["student"],
-  },
-  {
-    title: "Grades",
-    href: "/student/grades",
-    icon: "Award",
-    roles: ["student"],
-  },
+  // {
+  //   title: "Tests",
+  //   href: "/student/tests",
+  //   icon: "FileText",
+  //   roles: ["student"],
+  // },
+  // {
+  //   title: "Assignments",
+  //   href: "/student/assignments",
+  //   icon: "FileText",
+  //   roles: ["student"],
+  // },
+  // {
+  //   title: "Upcoming Classes",
+  //   href: "/student/classes",
+  //   icon: "Calendar",
+  //   roles: ["student"],
+  // },
+  // {
+  //   title: "Grades",
+  //   href: "/student/grades",
+  //   icon: "Award",
+  //   roles: ["student"],
+  // },
 ];
 
 // Legacy navigation items for backward compatibility

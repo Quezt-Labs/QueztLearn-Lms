@@ -1,6 +1,6 @@
 "use client";
 
-import { Layout } from "@/components/common/layout";
+import { AdminTeacherLayout } from "@/components/common/admin-teacher-layout";
 import { RouteGuard } from "@/components/common/route-guard";
 import { ROLES } from "@/lib/constants";
 
@@ -11,7 +11,7 @@ export default function AdminLayout({
 }) {
   return (
     <RouteGuard allowedRoles={[ROLES.ADMIN]}>
-      <Layout>{children}</Layout>
+      <AdminTeacherLayout>{children}</AdminTeacherLayout>
     </RouteGuard>
   );
 }

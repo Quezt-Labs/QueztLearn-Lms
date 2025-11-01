@@ -2,23 +2,21 @@
 
 import { ReactNode } from "react";
 import { Sidebar } from "@/components/common/sidebar";
-import { Header } from "@/components/common/header";
 import { MobileBottomTabs } from "@/components/common/mobile-bottom-tabs";
 import { useRequireAuth } from "@/hooks";
 import { Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-interface LayoutProps {
+interface StudentLayoutProps {
   children: ReactNode;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function StudentLayout({ children }: StudentLayoutProps) {
   const { isAuthenticated, isLoading } = useRequireAuth();
   const pathname = usePathname();
   const isAttemptRoute = Boolean(
     pathname?.includes("/student/tests/") && pathname?.endsWith("/attempt")
   );
-  const isStudentRoute = pathname?.includes("/student");
 
   if (isLoading) {
     return (
@@ -32,19 +30,21 @@ export function Layout({ children }: LayoutProps) {
     return <>{children}</>;
   }
 
-  /* flex-1 overflow-auto p-6 pb-24 md:pb-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,theme(colors.primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,theme(colors.muted/40),transparent_50%)] */
-
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background relative">
       {/* Hide sidebar on student test attempt route for distraction-free exam mode */}
-      {!isAttemptRoute ? <Sidebar /> : null}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Hide Header for student routes (they use StudentHeader in page content) */}
-        {!isAttemptRoute && !isStudentRoute ? <Header /> : null}
+      {/* Hide sidebar completely on mobile - students use bottom tabs for navigation */}
+      {!isAttemptRoute ? (
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
+      ) : null}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 w-full md:w-auto">
+        {/* Student routes use StudentHeader in page content, not the main Header */}
         <main
           className={
             !isAttemptRoute
-              ? "flex-1 overflow-auto p-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,--theme(--color-primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,--theme(--color-muted/40),transparent_50%)]"
+              ? "flex-1 overflow-y-auto overflow-x-hidden md:p-6 md:pb-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,--theme(--color-primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,--theme(--color-muted/40),transparent_50%)] relative z-0"
               : "flex-1 overflow-auto p-0"
           }
         >
@@ -52,9 +52,7 @@ export function Layout({ children }: LayoutProps) {
         </main>
       </div>
       {/* Mobile bottom tabs - only show for student routes and not on attempt pages */}
-      {isAuthenticated && isStudentRoute && !isAttemptRoute && (
-        <MobileBottomTabs />
-      )}
+      {isAuthenticated && !isAttemptRoute && <MobileBottomTabs />}
     </div>
   );
 }
