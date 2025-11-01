@@ -146,10 +146,10 @@ const purchasedTestSeries = [
 
 export default function MyLearningPage() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
+    <div className="w-full min-h-[calc(100vh-4rem)] bg-gradient-to-br from-background via-background to-muted/20">
       <StudentHeader />
 
-      <div className="container mx-auto px-4 py-6 space-y-8 max-w-7xl">
+      <div className="container mx-auto px-2 md:px-4 py-4 md:py-6 space-y-6 md:space-y-8 max-w-7xl w-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

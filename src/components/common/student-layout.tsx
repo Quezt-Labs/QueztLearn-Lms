@@ -31,15 +31,20 @@ export function StudentLayout({ children }: StudentLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background relative">
       {/* Hide sidebar on student test attempt route for distraction-free exam mode */}
-      {!isAttemptRoute ? <Sidebar /> : null}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Hide sidebar completely on mobile - students use bottom tabs for navigation */}
+      {!isAttemptRoute ? (
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
+      ) : null}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 w-full md:w-auto">
         {/* Student routes use StudentHeader in page content, not the main Header */}
         <main
           className={
             !isAttemptRoute
-              ? "flex-1 overflow-auto p-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,--theme(--color-primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,--theme(--color-muted/40),transparent_50%)]"
+              ? "flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-24 md:pb-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,--theme(--color-primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,--theme(--color-muted/40),transparent_50%)] relative z-0"
               : "flex-1 overflow-auto p-0"
           }
         >
