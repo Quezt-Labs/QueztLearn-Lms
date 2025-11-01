@@ -42,7 +42,7 @@ export function TestSeriesCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-2 hover:border-accent/50 h-full flex flex-col">
+      <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-2 hover:border-accent/50 h-full flex flex-col p-0 ">
         <div className="relative h-40 overflow-hidden bg-linear-to-br from-accent/10 to-accent/5">
           {imageUrl ? (
             <img

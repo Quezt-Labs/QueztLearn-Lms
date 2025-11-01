@@ -47,7 +47,7 @@ export function BatchCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-2 hover:border-primary/50">
+      <Card className="p-0 group hover:shadow-xl transition-all duration-300 overflow-hidden border-2 hover:border-primary/50">
         <div className="relative h-48 overflow-hidden bg-linear-to-br from-primary/20 to-primary/5">
           {imageUrl ? (
             <img

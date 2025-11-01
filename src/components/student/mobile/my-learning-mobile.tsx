@@ -163,13 +163,15 @@ export function MyLearningMobile() {
 
       {/* Content */}
       <div className="py-6 space-y-8">
-        {/* Recently Watched Videos */}
+        {/* Continue Watching */}
         <section>
           <div className="px-4">
             <SectionHeader
               title="Continue Watching"
               icon={Play}
-              viewAllHref="/student/videos"
+              viewAllHref={
+                recentVideos.length >= 4 ? "/student/videos" : undefined
+              }
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">
@@ -190,7 +192,9 @@ export function MyLearningMobile() {
             <SectionHeader
               title="Recent Test Attempts"
               icon={FileText}
-              viewAllHref="/student/tests"
+              viewAllHref={
+                recentTests.length >= 4 ? "/student/tests" : undefined
+              }
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">
@@ -211,7 +215,9 @@ export function MyLearningMobile() {
             <SectionHeader
               title="My Batches"
               icon={BookOpen}
-              viewAllHref="/student/batches"
+              viewAllHref={
+                purchasedBatches.length >= 4 ? "/student/batches" : undefined
+              }
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">
@@ -232,7 +238,11 @@ export function MyLearningMobile() {
             <SectionHeader
               title="My Test Series"
               icon={TrendingUp}
-              viewAllHref="/student/test-series"
+              viewAllHref={
+                purchasedTestSeries.length >= 4
+                  ? "/student/test-series"
+                  : undefined
+              }
             />
           </div>
           <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">

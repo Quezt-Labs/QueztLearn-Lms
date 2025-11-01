@@ -11,7 +11,6 @@ import { TestSeriesCard } from "@/components/student/test-series-card";
 import { motion } from "framer-motion";
 import { Play, FileText, BookOpen, TrendingUp } from "lucide-react";
 
-// Mock data - Replace with actual API calls
 const recentVideos = [
   {
     id: "1",
@@ -158,7 +157,6 @@ export default function MyLearningPage() {
         <StudentHeader />
 
         <div className="container mx-auto px-2 md:px-4 py-4 md:py-6 space-y-6 md:space-y-8 max-w-7xl w-full">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -174,7 +172,6 @@ export default function MyLearningPage() {
             />
           </motion.div>
 
-          {/* Recently Watched Videos */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -193,7 +190,6 @@ export default function MyLearningPage() {
             </div>
           </motion.section>
 
-          {/* Recently Attempted Tests */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -202,7 +198,9 @@ export default function MyLearningPage() {
             <SectionHeader
               title="Recent Test Attempts"
               icon={FileText}
-              viewAllHref="/student/tests"
+              viewAllHref={
+                recentTests.length >= 4 ? "/student/tests" : undefined
+              }
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -212,7 +210,6 @@ export default function MyLearningPage() {
             </div>
           </motion.section>
 
-          {/* Purchased Batches */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -221,17 +218,18 @@ export default function MyLearningPage() {
             <SectionHeader
               title="My Batches"
               icon={BookOpen}
-              viewAllHref="/student/batches"
+              viewAllHref={
+                purchasedBatches.length >= 4 ? "/student/batches" : undefined
+              }
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {purchasedBatches.map((batch, index) => (
                 <BatchCard key={batch.id} {...batch} index={index} />
               ))}
             </div>
           </motion.section>
 
-          {/* Purchased Test Series */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -240,7 +238,11 @@ export default function MyLearningPage() {
             <SectionHeader
               title="My Test Series"
               icon={TrendingUp}
-              viewAllHref="/student/test-series"
+              viewAllHref={
+                purchasedTestSeries.length >= 4
+                  ? "/student/test-series"
+                  : undefined
+              }
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
