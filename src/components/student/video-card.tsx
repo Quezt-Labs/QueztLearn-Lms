@@ -41,7 +41,7 @@ export function VideoCard({
     >
       <Link href={`/student/videos/${id}`}>
         <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 cursor-pointer h-full p-0">
-          <CardContent className="p-4 h-full flex items-center">
+          <CardContent className="px-4 py-4 sm:p-4 h-full flex items-center">
             <div className="flex items-center gap-4 w-full">
               {/* Play Icon */}
               <div className="shrink-0 h-14 w-14 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">

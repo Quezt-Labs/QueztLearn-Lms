@@ -49,25 +49,25 @@ export function TestAttemptCard({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
     >
-      <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50">
-        <CardHeader className="pb-3">
+      <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50 h-full p-0">
+        <CardHeader className="pb-3 px-4 pt-4 sm:px-6">
           <div className="flex items-start justify-between">
             <div className="space-y-1 flex-1">
-              <CardTitle className="text-lg">{title}</CardTitle>
+              <CardTitle className="text-lg line-clamp-2">{title}</CardTitle>
               <CardDescription className="text-xs">
                 {testSeriesName}
               </CardDescription>
             </div>
             <Badge
               variant="secondary"
-              className="bg-linear-to-r from-primary to-primary/80 text-primary-foreground"
+              className="bg-linear-to-r from-primary to-primary/80 text-primary-foreground shrink-0 ml-2"
             >
               <Award className="h-3 w-3 mr-1" />
               {percentile}%ile
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pb-4 px-4 sm:px-6">
           {/* Score Section */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-linear-to-r from-primary/10 to-primary/5 border border-primary/20">
             <div>
