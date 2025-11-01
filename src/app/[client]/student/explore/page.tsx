@@ -50,7 +50,6 @@ export default function ExplorePage() {
     "batches"
   );
 
-  // Fetch batches from API only when batches tab is active
   const {
     data: batchesResponse,
     isLoading: isBatchesLoading,
@@ -58,7 +57,6 @@ export default function ExplorePage() {
   } = useGetExploreBatches();
   const batches: Batch[] = batchesResponse?.data || [];
 
-  // Fetch test series from API only when test series tab is active
   const {
     data: testSeriesResponse,
     isLoading: isTestSeriesLoading,

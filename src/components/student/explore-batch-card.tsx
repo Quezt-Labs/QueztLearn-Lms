@@ -6,6 +6,12 @@ import { Calendar, Clock, Globe, GraduationCap, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 interface ExploreBatchCardProps {
@@ -65,7 +71,7 @@ export function ExploreBatchCard({
       transition={{ duration: 0.4, delay: index * 0.1 }}
       className="h-full"
     >
-      <Card className="p-0 group h-full flex flex-col overflow-hidden border-2 hover:border-primary/50 hover:shadow-2xl transition-all duration-300">
+      <Card className="p-0 group h-full flex flex-col overflow-hidden border-2 hover:border-primary/50 hover:shadow-2xl transition-all duration-300 gap-0">
         {/* Image Section */}
         <div className="relative h-44 sm:h-48 overflow-hidden bg-linear-to-br from-primary/10 via-secondary/10 to-accent/10">
           {imageUrl ? (
@@ -112,7 +118,7 @@ export function ExploreBatchCard({
         </div>
 
         {/* Content Section */}
-        <CardContent className="flex-1 flex flex-col p-4 sm:p-5 space-y-4">
+        <CardContent className="flex-1 flex flex-col p-4 space-y-4">
           {/* Title & Exam Info */}
           <div className="space-y-2">
             <div className="flex items-start gap-2 flex-wrap">
@@ -123,9 +129,18 @@ export function ExploreBatchCard({
                 Class {className}
               </Badge>
             </div>
-            <h3 className="font-bold text-base sm:text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors min-h-12 sm:min-h-14">
-              {name}
-            </h3>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <h3 className="font-bold text-base sm:text-lg leading-tight truncate group-hover:text-primary transition-colors cursor-default">
+                    {name}
+                  </h3>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  <p>{name}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {/* Info Grid */}
