@@ -39,7 +39,6 @@ import { CreateTeacherModal } from "@/components/common/create-teacher-modal";
 import { EditTeacherModal } from "@/components/common/edit-teacher-modal";
 import { CreateSubjectModal } from "@/components/common/create-subject-modal";
 import { EditSubjectModal } from "@/components/common/edit-subject-modal";
-import { useCurrentUser } from "@/hooks";
 import { ROLES } from "@/lib/constants";
 import { SubjectDataTable } from "@/components/courses/subject-data-table";
 import { EditBatchModal } from "@/components/common/edit-batch-modal";
@@ -115,7 +114,8 @@ export function CourseDetailPage({
   const courseId = params.id as string;
 
   // Detect role from current path
-  const currentRole = basePath === "admin" ? ROLES.ADMIN : ROLES.TEACHER;
+  const currentRole =
+    basePath === ROLES.ADMIN.toLowerCase() ? ROLES.ADMIN : ROLES.TEACHER;
   const isAdmin = currentRole === ROLES.ADMIN;
   const isTeacher = currentRole === ROLES.TEACHER;
 
@@ -243,10 +243,6 @@ export function CourseDetailPage({
     }
   };
 
-  const handleViewSubject = (subject: Subject) => {
-    router.push(`/${basePath}/courses/${courseId}/subjects/${subject.id}`);
-  };
-
   // Helper functions
   const getStatusBadge = (course: Batch) => {
     const now = new Date();
@@ -297,400 +293,392 @@ export function CourseDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <Button variant="ghost" onClick={handleGoBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Courses
-            </Button>
-          </div>
-
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-4 mb-4">
-                <h1 className="text-3xl font-bold tracking-tight">
-                  {courseData.name}
-                </h1>
-                {getStatusBadge(courseData)}
-              </div>
-              <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4" />
-                  <span>Class {courseData.class}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <BookOpen className="h-4 w-4" />
-                  <span>{courseData.exam}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Globe className="h-4 w-4" />
-                  <span>{courseData.language}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    {formatDate(courseData.startDate)} -{" "}
-                    {formatDate(courseData.endDate)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex space-x-2">
-              {canManageCourse && (
-                <>
-                  <Button variant="outline" onClick={handleEditCourse}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </Button>
-                  <Button variant="outline" onClick={handleDeleteCourse}>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-4 mb-6">
+          <Button variant="ghost" onClick={handleGoBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Courses
+          </Button>
         </div>
 
-        {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList
-            className="grid w-full"
-            style={{
-              gridTemplateColumns: `repeat(${
-                [showSubjectsTab, showAnalyticsTab, showSettingsTab].filter(
-                  Boolean
-                ).length + 3
-              }, minmax(0, 1fr))`,
-            }}
-          >
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            {showSubjectsTab && (
-              <TabsTrigger value="subjects">Subjects</TabsTrigger>
-            )}
-            <TabsTrigger value="teachers">Teachers</TabsTrigger>
-            <TabsTrigger value="students">Students</TabsTrigger>
-            {showAnalyticsTab && (
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            )}
-            {showSettingsTab && (
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            )}
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Course Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold mb-2">Description</h3>
-                      <div
-                        className="prose prose-sm max-w-none text-muted-foreground"
-                        dangerouslySetInnerHTML={{
-                          __html: courseData.description || "",
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">FAQ</h3>
-                      {courseData.faq && courseData.faq.length > 0 ? (
-                        <div className="space-y-4">
-                          {courseData.faq.map((faq, index) => (
-                            <div key={index}>
-                              <h4 className="font-medium">{faq.title}</h4>
-                              <div
-                                className="prose prose-sm max-w-none text-muted-foreground"
-                                dangerouslySetInnerHTML={{
-                                  __html: faq.description || "",
-                                }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">
-                          No FAQ available
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-4 mb-4">
+              <h1 className="text-3xl font-bold tracking-tight">
+                {courseData.name}
+              </h1>
+              {getStatusBadge(courseData)}
+            </div>
+            <div className="flex items-center space-x-6 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4" />
+                <span>Class {courseData.class}</span>
               </div>
-
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Pricing</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground line-through">
-                          ₹{formatPrice(courseData.totalPrice).original}
-                        </span>
-                        <span className="text-2xl font-bold">
-                          ₹{formatPrice(courseData.totalPrice).discounted}
-                        </span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {courseData.discountPercentage}% discount
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="flex items-center space-x-2">
+                <BookOpen className="h-4 w-4" />
+                <span>{courseData.exam}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Globe className="h-4 w-4" />
+                <span>{courseData.language}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  {formatDate(courseData.startDate)} -{" "}
+                  {formatDate(courseData.endDate)}
+                </span>
               </div>
             </div>
-          </TabsContent>
+          </div>
 
-          {/* Subjects Tab */}
+          <div className="flex space-x-2">
+            {canManageCourse && (
+              <>
+                <Button variant="outline" onClick={handleEditCourse}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Button>
+                <Button variant="outline" onClick={handleDeleteCourse}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList
+          className="grid w-full"
+          style={{
+            gridTemplateColumns: `repeat(${
+              [showSubjectsTab, showAnalyticsTab, showSettingsTab].filter(
+                Boolean
+              ).length + 3
+            }, minmax(0, 1fr))`,
+          }}
+        >
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           {showSubjectsTab && (
-            <TabsContent value="subjects" className="space-y-6">
+            <TabsTrigger value="subjects">Subjects</TabsTrigger>
+          )}
+          <TabsTrigger value="teachers">Teachers</TabsTrigger>
+          <TabsTrigger value="students">Students</TabsTrigger>
+          {showAnalyticsTab && (
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          )}
+          {showSettingsTab && (
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          )}
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Subjects</CardTitle>
-                  {canManageCourse && (
-                    <Button onClick={handleCreateSubject}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Subject
-                    </Button>
-                  )}
+                <CardHeader>
+                  <CardTitle>Course Information</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  {subjectsLoading ? (
-                    <div className="text-center py-8">Loading subjects...</div>
-                  ) : subjects?.data && subjects.data.length > 0 ? (
-                    <SubjectDataTable
-                      subjects={subjects.data as Subject[]}
-                      basePath={basePath}
-                      courseId={courseId}
-                      onEdit={handleEditSubject}
-                      onDelete={handleDeleteSubject}
-                      canManageCourse={canManageCourse}
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Description</h3>
+                    <div
+                      className="prose prose-sm max-w-none text-muted-foreground"
+                      dangerouslySetInnerHTML={{
+                        __html: courseData.description || "",
+                      }}
                     />
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No subjects added yet
-                    </div>
-                  )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">FAQ</h3>
+                    {courseData.faq && courseData.faq.length > 0 ? (
+                      <div className="space-y-4">
+                        {courseData.faq.map((faq, index) => (
+                          <div key={index}>
+                            <h4 className="font-medium">{faq.title}</h4>
+                            <div
+                              className="prose prose-sm max-w-none text-muted-foreground"
+                              dangerouslySetInnerHTML={{
+                                __html: faq.description || "",
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">No FAQ available</p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-          )}
+            </div>
 
-          {/* Teachers Tab */}
-          <TabsContent value="teachers" className="space-y-6">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pricing</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground line-through">
+                        ₹{formatPrice(courseData.totalPrice).original}
+                      </span>
+                      <span className="text-2xl font-bold">
+                        ₹{formatPrice(courseData.totalPrice).discounted}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {courseData.discountPercentage}% discount
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Subjects Tab */}
+        {showSubjectsTab && (
+          <TabsContent value="subjects" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Teachers</CardTitle>
-                <div className="flex space-x-2">
-                  <Button variant="outline" onClick={handleAssignTeachers}>
+                <CardTitle>Subjects</CardTitle>
+                {canManageCourse && (
+                  <Button onClick={handleCreateSubject}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Assign Teacher
+                    Add Subject
                   </Button>
-                  {canManageCourse && (
-                    <Button onClick={handleCreateTeacher}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add New Teacher
-                    </Button>
-                  )}
-                </div>
+                )}
               </CardHeader>
               <CardContent>
-                {teachersLoading ? (
-                  <div className="text-center py-8">Loading teachers...</div>
-                ) : teachers?.data && teachers.data.length > 0 ? (
-                  <div className="space-y-4">
-                    {teachers.data.map((teacher: Teacher) => (
-                      <Card key={teacher.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <Avatar>
-                                <AvatarImage src={teacher.imageUrl} />
-                                <AvatarFallback>
-                                  {teacher.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <h4 className="font-semibold">
-                                  {teacher.name}
-                                </h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {teacher.highlights}
-                                </p>
-                              </div>
-                            </div>
-                            {canManageCourse && (
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleEditTeacher(teacher)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDeleteTeacher(teacher)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                {subjectsLoading ? (
+                  <div className="text-center py-8">Loading subjects...</div>
+                ) : subjects?.data && subjects.data.length > 0 ? (
+                  <SubjectDataTable
+                    subjects={subjects.data as Subject[]}
+                    basePath={basePath}
+                    courseId={courseId}
+                    onEdit={handleEditSubject}
+                    onDelete={handleDeleteSubject}
+                    canManageCourse={canManageCourse}
+                  />
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    No teachers assigned yet
+                    No subjects added yet
                   </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
+        )}
 
-          {/* Other tabs */}
-          <TabsContent value="students" className="space-y-6">
+        {/* Teachers Tab */}
+        <TabsContent value="teachers" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Teachers</CardTitle>
+              <div className="flex space-x-2">
+                <Button variant="outline" onClick={handleAssignTeachers}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Assign Teacher
+                </Button>
+                {canManageCourse && (
+                  <Button onClick={handleCreateTeacher}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add New Teacher
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {teachersLoading ? (
+                <div className="text-center py-8">Loading teachers...</div>
+              ) : teachers?.data && teachers.data.length > 0 ? (
+                <div className="space-y-4">
+                  {teachers.data.map((teacher: Teacher) => (
+                    <Card key={teacher.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Avatar>
+                              <AvatarImage src={teacher.imageUrl} />
+                              <AvatarFallback>
+                                {teacher.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-semibold">{teacher.name}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {teacher.highlights}
+                              </p>
+                            </div>
+                          </div>
+                          {canManageCourse && (
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditTeacher(teacher)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteTeacher(teacher)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No teachers assigned yet
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Other tabs */}
+        <TabsContent value="students" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Students</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Student management coming soon...
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {showAnalyticsTab && (
+          <TabsContent value="analytics" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Students</CardTitle>
+                <CardTitle>Analytics</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Student management coming soon...
+                  Analytics coming soon...
                 </p>
               </CardContent>
             </Card>
           </TabsContent>
-
-          {showAnalyticsTab && (
-            <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Analytics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Analytics coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
-          {showSettingsTab && (
-            <TabsContent value="settings" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Settings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Settings coming soon...
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-        </Tabs>
-
-        {/* Modals */}
-        <EditBatchModal
-          isOpen={isEditCourseOpen}
-          onClose={() => setIsEditCourseOpen(false)}
-          batch={courseData}
-          onSuccess={() => {
-            queryClient.invalidateQueries({ queryKey: ["batch", courseId] });
-          }}
-        />
-        <TeacherAssignmentModal
-          isOpen={isTeacherAssignmentOpen}
-          onClose={() => setIsTeacherAssignmentOpen(false)}
-          batchId={courseId}
-          batchName={courseData.name}
-        />
-
-        <CreateTeacherModal
-          isOpen={isCreateTeacherOpen}
-          onClose={() => setIsCreateTeacherOpen(false)}
-          batchId={courseId}
-          onSuccess={handleTeacherCreated}
-        />
-
-        <EditTeacherModal
-          isOpen={isEditTeacherOpen}
-          onClose={() => {
-            setIsEditTeacherOpen(false);
-            setSelectedTeacher(null);
-          }}
-          teacher={selectedTeacher}
-          onSuccess={handleTeacherUpdated}
-        />
-
-        {showSubjectsTab && (
-          <>
-            <CreateSubjectModal
-              isOpen={isCreateSubjectOpen}
-              onClose={() => setIsCreateSubjectOpen(false)}
-              batchId={courseId}
-              onSuccess={handleSubjectCreated}
-            />
-
-            <EditSubjectModal
-              isOpen={isEditSubjectOpen}
-              onClose={() => {
-                setIsEditSubjectOpen(false);
-                setSelectedSubject(null);
-              }}
-              subject={selectedSubject}
-              onSuccess={handleSubjectUpdated}
-            />
-          </>
         )}
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Course</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this course? This action cannot
-                be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsDeleteDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={confirmDelete}>
-                Delete
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+        {showSettingsTab && (
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Settings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Settings coming soon...</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+      </Tabs>
+
+      {/* Modals */}
+      <EditBatchModal
+        isOpen={isEditCourseOpen}
+        onClose={() => setIsEditCourseOpen(false)}
+        batch={courseData}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["batch", courseId] });
+        }}
+      />
+      <TeacherAssignmentModal
+        isOpen={isTeacherAssignmentOpen}
+        onClose={() => setIsTeacherAssignmentOpen(false)}
+        batchId={courseId}
+        batchName={courseData.name}
+      />
+
+      <CreateTeacherModal
+        isOpen={isCreateTeacherOpen}
+        onClose={() => setIsCreateTeacherOpen(false)}
+        batchId={courseId}
+        onSuccess={handleTeacherCreated}
+      />
+
+      <EditTeacherModal
+        isOpen={isEditTeacherOpen}
+        onClose={() => {
+          setIsEditTeacherOpen(false);
+          setSelectedTeacher(null);
+        }}
+        teacher={selectedTeacher}
+        onSuccess={handleTeacherUpdated}
+      />
+
+      {showSubjectsTab && (
+        <>
+          <CreateSubjectModal
+            isOpen={isCreateSubjectOpen}
+            onClose={() => setIsCreateSubjectOpen(false)}
+            batchId={courseId}
+            onSuccess={handleSubjectCreated}
+          />
+
+          <EditSubjectModal
+            isOpen={isEditSubjectOpen}
+            onClose={() => {
+              setIsEditSubjectOpen(false);
+              setSelectedSubject(null);
+            }}
+            subject={selectedSubject}
+            onSuccess={handleSubjectUpdated}
+          />
+        </>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Course</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this course? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
