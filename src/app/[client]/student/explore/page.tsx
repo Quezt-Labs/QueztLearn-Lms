@@ -4,11 +4,10 @@ import { useState } from "react";
 import { Search, BookOpen, FileText } from "lucide-react";
 import { StudentHeader } from "@/components/student/student-header";
 import { ExploreBatchCard } from "@/components/student/explore-batch-card";
-import { MobileTestSeriesCard } from "@/components/student/mobile/mobile-test-series-card";
+import { ExploreTestSeriesCard } from "@/components/student/explore-test-series-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-// Mock data - will be replaced with actual API data
 const mockBatches = [
   {
     id: "1",
@@ -92,21 +91,62 @@ const mockBatches = [
 const mockTestSeries = [
   {
     id: "1",
+    exam: "JEE",
     title: "JEE Main 2025 Mock Test Series - 30 Full Length Tests",
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400",
-    originalPrice: 5000,
-    discountedPrice: 3499,
-    badge: "Popular",
-    badgeColor: "bg-blue-500",
+    slug: "jee-main-2025-mock-series",
+    imageUrl:
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800",
+    totalPrice: 5000,
+    discountPercentage: 30,
+    isFree: false,
+    durationDays: 180,
   },
   {
     id: "2",
+    exam: "NEET",
     title: "NEET 2025 Grand Test Series with Detailed Analysis",
-    image: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400",
-    originalPrice: 4500,
-    discountedPrice: 2999,
-    badge: "Best Seller",
-    badgeColor: "bg-emerald-500",
+    slug: "neet-2025-grand-test-series",
+    imageUrl:
+      "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800",
+    totalPrice: 4500,
+    discountPercentage: 33,
+    isFree: false,
+    durationDays: 150,
+  },
+  {
+    id: "3",
+    exam: "UPSC",
+    title: "UPSC Prelims Free Mock Test Series 2025",
+    slug: "upsc-prelims-free-mock-series",
+    imageUrl:
+      "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800",
+    totalPrice: 0,
+    discountPercentage: 0,
+    isFree: true,
+    durationDays: 90,
+  },
+  {
+    id: "4",
+    exam: "SSC",
+    title: "SSC CGL Tier 1 & 2 Complete Test Package",
+    slug: "ssc-cgl-complete-test-package",
+    imageUrl:
+      "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800",
+    totalPrice: 3000,
+    discountPercentage: 40,
+    isFree: false,
+    durationDays: 120,
+  },
+  {
+    id: "5",
+    exam: "CAT",
+    title: "CAT 2025 - 50 Sectional + 20 Full Mock Tests",
+    slug: "cat-2025-mock-test-series",
+    imageUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800",
+    totalPrice: 6000,
+    discountPercentage: 25,
+    isFree: false,
+    durationDays: 200,
   },
 ];
 
@@ -166,8 +206,12 @@ export default function ExplorePage() {
             </>
           ) : (
             <>
-              {mockTestSeries.map((series) => (
-                <MobileTestSeriesCard key={series.id} {...series} />
+              {mockTestSeries.map((series, index) => (
+                <ExploreTestSeriesCard
+                  key={series.id}
+                  {...series}
+                  index={index}
+                />
               ))}
             </>
           )}
@@ -227,8 +271,12 @@ export default function ExplorePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockTestSeries.map((series) => (
-                <MobileTestSeriesCard key={series.id} {...series} />
+              {mockTestSeries.map((series, index) => (
+                <ExploreTestSeriesCard
+                  key={series.id}
+                  {...series}
+                  index={index}
+                />
               ))}
             </div>
           )}
