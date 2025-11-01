@@ -41,6 +41,8 @@ import {
   MoreHorizontal,
   Search,
   Eye,
+  Copy,
+  Check,
 } from "lucide-react";
 import {
   useGetSubject,
@@ -74,6 +76,7 @@ export default function SubjectDetailPage() {
   const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [copiedChapterId, setCopiedChapterId] = useState<string | null>(null);
 
   const { data: subject, isLoading: subjectLoading } = useGetSubject(subjectId);
   const { data: chapters, isLoading: chaptersLoading } =
@@ -140,6 +143,16 @@ export default function SubjectDetailPage() {
     router.push(
       `/admin/courses/${courseId}/subjects/${subjectId}/chapters/${chapterId}`
     );
+  };
+
+  const handleCopyChapterId = async (chapterId: string) => {
+    try {
+      await navigator.clipboard.writeText(chapterId);
+      setCopiedChapterId(chapterId);
+      setTimeout(() => setCopiedChapterId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy Chapter ID:", error);
+    }
   };
 
   if (subjectLoading) {
@@ -230,6 +243,7 @@ export default function SubjectDetailPage() {
                       <TableHead className="min-w-[200px]">
                         Chapter Name
                       </TableHead>
+                      <TableHead className="min-w-[200px]">Chapter ID</TableHead>
                       <TableHead className="w-[100px]">Topics</TableHead>
                       <TableHead className="w-[120px] text-right">
                         Actions
@@ -244,7 +258,7 @@ export default function SubjectDetailPage() {
                     ).length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={3}
+                          colSpan={4}
                           className="text-center py-8 text-muted-foreground"
                         >
                           {searchQuery
@@ -263,6 +277,7 @@ export default function SubjectDetailPage() {
                           <ChapterTableRow
                             key={chapter.id}
                             chapter={chapter}
+                            copiedId={copiedChapterId}
                             onEdit={() => handleEditChapter(chapter)}
                             onDelete={() => handleDeleteChapter(chapter)}
                             onViewTopics={() => handleViewTopics(chapter.id)}
@@ -270,6 +285,7 @@ export default function SubjectDetailPage() {
                               setSelectedChapter({ id: chapter.id } as Chapter);
                               setIsCreateTopicOpen(true);
                             }}
+                            onCopyId={() => handleCopyChapterId(chapter.id)}
                           />
                         ))
                     )}
@@ -361,16 +377,20 @@ export default function SubjectDetailPage() {
 
 function ChapterTableRow({
   chapter,
+  copiedId,
   onEdit,
   onDelete,
   onViewTopics,
   onAddTopic,
+  onCopyId,
 }: {
   chapter: Chapter;
+  copiedId: string | null;
   onEdit: () => void;
   onDelete: () => void;
   onViewTopics: () => void;
   onAddTopic: () => void;
+  onCopyId: () => void;
 }) {
   const { data: topicsData } = useGetTopicsByChapter(chapter.id);
   const topics = topicsData?.data || [];
@@ -381,6 +401,26 @@ function ChapterTableRow({
         <div className="flex items-center space-x-2">
           <FileText className="h-4 w-4 text-primary" />
           <span>{chapter.name}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground font-mono">
+            {chapter.id}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={onCopyId}
+            title="Copy Chapter ID"
+          >
+            {copiedId === chapter.id ? (
+              <Check className="h-3.5 w-3.5 text-green-600" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+          </Button>
         </div>
       </TableCell>
       <TableCell>
@@ -401,6 +441,10 @@ function ChapterTableRow({
             <DropdownMenuItem onClick={onViewTopics}>
               <Eye className="mr-2 h-4 w-4" />
               View Topics
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onCopyId}>
+              <Copy className="mr-2 h-4 w-4" />
+              Copy ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onAddTopic}>

@@ -41,13 +41,15 @@ export function CreateContentModal({
     type: "Lecture" as "Lecture" | "Video" | "PDF" | "Assignment",
     pdfUrl: "",
     videoUrl: "",
-    videoType: "HLS" as "HLS" | "MP4",
+    videoType: "YouTube" as "YouTube" | "HLS" | "MP4",
     videoThumbnail: "",
     videoDuration: 0,
     isCompleted: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pdfFile, setPdfFile] = useState<string>("");
+  const [videoFile, setVideoFile] = useState<string>("");
+  const [thumbnailFile, setThumbnailFile] = useState<string>("");
 
   const createContentMutation = useCreateContent();
 
@@ -66,9 +68,12 @@ export function CreateContentModal({
         topicId: topicId,
         type: formData.type,
         pdfUrl: pdfFile || formData.pdfUrl || undefined,
-        videoUrl: formData.videoUrl || undefined,
+        videoUrl:
+          formData.videoType === "YouTube"
+            ? formData.videoUrl
+            : videoFile || formData.videoUrl || undefined,
         videoType: formData.videoType,
-        videoThumbnail: formData.videoThumbnail || undefined,
+        videoThumbnail: thumbnailFile || formData.videoThumbnail || undefined,
         videoDuration: formData.videoDuration,
         isCompleted: formData.isCompleted,
       };
@@ -89,12 +94,14 @@ export function CreateContentModal({
       type: "Lecture",
       pdfUrl: "",
       videoUrl: "",
-      videoType: "HLS",
+      videoType: "YouTube",
       videoThumbnail: "",
       videoDuration: 0,
       isCompleted: false,
     });
     setPdfFile("");
+    setVideoFile("");
+    setThumbnailFile("");
     onClose();
   };
 
@@ -171,27 +178,14 @@ export function CreateContentModal({
           {formData.type === "Video" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="videoUrl">Video URL</Label>
-                <Input
-                  id="videoUrl"
-                  placeholder="Enter video URL"
-                  value={formData.videoUrl}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      videoUrl: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="videoType">Video Type</Label>
+                <Label htmlFor="videoType">Video Type *</Label>
                 <Select
                   value={formData.videoType}
                   onValueChange={(value) =>
                     setFormData((prev) => ({
                       ...prev,
                       videoType: value as typeof formData.videoType,
+                      videoUrl: "", // Reset URL when changing type
                     }))
                   }
                 >
@@ -199,24 +193,91 @@ export function CreateContentModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="YouTube">
+                      <div className="flex items-center space-x-2">
+                        <Video className="h-4 w-4" />
+                        <span>YouTube</span>
+                      </div>
+                    </SelectItem>
                     <SelectItem value="HLS">HLS</SelectItem>
                     <SelectItem value="MP4">MP4</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* YouTube URL Input */}
+              {formData.videoType === "YouTube" && (
+                <div className="space-y-2">
+                  <Label htmlFor="videoUrl">YouTube URL *</Label>
+                  <Input
+                    id="videoUrl"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={formData.videoUrl}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        videoUrl: e.target.value,
+                      }))
+                    }
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter the full YouTube video URL or video ID
+                  </p>
+                </div>
+              )}
+
+              {/* Video Upload for HLS/MP4 */}
+              {(formData.videoType === "HLS" || formData.videoType === "MP4") && (
+                <div className="space-y-2">
+                  <Label htmlFor="videoUpload">Upload Video *</Label>
+                  <FileUpload
+                    accept="video/*"
+                    maxSize={500}
+                    onUploadComplete={(fileData) => {
+                      setVideoFile(fileData.url);
+                    }}
+                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="videoUrl">Or Enter Video URL</Label>
+                    <Input
+                      id="videoUrl"
+                      placeholder="Enter video URL (optional)"
+                      value={formData.videoUrl}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          videoUrl: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="videoThumbnail">Video Thumbnail URL</Label>
-                <Input
-                  id="videoThumbnail"
-                  placeholder="Enter thumbnail URL"
-                  value={formData.videoThumbnail}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      videoThumbnail: e.target.value,
-                    }))
-                  }
+                <Label htmlFor="videoThumbnail">Video Thumbnail</Label>
+                <FileUpload
+                  accept="image/*"
+                  maxSize={10}
+                  onUploadComplete={(fileData) => {
+                    setThumbnailFile(fileData.url);
+                  }}
                 />
+                <div className="space-y-2">
+                  <Label htmlFor="videoThumbnailUrl">Or Enter Thumbnail URL</Label>
+                  <Input
+                    id="videoThumbnailUrl"
+                    placeholder="Enter thumbnail URL (optional)"
+                    value={formData.videoThumbnail}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        videoThumbnail: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="videoDuration">Duration (seconds)</Label>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,7 +11,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useGetContentsByTopic } from "@/hooks";
-import { Video, FileText, Download, ExternalLink } from "lucide-react";
+import {
+  Video,
+  FileText,
+  Download,
+  ExternalLink,
+  Copy,
+  Check,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Content {
@@ -47,8 +55,23 @@ export function ViewTopicModal({
   onClose,
   topic,
 }: ViewTopicModalProps) {
+  // Preserve topic while modal is open to avoid null issues
+  const [preservedTopic, setPreservedTopic] = useState<Topic | null>(null);
+
+  // Update preserved topic when topic prop changes and modal is open
+  useEffect(() => {
+    if (isOpen && topic) {
+      setPreservedTopic(topic);
+    } else if (!isOpen) {
+      // Clear preserved topic when modal closes
+      setPreservedTopic(null);
+    }
+  }, [isOpen, topic]);
+
+  // Use topic prop if available, otherwise fall back to preserved topic
+  const currentTopic = topic || preservedTopic;
   const { data: contentsData, isLoading: contentsLoading } =
-    useGetContentsByTopic(topic?.id || "");
+    useGetContentsByTopic(currentTopic?.id || "");
 
   const contents = contentsData?.data || [];
 
@@ -63,7 +86,7 @@ export function ViewTopicModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{topic?.name || "View Topic"}</DialogTitle>
+          <DialogTitle>{currentTopic?.name || "View Topic"}</DialogTitle>
           <DialogDescription>
             View all videos and PDFs associated with this topic
           </DialogDescription>
@@ -94,7 +117,13 @@ export function ViewTopicModal({
 
             <TabsContent value="all" className="space-y-4 mt-4">
               {contents.map((content: Content) => (
-                <ContentCard key={content.id} content={content} />
+                <ContentCard
+                  key={content.id}
+                  content={{
+                    ...content,
+                    topicId: content.topicId || currentTopic?.id || "",
+                  }}
+                />
               ))}
             </TabsContent>
 
@@ -105,7 +134,13 @@ export function ViewTopicModal({
                 </div>
               ) : (
                 videos.map((content: Content) => (
-                  <ContentCard key={content.id} content={content} />
+                  <ContentCard
+                    key={content.id}
+                    content={{
+                      ...content,
+                      topicId: content.topicId || currentTopic?.id || "",
+                    }}
+                  />
                 ))
               )}
             </TabsContent>
@@ -117,7 +152,13 @@ export function ViewTopicModal({
                 </div>
               ) : (
                 pdfs.map((content: Content) => (
-                  <ContentCard key={content.id} content={content} />
+                  <ContentCard
+                    key={content.id}
+                    content={{
+                      ...content,
+                      topicId: content.topicId || currentTopic?.id || "",
+                    }}
+                  />
                 ))
               )}
             </TabsContent>
@@ -131,6 +172,7 @@ export function ViewTopicModal({
 function ContentCard({ content }: { content: Content }) {
   const isVideo = content.type === "Video" && content.videoUrl;
   const isPdf = content.type === "PDF" && content.pdfUrl;
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const formatDuration = (seconds: number | undefined) => {
     if (!seconds) return "";
@@ -145,6 +187,16 @@ function ContentCard({ content }: { content: Content }) {
 
   const handleOpenVideo = (url: string) => {
     window.open(url, "_blank");
+  };
+
+  const handleCopyId = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy ID:", error);
+    }
   };
 
   return (
@@ -172,6 +224,25 @@ function ContentCard({ content }: { content: Content }) {
                 Completed
               </Badge>
             )}
+          </div>
+          <div className="flex items-center gap-2 ml-8 mb-2">
+            <span className="text-xs text-muted-foreground">Topic ID:</span>
+            <span className="text-xs text-muted-foreground font-mono">
+              {content.topicId}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0"
+              onClick={() => handleCopyId(content.topicId)}
+              title="Copy Topic ID"
+            >
+              {copiedId === content.topicId ? (
+                <Check className="h-3 w-3 text-green-600" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+            </Button>
           </div>
           {isVideo && content.videoDuration && (
             <p className="text-sm text-muted-foreground ml-8">

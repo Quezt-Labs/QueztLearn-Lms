@@ -32,15 +32,14 @@ import {
   MoreHorizontal,
   Search,
   Eye,
+  Copy,
+  Check,
 } from "lucide-react";
-import {
-  useGetChapter,
-  useGetTopicsByChapter,
-  useDeleteTopic,
-} from "@/hooks";
+import { useGetChapter, useGetTopicsByChapter, useDeleteTopic } from "@/hooks";
 import { CreateTopicModal } from "@/components/common/create-topic-modal";
 import { EditTopicModal } from "@/components/common/edit-topic-modal";
 import { ViewTopicModal } from "@/components/common/view-topic-modal";
+import { CreateContentModal } from "@/components/common/create-content-modal";
 
 interface Topic {
   id: string;
@@ -61,8 +60,10 @@ export default function ChapterTopicsPage() {
   const [isCreateTopicOpen, setIsCreateTopicOpen] = useState(false);
   const [isEditTopicOpen, setIsEditTopicOpen] = useState(false);
   const [isViewTopicOpen, setIsViewTopicOpen] = useState(false);
+  const [isCreateContentOpen, setIsCreateContentOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [copiedTopicId, setCopiedTopicId] = useState<string | null>(null);
 
   const { data: chapter, isLoading: chapterLoading } = useGetChapter(chapterId);
   const { data: topics, isLoading: topicsLoading } =
@@ -97,6 +98,25 @@ export default function ChapterTopicsPage() {
   const handleViewTopic = (topic: Topic) => {
     setSelectedTopic(topic);
     setIsViewTopicOpen(true);
+  };
+
+  const handleCopyTopicId = async (topicId: string) => {
+    try {
+      await navigator.clipboard.writeText(topicId);
+      setCopiedTopicId(topicId);
+      setTimeout(() => setCopiedTopicId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy Topic ID:", error);
+    }
+  };
+
+  const handleAddContent = (topicId: string) => {
+    setSelectedTopic({ id: topicId } as Topic);
+    setIsCreateContentOpen(true);
+  };
+
+  const handleContentCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ["contents"] });
   };
 
   const handleDeleteTopic = async (topic: Topic) => {
@@ -143,6 +163,7 @@ export default function ChapterTopicsPage() {
     topic.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  console.log("topicsData", topicsData);
   return (
     <div className="container mx-auto py-8 space-y-6">
       {/* Header */}
@@ -197,15 +218,20 @@ export default function ChapterTopicsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[200px]">Topic Name</TableHead>
-                      <TableHead className="w-[120px] text-right">Actions</TableHead>
+                      <TableHead className="min-w-[200px]">
+                        Topic Name
+                      </TableHead>
+                      <TableHead className="min-w-[200px]">Topic ID</TableHead>
+                      <TableHead className="w-[120px] text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredTopics.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={2}
+                          colSpan={3}
                           className="text-center py-8 text-muted-foreground"
                         >
                           {searchQuery
@@ -222,6 +248,26 @@ export default function ChapterTopicsPage() {
                               <span>{topic.name}</span>
                             </div>
                           </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-muted-foreground font-mono">
+                                {topic.id}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                onClick={() => handleCopyTopicId(topic.id)}
+                                title="Copy Topic ID"
+                              >
+                                {copiedTopicId === topic.id ? (
+                                  <Check className="h-3.5 w-3.5 text-green-600" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            </div>
+                          </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -232,12 +278,29 @@ export default function ChapterTopicsPage() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleViewTopic(topic)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleViewTopic(topic)}
+                                >
                                   <Eye className="mr-2 h-4 w-4" />
                                   View
                                 </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleCopyTopicId(topic.id)}
+                                >
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  Copy ID
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleEditTopic(topic)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleAddContent(topic.id)}
+                                >
+                                  <Plus className="mr-2 h-4 w-4" />
+                                  Add Content
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleEditTopic(topic)}
+                                >
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit
                                 </DropdownMenuItem>
@@ -297,11 +360,19 @@ export default function ChapterTopicsPage() {
         isOpen={isViewTopicOpen}
         onClose={() => {
           setIsViewTopicOpen(false);
-          setSelectedTopic(null);
         }}
         topic={selectedTopic}
+      />
+
+      <CreateContentModal
+        isOpen={isCreateContentOpen}
+        onClose={() => {
+          setIsCreateContentOpen(false);
+          setSelectedTopic(null);
+        }}
+        topicId={selectedTopic?.id || ""}
+        onSuccess={handleContentCreated}
       />
     </div>
   );
 }
-
