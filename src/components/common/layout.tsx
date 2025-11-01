@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { Sidebar } from "@/components/common/sidebar";
 import { Header } from "@/components/common/header";
+import { MobileBottomTabs } from "@/components/common/mobile-bottom-tabs";
 import { useRequireAuth } from "@/hooks";
 import { Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -17,9 +18,10 @@ export function Layout({ children }: LayoutProps) {
   const isAttemptRoute = Boolean(
     pathname?.includes("/student/tests/") && pathname?.endsWith("/attempt")
   );
+  const isStudentRoute = pathname?.includes("/student");
 
   // Hide header on student routes (they use StudentHeader in page content)
-  const isStudentRoute = pathname?.includes("/student/");
+  /*  const isStudentRoute = pathname?.includes("/student/"); */
 
   if (isLoading) {
     return (
@@ -50,6 +52,10 @@ export function Layout({ children }: LayoutProps) {
           {children}
         </main>
       </div>
+      {/* Mobile bottom tabs - only show for student routes and not on attempt pages */}
+      {isAuthenticated && isStudentRoute && !isAttemptRoute && (
+        <MobileBottomTabs />
+      )}
     </div>
   );
 }
