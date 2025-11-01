@@ -26,6 +26,7 @@ import {
   Globe,
   Plus,
 } from "lucide-react";
+import { decodeHtmlEntities } from "@/lib/utils";
 import {
   useGetBatch,
   useDeleteBatch,
@@ -74,7 +75,7 @@ interface Teacher {
   id: string;
   name: string;
   imageUrl?: string;
-  highlights: string;
+  highlights: string | { content: string };
   subjects: string[];
   batchIds: string[];
   rating?: number;
@@ -176,7 +177,10 @@ export function CourseDetailPage({
   const handleEditTeacher = (teacher: Teacher) => {
     setSelectedTeacher({
       ...teacher,
-      highlights: teacher.highlights || "",
+      highlights:
+        typeof teacher.highlights === "string"
+          ? teacher.highlights
+          : teacher.highlights?.content || "",
       subjects: teacher.subjects || [],
       batchIds: teacher.batchIds || [],
     });
@@ -511,20 +515,39 @@ export function CourseDetailPage({
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
-                            <Avatar>
-                              <AvatarImage src={teacher.imageUrl} />
-                              <AvatarFallback>
+                            <Avatar className="h-12 w-12 shrink-0">
+                              <AvatarImage
+                                src={teacher.imageUrl}
+                                alt={teacher.name}
+                              />
+                              <AvatarFallback className="text-sm">
                                 {teacher.name
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <h4 className="font-semibold">{teacher.name}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {teacher.highlights}
-                              </p>
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-2">
+                                {teacher.name}
+                              </h4>
+                              {(() => {
+                                const highlightsContent =
+                                  typeof teacher.highlights === "string"
+                                    ? teacher.highlights
+                                    : teacher.highlights?.content || "";
+                                const decodedContent = highlightsContent
+                                  ? decodeHtmlEntities(highlightsContent)
+                                  : "";
+                                return decodedContent ? (
+                                  <div
+                                    className="prose prose-sm max-w-none text-muted-foreground [&_p]:m-0 [&_p]:mb-2 [&_h1]:text-base [&_h2]:text-base [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-2 [&_h3]:text-foreground [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-2 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-2 [&_li]:mb-1 [&_li]:text-sm [&_strong]:font-semibold [&_em]:italic"
+                                    dangerouslySetInnerHTML={{
+                                      __html: decodedContent,
+                                    }}
+                                  />
+                                ) : null;
+                              })()}
                             </div>
                           </div>
                           {canManageCourse && (
