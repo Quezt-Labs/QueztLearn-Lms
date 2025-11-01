@@ -164,7 +164,7 @@ export default function ExplorePage() {
         <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/40">
           <div className="flex items-center justify-between px-4 h-14">
             <h1 className="text-xl font-bold text-foreground">Explore</h1>
-            <Search className="h-5 w-5 text-muted-foreground" />
+            {/* <Search className="h-5 w-5 text-muted-foreground" /> */}
           </div>
         </header>
 
@@ -233,7 +233,7 @@ export default function ExplorePage() {
 
           {/* Filters & Search */}
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <div className="relative flex-1">
+            {/* <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Search batches and test series..."
@@ -241,7 +241,7 @@ export default function ExplorePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-11"
               />
-            </div>
+            </div> */}
             <div className="flex gap-2">
               <Button
                 variant={activeTab === "batches" ? "default" : "outline"}
