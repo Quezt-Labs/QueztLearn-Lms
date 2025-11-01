@@ -20,9 +20,6 @@ export function Layout({ children }: LayoutProps) {
   );
   const isStudentRoute = pathname?.includes("/student");
 
-  // Hide header on student routes (they use StudentHeader in page content)
-  /*  const isStudentRoute = pathname?.includes("/student/"); */
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -34,6 +31,8 @@ export function Layout({ children }: LayoutProps) {
   if (!isAuthenticated) {
     return <>{children}</>;
   }
+
+  /* flex-1 overflow-auto p-6 pb-24 md:pb-6 bg-[radial-gradient(80rem_50rem_at_120%_-10%,theme(colors.primary/6),transparent_60%),radial-gradient(60rem_40rem_at_-10%_-20%,theme(colors.muted/40),transparent_50%)] */
 
   return (
     <div className="flex h-screen bg-background">
