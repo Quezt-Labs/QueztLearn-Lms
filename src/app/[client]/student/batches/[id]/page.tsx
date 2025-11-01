@@ -71,8 +71,7 @@ export default function BatchDetailPage() {
   const isHotDeal = batch.discountPercentage >= 30;
 
   return (
-    <div className="-m-6 md:-m-6 min-h-screen">
-      {/* Desktop Header - Sticky */}
+    <div className="h-full">
       <div className="hidden lg:block sticky top-0 z-50">
         <BatchDetailHeader
           batch={batch}
@@ -85,7 +84,6 @@ export default function BatchDetailPage() {
         />
       </div>
 
-      {/* Mobile Hero */}
       <div className="lg:hidden">
         <MobileBatchHero
           batch={batch}
@@ -98,7 +96,7 @@ export default function BatchDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="px-4 md:px-6 py-8">
+      <div className="p-2.5 lg:px-10 lg:py-8">
         <div className="container max-w-7xl mx-auto">
           <Suspense
             fallback={
