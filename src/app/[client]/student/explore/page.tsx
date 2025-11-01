@@ -7,70 +7,7 @@ import { ExploreBatchCard } from "@/components/student/explore-batch-card";
 import { ExploreTestSeriesCard } from "@/components/student/explore-test-series-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useGetExploreBatches } from "@/hooks";
-
-// Mock data for test series - will be replaced with actual API
-const mockTestSeries = [
-  {
-    id: "1",
-    exam: "JEE",
-    title: "JEE Main 2025 Mock Test Series - 30 Full Length Tests",
-    slug: "jee-main-2025-mock-series",
-    imageUrl:
-      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800",
-    totalPrice: 5000,
-    discountPercentage: 30,
-    isFree: false,
-    durationDays: 180,
-  },
-  {
-    id: "2",
-    exam: "NEET",
-    title: "NEET 2025 Grand Test Series with Detailed Analysis",
-    slug: "neet-2025-grand-test-series",
-    imageUrl:
-      "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800",
-    totalPrice: 4500,
-    discountPercentage: 33,
-    isFree: false,
-    durationDays: 150,
-  },
-  {
-    id: "3",
-    exam: "UPSC",
-    title: "UPSC Prelims Free Mock Test Series 2025",
-    slug: "upsc-prelims-free-mock-series",
-    imageUrl:
-      "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800",
-    totalPrice: 0,
-    discountPercentage: 0,
-    isFree: true,
-    durationDays: 90,
-  },
-  {
-    id: "4",
-    exam: "SSC",
-    title: "SSC CGL Tier 1 & 2 Complete Test Package",
-    slug: "ssc-cgl-complete-test-package",
-    imageUrl:
-      "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800",
-    totalPrice: 3000,
-    discountPercentage: 40,
-    isFree: false,
-    durationDays: 120,
-  },
-  {
-    id: "5",
-    exam: "CAT",
-    title: "CAT 2025 - 50 Sectional + 20 Full Mock Tests",
-    slug: "cat-2025-mock-test-series",
-    imageUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800",
-    totalPrice: 6000,
-    discountPercentage: 25,
-    isFree: false,
-    durationDays: 200,
-  },
-];
+import { useGetExploreBatches, useGetExploreTestSeries } from "@/hooks";
 
 interface Batch {
   id: string;
@@ -86,6 +23,18 @@ interface Batch {
   discountPercentage: number;
 }
 
+interface TestSeries {
+  id: string;
+  exam: string;
+  title: string;
+  slug: string;
+  imageUrl?: string;
+  totalPrice: number;
+  discountPercentage?: number;
+  isFree?: boolean;
+  durationDays?: number;
+}
+
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<"batches" | "test-series">(
     "batches"
@@ -96,6 +45,11 @@ export default function ExplorePage() {
   const { data: batchesResponse, isLoading: isBatchesLoading } =
     useGetExploreBatches();
   const batches: Batch[] = batchesResponse?.data || [];
+
+  // Fetch test series from API using client-specific endpoint
+  const { data: testSeriesResponse, isLoading: isTestSeriesLoading } =
+    useGetExploreTestSeries();
+  const testSeries: TestSeries[] = testSeriesResponse?.data || [];
 
   return (
     <>
@@ -157,13 +111,23 @@ export default function ExplorePage() {
             </>
           ) : (
             <>
-              {mockTestSeries.map((series, index) => (
-                <ExploreTestSeriesCard
-                  key={series.id}
-                  {...series}
-                  index={index}
-                />
-              ))}
+              {isTestSeriesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : testSeries.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  No test series available at the moment
+                </div>
+              ) : (
+                testSeries.map((series, index) => (
+                  <ExploreTestSeriesCard
+                    key={series.id}
+                    {...series}
+                    index={index}
+                  />
+                ))
+              )}
             </>
           )}
         </div>
@@ -239,15 +203,33 @@ export default function ExplorePage() {
               )}
             </>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockTestSeries.map((series, index) => (
-                <ExploreTestSeriesCard
-                  key={series.id}
-                  {...series}
-                  index={index}
-                />
-              ))}
-            </div>
+            <>
+              {isTestSeriesLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </div>
+              ) : testSeries.length === 0 ? (
+                <div className="text-center py-20">
+                  <FileText className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Test Series Available
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Check back later for new test series
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {testSeries.map((series, index) => (
+                    <ExploreTestSeriesCard
+                      key={series.id}
+                      {...series}
+                      index={index}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
