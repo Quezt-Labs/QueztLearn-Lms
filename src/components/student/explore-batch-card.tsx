@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Globe, GraduationCap, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +43,9 @@ export function ExploreBatchCard({
   discountPercentage,
   index = 0,
 }: ExploreBatchCardProps) {
+  const params = useParams();
+  const clientSlug = params.client as string;
+
   const finalPrice = Math.round(totalPrice * (1 - discountPercentage / 100));
   const savings = totalPrice - finalPrice;
 
@@ -190,14 +194,10 @@ export function ExploreBatchCard({
                 <Link href={`/student/batches/${id}`}>View Details</Link>
               </Button>
               <Button
-                className="flex-1 h-10 sm:h-11 font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // Handle purchase - will be connected to payment flow
-                  console.log("Buy now clicked for batch:", id);
-                }}
+                className="flex-1 h-10 sm:h-11 font-semibold text-sm sm:text-base"
+                asChild
               >
-                Buy Now
+                <Link href={`/student/batches/${id}`}>Buy Now</Link>
               </Button>
             </div>
           </div>
