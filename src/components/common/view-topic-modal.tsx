@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -82,7 +81,7 @@ export function ViewTopicModal({
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="font-semibold mb-2">No content available</h3>
             <p className="text-muted-foreground">
-              This topic doesn't have any videos or PDFs yet.
+              This topic doesn&apos;t have any videos or PDFs yet.
             </p>
           </div>
         ) : (
