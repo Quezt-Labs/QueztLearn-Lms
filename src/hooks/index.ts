@@ -51,6 +51,10 @@ export {
   useGetContent,
   useUpdateContent,
   useDeleteContent,
+  useGetExploreBatches,
+  useGetExploreBatch,
+  useGetExploreTestSeries,
+  useGetExploreTestSeriesById,
   queryKeys,
 } from "./api";
 

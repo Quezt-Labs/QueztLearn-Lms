@@ -1,93 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Search, BookOpen, FileText } from "lucide-react";
+import { Search, BookOpen, FileText, Loader2 } from "lucide-react";
 import { StudentHeader } from "@/components/student/student-header";
 import { ExploreBatchCard } from "@/components/student/explore-batch-card";
 import { ExploreTestSeriesCard } from "@/components/student/explore-test-series-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useGetExploreBatches } from "@/hooks";
 
-const mockBatches = [
-  {
-    id: "1",
-    name: "NEET 2026 Complete Foundation Batch - Biology, Physics & Chemistry",
-    class: "12" as const,
-    exam: "NEET",
-    imageUrl:
-      "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=800",
-    startDate: new Date("2024-12-01"),
-    endDate: new Date("2025-05-31"),
-    language: "English & Hindi",
-    totalPrice: 25000,
-    discountPercentage: 40,
-  },
-  {
-    id: "2",
-    name: "JEE Main & Advanced 2025 - Complete Mathematics Mastery",
-    class: "12" as const,
-    exam: "JEE",
-    imageUrl:
-      "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800",
-    startDate: new Date("2024-11-15"),
-    endDate: new Date("2025-04-30"),
-    language: "English",
-    totalPrice: 20000,
-    discountPercentage: 35,
-  },
-  {
-    id: "3",
-    name: "UPSC CSE 2025 - General Studies Foundation Course",
-    class: "Grad" as const,
-    exam: "UPSC",
-    imageUrl:
-      "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800",
-    startDate: new Date("2024-10-01"),
-    endDate: new Date("2025-06-30"),
-    language: "English & Hindi",
-    totalPrice: 30000,
-    discountPercentage: 25,
-  },
-  {
-    id: "4",
-    name: "CA Foundation Complete Course - Accounts, Laws & Maths",
-    class: "12+" as const,
-    exam: "CA",
-    imageUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800",
-    startDate: new Date("2024-11-01"),
-    endDate: new Date("2025-05-15"),
-    language: "English",
-    totalPrice: 18000,
-    discountPercentage: 30,
-  },
-  {
-    id: "5",
-    name: "Class 11 Science PCM Complete Foundation Course",
-    class: "11" as const,
-    exam: "Boards",
-    imageUrl:
-      "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=800",
-    startDate: new Date("2024-11-10"),
-    endDate: new Date("2025-03-31"),
-    language: "Hindi",
-    totalPrice: 15000,
-    discountPercentage: 20,
-  },
-  {
-    id: "6",
-    name: "SSC CGL 2025 - Complete Preparation with Mock Tests",
-    class: "Grad" as const,
-    exam: "SSC",
-    imageUrl:
-      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800",
-    startDate: new Date("2024-12-01"),
-    endDate: new Date("2025-07-31"),
-    language: "English & Hindi",
-    totalPrice: 12000,
-    discountPercentage: 45,
-  },
-];
-
+// Mock data for test series - will be replaced with actual API
 const mockTestSeries = [
   {
     id: "1",
@@ -150,11 +72,30 @@ const mockTestSeries = [
   },
 ];
 
+interface Batch {
+  id: string;
+  name: string;
+  description?: any;
+  class: "11" | "12" | "12+" | "Grad";
+  exam: string;
+  imageUrl?: string;
+  startDate: string;
+  endDate: string;
+  language: string;
+  totalPrice: number;
+  discountPercentage: number;
+}
+
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<"batches" | "test-series">(
     "batches"
   );
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch batches from API using client-specific endpoint
+  const { data: batchesResponse, isLoading: isBatchesLoading } =
+    useGetExploreBatches();
+  const batches: Batch[] = batchesResponse?.data || [];
 
   return (
     <>
@@ -200,9 +141,19 @@ export default function ExplorePage() {
         <div className="px-4 py-6 space-y-4">
           {activeTab === "batches" ? (
             <>
-              {mockBatches.map((batch, index) => (
-                <ExploreBatchCard key={batch.id} {...batch} index={index} />
-              ))}
+              {isBatchesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : batches.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  No batches available at the moment
+                </div>
+              ) : (
+                batches.map((batch, index) => (
+                  <ExploreBatchCard key={batch.id} {...batch} index={index} />
+                ))
+              )}
             </>
           ) : (
             <>
@@ -264,11 +215,29 @@ export default function ExplorePage() {
 
           {/* Content Grid */}
           {activeTab === "batches" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockBatches.map((batch, index) => (
-                <ExploreBatchCard key={batch.id} {...batch} index={index} />
-              ))}
-            </div>
+            <>
+              {isBatchesLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                </div>
+              ) : batches.length === 0 ? (
+                <div className="text-center py-20">
+                  <BookOpen className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Batches Available
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Check back later for new courses
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {batches.map((batch, index) => (
+                    <ExploreBatchCard key={batch.id} {...batch} index={index} />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {mockTestSeries.map((series, index) => (

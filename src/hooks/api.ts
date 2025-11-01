@@ -906,3 +906,44 @@ export const useClearOrganizationCache = () => {
     },
   });
 };
+
+// ==========================================
+// Student/Client API Hooks
+// ==========================================
+
+// Get all batches for students/clients (explore page)
+export const useGetExploreBatches = () => {
+  return useQuery({
+    queryKey: ["explore", "batches"],
+    queryFn: () => apiClient.get("/api/batches").then((res) => res.data),
+    enabled: true,
+  });
+};
+
+// Get single batch details for students/clients
+export const useGetExploreBatch = (id: string) => {
+  return useQuery({
+    queryKey: ["explore", "batch", id],
+    queryFn: () => apiClient.get(`/api/batches/${id}`).then((res) => res.data),
+    enabled: !!id,
+  });
+};
+
+// Get all test series for students/clients (explore page)
+export const useGetExploreTestSeries = () => {
+  return useQuery({
+    queryKey: ["explore", "testSeries"],
+    queryFn: () => apiClient.get("/api/test-series").then((res) => res.data),
+    enabled: true,
+  });
+};
+
+// Get single test series details for students/clients
+export const useGetExploreTestSeriesById = (id: string) => {
+  return useQuery({
+    queryKey: ["explore", "testSeries", id],
+    queryFn: () =>
+      apiClient.get(`/api/test-series/${id}`).then((res) => res.data),
+    enabled: !!id,
+  });
+};
