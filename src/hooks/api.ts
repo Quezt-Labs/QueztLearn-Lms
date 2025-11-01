@@ -810,13 +810,12 @@ export const useDeleteTopic = () => {
 interface ContentData {
   name: string;
   topicId?: string;
-  type: "Lecture" | "Video" | "PDF" | "Assignment";
+  type: "Lecture" | "PDF";
   pdfUrl?: string;
   videoUrl?: string;
-  videoType?: "HLS" | "MP4";
+  videoType?: "YOUTUBE" | "HLS";
   videoThumbnail?: string;
   videoDuration?: number;
-  isCompleted?: boolean;
 }
 
 // Create Content
@@ -833,11 +832,13 @@ export const useCreateContent = () => {
 };
 
 // Get Contents by Topic
+// Note: Both admin and teacher use the same /admin/ endpoint
 export const useGetContentsByTopic = (topicId: string) => {
   return useQuery({
     queryKey: ["contents", "topic", topicId],
     queryFn: () =>
       apiClient.get(`/admin/contents/topic/${topicId}`).then((res) => res.data),
+    enabled: !!topicId, // Only fetch if topicId is provided
   });
 };
 

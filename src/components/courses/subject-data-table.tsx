@@ -20,7 +20,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Search, Eye, Edit, Trash2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Copy,
+  Check,
+} from "lucide-react";
 
 interface Subject {
   id: string;
@@ -51,6 +59,7 @@ export function SubjectDataTable({
 }: SubjectDataTableProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const stripHtml = (html: string | undefined) => {
     if (!html) return "";
@@ -65,6 +74,16 @@ export function SubjectDataTable({
 
   const handleView = (subjectId: string) => {
     router.push(`/${basePath}/courses/${courseId}/subjects/${subjectId}`);
+  };
+
+  const handleCopyId = async (subjectId: string) => {
+    try {
+      await navigator.clipboard.writeText(subjectId);
+      setCopiedId(subjectId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy ID:", error);
+    }
   };
 
   return (
@@ -86,6 +105,7 @@ export function SubjectDataTable({
               <TableHead className="min-w-[280px] max-w-[420px]">
                 Subject
               </TableHead>
+              <TableHead className="min-w-[200px]">Subject ID</TableHead>
               <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -108,6 +128,26 @@ export function SubjectDataTable({
                     </div>
                   </TableCell>
                   <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground font-mono">
+                        {subject.id}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => handleCopyId(subject.id)}
+                        title="Copy Subject ID"
+                      >
+                        {copiedId === subject.id ? (
+                          <Check className="h-3.5 w-3.5 text-green-600" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
@@ -125,6 +165,7 @@ export function SubjectDataTable({
                         </DropdownMenuItem>
                         {canManageCourse && (
                           <>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onEdit(subject)}>
                               <Edit className="mr-2 h-4 w-4" />
                               Edit

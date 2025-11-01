@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 interface ExploreBatchCardProps {
   id: string;
   name: string;
-  description?: any;
+  description?: string | null;
   class: "11" | "12" | "12+" | "Grad";
   exam: string;
   imageUrl?: string;
