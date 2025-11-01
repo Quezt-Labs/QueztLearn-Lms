@@ -71,7 +71,7 @@ export default function ChapterTopicsPage() {
   const deleteTopicMutation = useDeleteTopic();
 
   const handleGoBack = () => {
-    router.push(`/admin/courses/${courseId}/subjects/${subjectId}`);
+    router.push(`/teacher/courses/${courseId}/subjects/${subjectId}`);
   };
 
   const handleAddTopic = () => {

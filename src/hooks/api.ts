@@ -810,13 +810,12 @@ export const useDeleteTopic = () => {
 interface ContentData {
   name: string;
   topicId?: string;
-  type: "Lecture" | "Video" | "PDF" | "Assignment";
+  type: "Lecture" | "PDF";
   pdfUrl?: string;
   videoUrl?: string;
-  videoType?: "HLS" | "MP4";
+  videoType?: "YOUTUBE" | "HLS";
   videoThumbnail?: string;
   videoDuration?: number;
-  isCompleted?: boolean;
 }
 
 // Create Content
