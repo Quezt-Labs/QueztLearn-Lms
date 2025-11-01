@@ -1,77 +1,146 @@
 "use client";
 
 import { useState } from "react";
-import { Settings } from "lucide-react";
-import { MobileInProgressSection } from "./mobile-in-progress-section";
-import { MobileContinueWatchingSection } from "./mobile-continue-watching-section";
-import { MobileTestSeriesSection } from "./mobile-test-series-section";
+import { Settings, Play, FileText, BookOpen, TrendingUp } from "lucide-react";
+import { VideoCard } from "@/components/student/video-card";
+import { TestAttemptCard } from "@/components/student/test-attempt-card";
+import { BatchCard } from "@/components/student/batch-card";
+import { TestSeriesCard } from "@/components/student/test-series-card";
+import { SectionHeader } from "@/components/student/section-header";
 
 // Mock data - Replace with actual API calls
-const inProgressCourses = [
+const recentVideos = [
   {
     id: "1",
-    title: "Mastering Data Analysis",
-    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400",
-    lessonsCompleted: 10,
-    totalLessons: 20,
-    backgroundColor: "from-amber-50 to-amber-100",
+    title: "Introduction to Organic Chemistry",
+    subject: "Chemistry",
+    thumbnail:
+      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400",
+    duration: 3600, // in seconds
+    watchedDuration: 2400,
+    lastWatchedAt: new Date("2025-10-30T10:30:00"),
+    batchName: "JEE Main 2025",
   },
   {
     id: "2",
-    title: "Advanced Python Programming",
-    thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4f18da5?w=400",
-    lessonsCompleted: 5,
-    totalLessons: 15,
-    backgroundColor: "from-slate-50 to-slate-100",
+    title: "Newton's Laws of Motion",
+    subject: "Physics",
+    thumbnail:
+      "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400",
+    duration: 2700,
+    watchedDuration: 2700,
+    lastWatchedAt: new Date("2025-10-29T15:20:00"),
+    batchName: "JEE Advanced 2025",
   },
   {
     id: "3",
-    title: "Machine Learning Fundamentals",
-    thumbnail: "https://images.unsplash.com/photo-1555255707-c07966088b7b?w=400",
-    lessonsCompleted: 8,
-    totalLessons: 25,
-    backgroundColor: "from-blue-50 to-blue-100",
+    title: "Calculus - Differentiation Basics",
+    subject: "Mathematics",
+    thumbnail:
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400",
+    duration: 3000,
+    watchedDuration: 1500,
+    lastWatchedAt: new Date("2025-10-28T18:45:00"),
+    batchName: "JEE Main 2025",
   },
 ];
 
-const continueWatchingVideos = [
+const recentTests = [
   {
     id: "1",
-    title: "Data Analysis Fundamentals",
-    subtitle: "Lesson 3: Data Visualization",
-    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400",
-    progress: 75,
-    duration: 1800,
-    watchedDuration: 1350,
+    title: "Physics Mock Test 1",
+    testSeriesName: "JEE Main Mock Series",
+    totalMarks: 300,
+    obtainedMarks: 245,
+    totalQuestions: 75,
+    attemptedQuestions: 73,
+    accuracy: 82.5,
+    attemptedAt: new Date("2025-10-29T14:00:00"),
+    rank: 145,
+    percentile: 89.5,
   },
   {
     id: "2",
-    title: "Python Functions",
-    subtitle: "Module 2: Advanced Concepts",
-    thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4f18da5?w=400",
-    progress: 40,
-    duration: 2400,
-    watchedDuration: 960,
-  },
-  {
-    id: "3",
-    title: "Statistical Methods",
-    subtitle: "Lesson 5: Hypothesis Testing",
-    thumbnail: "https://images.unsplash.com/photo-1555255707-c07966088b7b?w=400",
-    progress: 60,
-    duration: 2100,
-    watchedDuration: 1260,
+    title: "Chemistry Full Test",
+    testSeriesName: "NEET Practice Tests",
+    totalMarks: 180,
+    obtainedMarks: 156,
+    totalQuestions: 45,
+    attemptedQuestions: 45,
+    accuracy: 86.7,
+    attemptedAt: new Date("2025-10-27T10:00:00"),
+    rank: 89,
+    percentile: 92.3,
   },
 ];
 
-const testSeriesData = {
-  id: "1",
-  title: "Quantitative Aptitude",
-  topic: "Number Systems",
-  completionRate: 85,
-  averageScore: 78,
-  totalQuestions: 100,
-};
+const purchasedBatches = [
+  {
+    id: "1",
+    name: "JEE Main 2025 Complete Course",
+    class: "12th",
+    exam: "JEE",
+    imageUrl:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400",
+    startDate: new Date("2025-01-01"),
+    endDate: new Date("2025-12-31"),
+    language: "English",
+    totalPrice: 15000,
+    discountPercentage: 20,
+    finalPrice: 12000,
+    progress: 45,
+    totalSubjects: 3,
+    completedSubjects: 1,
+  },
+  {
+    id: "2",
+    name: "NEET Biology Mastery",
+    class: "12th",
+    exam: "NEET",
+    imageUrl:
+      "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400",
+    startDate: new Date("2025-02-01"),
+    endDate: new Date("2025-11-30"),
+    language: "Hindi",
+    totalPrice: 8000,
+    discountPercentage: 15,
+    finalPrice: 6800,
+    progress: 68,
+    totalSubjects: 1,
+    completedSubjects: 0,
+  },
+];
+
+const purchasedTestSeries = [
+  {
+    id: "1",
+    title: "JEE Main 2025 Complete Mock Series",
+    exam: "JEE",
+    imageUrl:
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400",
+    totalPrice: 2999,
+    discountPercentage: 20,
+    finalPrice: 2399,
+    totalTests: 30,
+    attemptedTests: 12,
+    averageScore: 68.5,
+    validUntil: new Date("2026-03-31"),
+  },
+  {
+    id: "2",
+    title: "NEET Practice Test Series",
+    exam: "NEET",
+    imageUrl:
+      "https://images.unsplash.com/photo-1532619187608-e5375cab36aa?w=400",
+    totalPrice: 1999,
+    discountPercentage: 25,
+    finalPrice: 1499,
+    totalTests: 20,
+    attemptedTests: 8,
+    averageScore: 72.3,
+    validUntil: new Date("2026-04-30"),
+  },
+];
 
 export function MyLearningMobile() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -94,16 +163,62 @@ export function MyLearningMobile() {
 
       {/* Content */}
       <div className="px-4 py-6 space-y-8">
-        {/* In Progress Section */}
-        <MobileInProgressSection courses={inProgressCourses} />
+        {/* Recently Watched Videos */}
+        <section>
+          <SectionHeader
+            title="Continue Watching"
+            icon={Play}
+            viewAllHref="/student/videos"
+          />
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            {recentVideos.map((video, index) => (
+              <VideoCard key={video.id} {...video} index={index} />
+            ))}
+          </div>
+        </section>
 
-        {/* Continue Watching Section */}
-        <MobileContinueWatchingSection videos={continueWatchingVideos} />
+        {/* Recently Attempted Tests */}
+        <section>
+          <SectionHeader
+            title="Recent Test Attempts"
+            icon={FileText}
+            viewAllHref="/student/tests"
+          />
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            {recentTests.map((test, index) => (
+              <TestAttemptCard key={test.id} {...test} index={index} />
+            ))}
+          </div>
+        </section>
 
-        {/* Test Series Preparation Section */}
-        <MobileTestSeriesSection testSeries={testSeriesData} />
+        {/* Purchased Batches */}
+        <section>
+          <SectionHeader
+            title="My Batches"
+            icon={BookOpen}
+            viewAllHref="/student/batches"
+          />
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            {purchasedBatches.map((batch, index) => (
+              <BatchCard key={batch.id} {...batch} index={index} />
+            ))}
+          </div>
+        </section>
+
+        {/* Purchased Test Series */}
+        <section>
+          <SectionHeader
+            title="My Test Series"
+            icon={TrendingUp}
+            viewAllHref="/student/test-series"
+          />
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            {purchasedTestSeries.map((series, index) => (
+              <TestSeriesCard key={series.id} {...series} index={index} />
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );
 }
-

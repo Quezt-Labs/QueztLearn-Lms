@@ -47,7 +47,7 @@ export function MobileInProgressSection({
   return (
     <section className="space-y-4">
       <h2 className="text-2xl font-bold text-foreground">In progress</h2>
-      
+
       {/* Horizontal Scrollable Cards with Scroll Indicator */}
       <div className="relative -mx-4 px-4">
         {/* Scroll Indicator - Right fade with arrow */}
@@ -55,12 +55,14 @@ export function MobileInProgressSection({
           <div className="absolute right-0 top-0 bottom-2 w-16 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none z-10 flex items-center justify-end pr-2">
             <div className="flex items-center gap-1 bg-background/90 backdrop-blur-sm rounded-full px-2 py-1 shadow-sm">
               <ChevronRight className="h-4 w-4 text-muted-foreground animate-pulse" />
-              <span className="text-[10px] font-semibold text-muted-foreground">Swipe</span>
+              <span className="text-[10px] font-semibold text-muted-foreground">
+                Swipe
+              </span>
             </div>
           </div>
         )}
-        
-        <div 
+
+        <div
           ref={scrollContainerRef}
           className="overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
           style={{ scrollBehavior: "smooth" }}
@@ -78,13 +80,15 @@ export function MobileInProgressSection({
                   href={`/student/courses/${course.id}`}
                   className="block w-[280px] active:scale-[0.98] transition-transform"
                 >
-                  <div className={cn(
-                    "relative rounded-2xl overflow-hidden flex flex-col",
-                    "bg-gradient-to-br",
-                    course.backgroundColor,
-                    "border border-border/30",
-                    "shadow-lg"
-                  )}>
+                  <div
+                    className={cn(
+                      "relative rounded-2xl overflow-hidden flex flex-col",
+                      "bg-gradient-to-br",
+                      course.backgroundColor,
+                      "border border-border/30",
+                      "shadow-lg"
+                    )}
+                  >
                     {/* Thumbnail Area */}
                     <div className="h-36 relative overflow-hidden">
                       <img
@@ -92,14 +96,18 @@ export function MobileInProgressSection({
                         alt={course.title}
                         className="w-full h-full object-cover"
                       />
-                    {/* Progress Badge - Shows percentage */}
-                    <div className="absolute top-3 right-3">
-                      <div className="bg-background/90 backdrop-blur-sm rounded-full px-3 py-1">
-                        <span className="text-xs font-semibold text-foreground">
-                          {Math.round((course.lessonsCompleted / course.totalLessons) * 100)}%
-                        </span>
+                      {/* Progress Badge - Shows percentage */}
+                      <div className="absolute top-3 right-3">
+                        <div className="bg-background/90 backdrop-blur-sm rounded-full px-3 py-1">
+                          <span className="text-xs font-semibold text-foreground">
+                            {Math.round(
+                              (course.lessonsCompleted / course.totalLessons) *
+                                100
+                            )}
+                            %
+                          </span>
+                        </div>
                       </div>
-                    </div>
                     </div>
 
                     {/* Content - Compact Layout */}
@@ -118,13 +126,20 @@ export function MobileInProgressSection({
                                 className="h-full bg-primary rounded-full transition-all duration-500"
                                 style={{
                                   width: `${
-                                    (course.lessonsCompleted / course.totalLessons) * 100
+                                    (course.lessonsCompleted /
+                                      course.totalLessons) *
+                                    100
                                   }%`,
                                 }}
                               />
                             </div>
                             <p className="text-[10px] text-muted-foreground font-medium">
-                              {Math.round((course.lessonsCompleted / course.totalLessons) * 100)}% completed
+                              {Math.round(
+                                (course.lessonsCompleted /
+                                  course.totalLessons) *
+                                  100
+                              )}
+                              % completed
                             </p>
                           </div>
                         </div>
@@ -140,4 +155,3 @@ export function MobileInProgressSection({
     </section>
   );
 }
-
