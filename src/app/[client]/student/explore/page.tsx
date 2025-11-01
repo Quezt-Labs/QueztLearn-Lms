@@ -1,13 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { Search, BookOpen, FileText, Loader2 } from "lucide-react";
+import { Suspense, useState, lazy } from "react";
+import { BookOpen, FileText, Loader2 } from "lucide-react";
 import { StudentHeader } from "@/components/student/student-header";
-import { ExploreBatchCard } from "@/components/student/explore-batch-card";
-import { ExploreTestSeriesCard } from "@/components/student/explore-test-series-card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useGetExploreBatches, useGetExploreTestSeries } from "@/hooks";
+
+// Dynamic imports for code splitting
+const ExploreBatchCard = lazy(() =>
+  import("@/components/student/explore-batch-card").then((mod) => ({
+    default: mod.ExploreBatchCard,
+  }))
+);
+
+const ExploreTestSeriesCard = lazy(() =>
+  import("@/components/student/explore-test-series-card").then((mod) => ({
+    default: mod.ExploreTestSeriesCard,
+  }))
+);
 
 interface Batch {
   id: string;
@@ -39,16 +49,21 @@ export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<"batches" | "test-series">(
     "batches"
   );
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch batches from API using client-specific endpoint
-  const { data: batchesResponse, isLoading: isBatchesLoading } =
-    useGetExploreBatches();
+  // Fetch batches from API only when batches tab is active
+  const {
+    data: batchesResponse,
+    isLoading: isBatchesLoading,
+    isFetched: isBatchesFetched,
+  } = useGetExploreBatches();
   const batches: Batch[] = batchesResponse?.data || [];
 
-  // Fetch test series from API using client-specific endpoint
-  const { data: testSeriesResponse, isLoading: isTestSeriesLoading } =
-    useGetExploreTestSeries();
+  // Fetch test series from API only when test series tab is active
+  const {
+    data: testSeriesResponse,
+    isLoading: isTestSeriesLoading,
+    isFetched: isTestSeriesFetched,
+  } = useGetExploreTestSeries();
   const testSeries: TestSeries[] = testSeriesResponse?.data || [];
 
   return (
@@ -95,7 +110,7 @@ export default function ExplorePage() {
         <div className="px-4 py-6 space-y-4">
           {activeTab === "batches" ? (
             <>
-              {isBatchesLoading ? (
+              {isBatchesLoading && !isBatchesFetched ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
@@ -104,14 +119,22 @@ export default function ExplorePage() {
                   No batches available at the moment
                 </div>
               ) : (
-                batches.map((batch, index) => (
-                  <ExploreBatchCard key={batch.id} {...batch} index={index} />
-                ))
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  }
+                >
+                  {batches.map((batch, index) => (
+                    <ExploreBatchCard key={batch.id} {...batch} index={index} />
+                  ))}
+                </Suspense>
               )}
             </>
           ) : (
             <>
-              {isTestSeriesLoading ? (
+              {isTestSeriesLoading && !isTestSeriesFetched ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
@@ -120,13 +143,21 @@ export default function ExplorePage() {
                   No test series available at the moment
                 </div>
               ) : (
-                testSeries.map((series, index) => (
-                  <ExploreTestSeriesCard
-                    key={series.id}
-                    {...series}
-                    index={index}
-                  />
-                ))
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  }
+                >
+                  {testSeries.map((series, index) => (
+                    <ExploreTestSeriesCard
+                      key={series.id}
+                      {...series}
+                      index={index}
+                    />
+                  ))}
+                </Suspense>
               )}
             </>
           )}
@@ -180,7 +211,7 @@ export default function ExplorePage() {
           {/* Content Grid */}
           {activeTab === "batches" ? (
             <>
-              {isBatchesLoading ? (
+              {isBatchesLoading && !isBatchesFetched ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 </div>
@@ -195,16 +226,28 @@ export default function ExplorePage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {batches.map((batch, index) => (
-                    <ExploreBatchCard key={batch.id} {...batch} index={index} />
-                  ))}
-                </div>
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  }
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {batches.map((batch, index) => (
+                      <ExploreBatchCard
+                        key={batch.id}
+                        {...batch}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </Suspense>
               )}
             </>
           ) : (
             <>
-              {isTestSeriesLoading ? (
+              {isTestSeriesLoading && !isTestSeriesFetched ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 </div>
@@ -219,15 +262,23 @@ export default function ExplorePage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {testSeries.map((series, index) => (
-                    <ExploreTestSeriesCard
-                      key={series.id}
-                      {...series}
-                      index={index}
-                    />
-                  ))}
-                </div>
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  }
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {testSeries.map((series, index) => (
+                      <ExploreTestSeriesCard
+                        key={series.id}
+                        {...series}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </Suspense>
               )}
             </>
           )}
