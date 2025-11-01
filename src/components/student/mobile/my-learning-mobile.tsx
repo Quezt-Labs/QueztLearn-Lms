@@ -162,59 +162,87 @@ export function MyLearningMobile() {
       </header>
 
       {/* Content */}
-      <div className="px-4 py-6 space-y-8">
+      <div className="py-6 space-y-8">
         {/* Recently Watched Videos */}
         <section>
-          <SectionHeader
-            title="Continue Watching"
-            icon={Play}
-            viewAllHref="/student/videos"
-          />
-          <div className="grid grid-cols-1 gap-4 mt-4">
+          <div className="px-4">
+            <SectionHeader
+              title="Continue Watching"
+              icon={Play}
+              viewAllHref="/student/videos"
+            />
+          </div>
+          <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">
             {recentVideos.map((video, index) => (
-              <VideoCard key={video.id} {...video} index={index} />
+              <div
+                key={video.id}
+                className="shrink-0 w-[85vw] sm:w-[400px] snap-start"
+              >
+                <VideoCard {...video} index={index} />
+              </div>
             ))}
           </div>
         </section>
 
         {/* Recently Attempted Tests */}
         <section>
-          <SectionHeader
-            title="Recent Test Attempts"
-            icon={FileText}
-            viewAllHref="/student/tests"
-          />
-          <div className="grid grid-cols-1 gap-4 mt-4">
+          <div className="px-4">
+            <SectionHeader
+              title="Recent Test Attempts"
+              icon={FileText}
+              viewAllHref="/student/tests"
+            />
+          </div>
+          <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">
             {recentTests.map((test, index) => (
-              <TestAttemptCard key={test.id} {...test} index={index} />
+              <div
+                key={test.id}
+                className="shrink-0 w-[85vw] sm:w-[400px] snap-start"
+              >
+                <TestAttemptCard {...test} index={index} />
+              </div>
             ))}
           </div>
         </section>
 
         {/* Purchased Batches */}
         <section>
-          <SectionHeader
-            title="My Batches"
-            icon={BookOpen}
-            viewAllHref="/student/batches"
-          />
-          <div className="grid grid-cols-1 gap-4 mt-4">
+          <div className="px-4">
+            <SectionHeader
+              title="My Batches"
+              icon={BookOpen}
+              viewAllHref="/student/batches"
+            />
+          </div>
+          <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">
             {purchasedBatches.map((batch, index) => (
-              <BatchCard key={batch.id} {...batch} index={index} />
+              <div
+                key={batch.id}
+                className="shrink-0 w-[85vw] sm:w-[400px] snap-start"
+              >
+                <BatchCard {...batch} index={index} />
+              </div>
             ))}
           </div>
         </section>
 
         {/* Purchased Test Series */}
         <section>
-          <SectionHeader
-            title="My Test Series"
-            icon={TrendingUp}
-            viewAllHref="/student/test-series"
-          />
-          <div className="grid grid-cols-1 gap-4 mt-4">
+          <div className="px-4">
+            <SectionHeader
+              title="My Test Series"
+              icon={TrendingUp}
+              viewAllHref="/student/test-series"
+            />
+          </div>
+          <div className="flex gap-4 overflow-x-auto px-4 mt-4 pb-2 scrollbar-hide snap-x snap-mandatory">
             {purchasedTestSeries.map((series, index) => (
-              <TestSeriesCard key={series.id} {...series} index={index} />
+              <div
+                key={series.id}
+                className="shrink-0 w-[85vw] sm:w-[350px] snap-start"
+              >
+                <TestSeriesCard {...series} index={index} />
+              </div>
             ))}
           </div>
         </section>
