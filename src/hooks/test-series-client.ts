@@ -92,7 +92,7 @@ export const useClientTestSeriesList = (params?: {
       const { data } = await apiClient.get<
         ClientApiResponse<ClientTestSeriesListItem[]>
       >(
-        `/api/client/test-series${
+        `/api/test-series${
           queryParams.toString() ? `?${queryParams.toString()}` : ""
         }`
       );
@@ -118,7 +118,7 @@ export const useClientMyEnrollments = (params?: {
       const { data } = await apiClient.get<
         ClientApiResponse<ClientTestSeriesListItem[]>
       >(
-        `/api/client/test-series/my-enrollments${
+        `/api/test-series/my-enrollments${
           queryParams.toString() ? `?${queryParams.toString()}` : ""
         }`
       );
@@ -133,7 +133,7 @@ export const useClientTestSeriesDetail = (identifier?: string) => {
     queryFn: async () => {
       const { data } = await apiClient.get<
         ClientApiResponse<ClientTestSeriesListItem>
-      >(`/api/client/test-series/${identifier}`);
+      >(`/api/test-series/${identifier}`);
       return data;
     },
     enabled: Boolean(identifier),
@@ -146,7 +146,7 @@ export const useClientTestsInSeries = (seriesId?: string) => {
     queryFn: async () => {
       const { data } = await apiClient.get<
         ClientApiResponse<ClientTestInSeries[]>
-      >(`/api/client/test-series/${seriesId}/tests`);
+      >(`/api/test-series/${seriesId}/tests`);
       return data;
     },
     enabled: Boolean(seriesId),
@@ -159,7 +159,7 @@ export const useClientCheckoutTestSeries = () => {
     mutationFn: async (testSeriesId: string) => {
       const { data } = await apiClient.post<
         ClientApiResponse<ClientCheckoutResponse>
-      >(`/api/client/test-series/${testSeriesId}/checkout`);
+      >(`/api/test-series/${testSeriesId}/checkout`);
       return data;
     },
     onSuccess: () => {
@@ -174,7 +174,7 @@ export const useClientEnrollFreeTestSeries = () => {
     mutationFn: async (testSeriesId: string) => {
       const { data } = await apiClient.post<
         ClientApiResponse<{ enrolled: boolean }>
-      >(`/api/client/test-series/${testSeriesId}/enroll-free`);
+      >(`/api/test-series/${testSeriesId}/enroll-free`);
       return data;
     },
     onSuccess: (_res, testSeriesId) => {
@@ -195,7 +195,7 @@ export const useClientVerifyPayment = () => {
     }) => {
       const { data } = await apiClient.post<
         ClientApiResponse<{ verified: boolean }>
-      >("/api/client/test-series/verify-payment", payload);
+      >("/api/test-series/verify-payment", payload);
       return data;
     },
     onSuccess: () => {

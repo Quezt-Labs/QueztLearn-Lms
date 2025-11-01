@@ -66,3 +66,4 @@ export * from "./common";
 // Test Series hooks
 export * from "./test-series";
 export * from "./test-series-client";
+export * from "./test-attempts-client";
