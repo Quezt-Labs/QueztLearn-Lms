@@ -1,14 +1,15 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Play, FileText, BookOpen, TrendingUp } from "lucide-react";
+import { MyLearningMobile } from "@/components/student/mobile/my-learning-mobile";
+import { StudentHeader } from "@/components/student/student-header";
 import { PageHeader } from "@/components/common/page-header";
 import { SectionHeader } from "@/components/student/section-header";
 import { VideoCard } from "@/components/student/video-card";
 import { TestAttemptCard } from "@/components/student/test-attempt-card";
 import { BatchCard } from "@/components/student/batch-card";
 import { TestSeriesCard } from "@/components/student/test-series-card";
-import { StudentHeader } from "@/components/student/student-header";
+import { motion } from "framer-motion";
+import { Play, FileText, BookOpen, TrendingUp } from "lucide-react";
 
 // Mock data - Replace with actual API calls
 const recentVideos = [
@@ -146,102 +147,110 @@ const purchasedTestSeries = [
 
 export default function MyLearningPage() {
   return (
-    <div className="w-full min-h-[calc(100vh-4rem)] bg-gradient-to-br from-background via-background to-muted/20">
-      <StudentHeader />
-
-      <div className="container mx-auto px-2 md:px-4 py-4 md:py-6 space-y-6 md:space-y-8 max-w-7xl w-full">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <PageHeader
-            title="My Learning"
-            description="Track your progress and continue your learning journey"
-            breadcrumbs={[
-              { label: "Dashboard", href: "/student/dashboard" },
-              { label: "My Learning" },
-            ]}
-          />
-        </motion.div>
-
-        {/* Recently Watched Videos */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <SectionHeader
-            title="Continue Watching"
-            icon={Play}
-            viewAllHref="/student/videos"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentVideos.map((video, index) => (
-              <VideoCard key={video.id} {...video} index={index} />
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Recently Attempted Tests */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <SectionHeader
-            title="Recent Test Attempts"
-            icon={FileText}
-            viewAllHref="/student/tests"
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {recentTests.map((test, index) => (
-              <TestAttemptCard key={test.id} {...test} index={index} />
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Purchased Batches */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <SectionHeader
-            title="My Batches"
-            icon={BookOpen}
-            viewAllHref="/student/batches"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {purchasedBatches.map((batch, index) => (
-              <BatchCard key={batch.id} {...batch} index={index} />
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Purchased Test Series */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <SectionHeader
-            title="My Test Series"
-            icon={TrendingUp}
-            viewAllHref="/student/test-series"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {purchasedTestSeries.map((series, index) => (
-              <TestSeriesCard key={series.id} {...series} index={index} />
-            ))}
-          </div>
-        </motion.section>
+    <>
+      {/* Mobile View */}
+      <div className="md:hidden">
+        <MyLearningMobile />
       </div>
-    </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block w-full min-h-[calc(100vh-4rem)] bg-gradient-to-br from-background via-background to-muted/20">
+        <StudentHeader />
+
+        <div className="container mx-auto px-2 md:px-4 py-4 md:py-6 space-y-6 md:space-y-8 max-w-7xl w-full">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <PageHeader
+              title="My Learning"
+              description="Track your progress and continue your learning journey"
+              breadcrumbs={[
+                { label: "Dashboard", href: "/student/dashboard" },
+                { label: "My Learning" },
+              ]}
+            />
+          </motion.div>
+
+          {/* Recently Watched Videos */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <SectionHeader
+              title="Continue Watching"
+              icon={Play}
+              viewAllHref="/student/videos"
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {recentVideos.map((video, index) => (
+                <VideoCard key={video.id} {...video} index={index} />
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Recently Attempted Tests */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <SectionHeader
+              title="Recent Test Attempts"
+              icon={FileText}
+              viewAllHref="/student/tests"
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {recentTests.map((test, index) => (
+                <TestAttemptCard key={test.id} {...test} index={index} />
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Purchased Batches */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <SectionHeader
+              title="My Batches"
+              icon={BookOpen}
+              viewAllHref="/student/batches"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {purchasedBatches.map((batch, index) => (
+                <BatchCard key={batch.id} {...batch} index={index} />
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Purchased Test Series */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <SectionHeader
+              title="My Test Series"
+              icon={TrendingUp}
+              viewAllHref="/student/test-series"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {purchasedTestSeries.map((series, index) => (
+                <TestSeriesCard key={series.id} {...series} index={index} />
+              ))}
+            </div>
+          </motion.section>
+        </div>
+      </div>
+    </>
   );
 }

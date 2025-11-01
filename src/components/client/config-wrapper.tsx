@@ -37,8 +37,8 @@ export function ClientConfigWrapper({ children }: ClientConfigWrapperProps) {
         <div className="text-center space-y-4 p-8">
           <h1 className="text-4xl font-bold">Under Maintenance</h1>
           <p className="text-muted-foreground max-w-md">
-            We're currently performing scheduled maintenance. Please check back
-            soon.
+            We&apos;re currently performing scheduled maintenance. Please check
+            back soon.
           </p>
         </div>
       </div>
