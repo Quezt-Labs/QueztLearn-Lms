@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, User } from "lucide-react";
+import { Bell, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -124,10 +124,7 @@ export function StudentHeader() {
                 Profile
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/student/settings">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+
             <DropdownMenuItem
               className="text-destructive"
               onClick={() => {
@@ -135,6 +132,7 @@ export function StudentHeader() {
                 window.location.href = "/login";
               }}
             >
+              <LogOut className="mr-2 h-4 w-4 text-destructive" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
