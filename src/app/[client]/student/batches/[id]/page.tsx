@@ -44,7 +44,7 @@ export default function BatchDetailPage() {
           <div className="text-6xl">😕</div>
           <h2 className="text-2xl font-bold">Batch Not Found</h2>
           <p className="text-muted-foreground">
-            The batch you're looking for doesn't exist or has been removed.
+            The batch you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Button onClick={() => router.back()} className="mt-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
